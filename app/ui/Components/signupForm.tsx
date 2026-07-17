@@ -5,7 +5,7 @@ import { createClient } from '@/app/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import RatLogo from './RatLogo'
 
-export default function LoginForm() {
+export default function SignUpForm() {
   const supabase = createClient()
   const router = useRouter()
 
@@ -24,10 +24,13 @@ export default function LoginForm() {
     }
 
     setLoading(true)
-
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        // If email confirmation is enabled, Supabase will send users here after confirmation.
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     })
 
     if (error) {
@@ -36,6 +39,9 @@ export default function LoginForm() {
       return
     }
 
+    // Account created. With email confirmation enabled, the user verifies via email.
+    alert('Check your email for the confirmation link!')
+    setLoading(false)
     router.push('/Ratpage')
   }
 
@@ -46,10 +52,8 @@ export default function LoginForm() {
           <RatLogo />
         </div>
 
-        <div>
-          <h1 className="text-4xl font-black text-blue-600 tracking-tighter">Log In</h1>
-          <p className="text-gray-500 font-medium mt-2">Welcome back. Sign in to continue.</p>
-        </div>
+        <h1 className="text-4xl font-black text-blue-600 tracking-tighter">Sign Up</h1>
+        <p className="text-gray-500 font-medium">Create an account to start exploring.</p>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <input
@@ -66,8 +70,8 @@ export default function LoginForm() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            autoComplete="current-password"
+            className="w-full p-4 bg-blue-300 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            autoComplete="new-password"
           />
 
           {error ? <p className="text-red-600 text-sm">{error}</p> : null}
@@ -77,16 +81,16 @@ export default function LoginForm() {
             disabled={loading}
             className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all mt-4 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? 'Signing in...' : 'LOG IN'}
+            {loading ? 'Creating...' : 'CREATE ACCOUNT'}
           </button>
         </form>
 
         <button
           type="button"
+          onClick={() => router.push('/Ratpage/Login')}
           className="w-full mt-2 text-sm text-gray-400 font-medium hover:text-blue-600 transition-colors"
-          onClick={() => router.push('/signup')}
         >
-          Don&apos;t have an account? Sign up
+          Already have an account? Log in
         </button>
       </div>
     </main>
