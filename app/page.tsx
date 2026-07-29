@@ -1,61 +1,43 @@
 import Link from 'next/link';
-import RatLogo from './ui/Components/RatLogo';
+import RatLogo from './ui/RatLogo';
 
 export default function WelcomePage() {
+  const cards = [
+    { title: 'Main App', href: '/Rat', description: 'Primary feed, posts, and interactions' },
+    { title: 'Notes', href: '/notes', description: 'Quick DB-backed notes (Neon)' },
+    { title: 'Sign Up', href: '/signup', description: 'Create a new account' },
+    { title: 'Log In', href: '/login', description: 'Access your account' },
+  ];
+
   return (
-    <>
-      <main className="min-h-screen bg-white ml-0 lg:ml-64 flex flex-col justify-between px-6 py-12">
-        
-        {/* 1. TOP SECTION: Logo */}
-        <div className="mt-10">
+    <main className="min-h-screen bg-white ml-0 lg:ml-64 px-6 py-12">
+      <div className="max-w-4xl mx-auto">
+        <header className="flex items-center gap-4">
           <RatLogo />
-          {/* <h1 className="text-blue-600 font-black text-5xl tracking-tighter">
-            R A T
-          </h1> */}
-         <p className="text-gray-500 mt-4 leading-relaxed max-w-[250px]">
-  Welcome to <span className="text-blue-600 font-semibold">R A T</span>. <br /> 
-  Ready to connect with the world?
-</p>
-        </div>
+          <div>
+            <h1 className="text-3xl font-extrabold text-blue-600">R A T</h1>
+            <p className="text-gray-500">A tiny social feed demo powered by Neon Postgres.</p>
+          </div>
+        </header>
 
-        {/* 2. BOTTOM SECTION: Actions */}
-        <div className="flex flex-col gap-4 mb-10 lg:mb-0 lg:max-w-md">
-          
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Ready to explore?
-          </h2>
+        <section className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {cards.map((c) => (
+            <Link
+              key={c.href}
+              href={c.href}
+              className="block rounded-2xl border border-gray-100 p-6 bg-white hover:shadow-lg transition-shadow"
+            >
+              <h3 className="text-lg font-semibold text-gray-900">{c.title}</h3>
+              <p className="text-sm text-gray-500 mt-2">{c.description}</p>
+              <p className="mt-4 text-xs text-blue-600 font-medium">Open {c.href}</p>
+            </Link>
+          ))}
+        </section>
 
-          <Link 
-            href="/signup" 
-            className="w-full bg-blue-600 text-white text-center font-bold py-4 rounded-2xl shadow-lg shadow-blue-100 active:scale-95 transition-all"
-          >
-            CREATE ACCOUNT
-          </Link>
-          
-
-          <Link 
-          
-            href ="/Ratpage/Login"
-            className="w-full bg-white text-blue-600 border-2 border-blue-600 text-center font-bold py-4 rounded-2xl active:scale-95 transition-all"
-          >
-          
-  
-            LOG IN
-          </Link>
-
-          <p className="text-center text-xs text-gray-400 mt-2 px-6">
-            By joining, you agree to our Terms and Privacy Policy.
-          </p>
-    </div >
-        
-
-        <button className="mt-4 text-gray-400 text-sm font-medium hover:text-blue-600 transition-colors">
-  Skip for now
-</button>
-      </main>
-
-      {/* This will show the Bottom Bar on phone and Sidebar on laptop */}
-   
-    </>
+        <footer className="mt-12 text-center text-xs text-gray-400">
+          <p>Folders map to routes: keep project structure meaningful.</p>
+        </footer>
+      </div>
+    </main>
   );
 }

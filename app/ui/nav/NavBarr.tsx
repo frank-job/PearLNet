@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import NavLinks from './NavLinks';
-import RatLogo from '../Components/RatLogo';
+// import RatLogo from '@/app/ui/RatLogo';
 
 export default function NavBar() {
     return (
@@ -21,7 +21,7 @@ export default function NavBar() {
         {/* Logo - Hidden on mobile bottom bar, visible on desktop sidebar */}
         <div className="hidden lg:block mb-4">
           <Link href="/" className="flex items-center">
-            <RatLogo />
+            {/* <RatLogo /> */}
           </Link>
         </div>
 

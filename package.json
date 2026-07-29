@@ -9,11 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@auth/pg-adapter": "^1.11.2",
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.4.0",
-    "@supabase/ssr": "^0.12.0",
-    "@supabase/supabase-js": "^2.110.0",
     "@types/bcryptjs": "^3.0.0",
+    "@vercel/postgres": "^0.10.0",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.23.0",
@@ -29,6 +28,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
