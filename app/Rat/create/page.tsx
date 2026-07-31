@@ -2,7 +2,8 @@
 
 import NavBar from '../../ui/nav/NavBarr';
 import CreatePost from '@/app/components/CreatePost';
-
+// import UploadImage.svg from '@/public/UploadImage.svg';
+import Image from 'next/image';
 // ============================================================
 // Create Post Page
 // - Dedicated page for creating new posts
@@ -11,6 +12,7 @@ import CreatePost from '@/app/components/CreatePost';
 
 export default function CreatePostPage() {
   return (
+    <>
     <main className="min-h-screen transition-all duration-300 ml-0 lg:ml-64 pb-24 lg:pb-8 px-4 md:px-8">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">
         <div>
@@ -23,9 +25,24 @@ export default function CreatePostPage() {
 
       <div className="max-w-2xl mx-auto mt-4">
         <CreatePost onPostCreated={() => {}} />
-      </div>
+        </div>
+               <span className="text-2xl font-bold text-gray-700">Upload Image</span>
+        <div className="flex items-center gap-2">
+   
+      {/* Next.js Image Component */}
+      <Image 
+        src="/UploadImage.svg" 
+        alt="Upload Icon" 
+        width={700}   // Set the size you want
+        height={700}  // Set the size you want
+        className="text-blue-600  h-60px w-50px"
+      />
+      
+      
+    </div>
 
       <NavBar />
-    </main>
+      </main>
+      </>
   );
 }

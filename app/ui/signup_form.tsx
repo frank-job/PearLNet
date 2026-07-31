@@ -60,7 +60,7 @@ export default function SignupForm() {
                 placeholder="Enter your username"
                 required
               />
-              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-18px w-18px -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
             </div>
           </div>
 
@@ -81,7 +81,7 @@ export default function SignupForm() {
                 placeholder="Enter your email"
                 required
               />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-18px w-18px -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
             </div>
           </div>
 
@@ -103,7 +103,7 @@ export default function SignupForm() {
                 required
                 minLength={6}
               />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-18px w-18px -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
             </div>
           </div>
 

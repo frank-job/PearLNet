@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PostFeed from './PostFeed';
 import CreatePost from './CreatePost';
 import type { Post } from '@/app/lib/definitions';
@@ -18,26 +18,34 @@ export default function MainFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
+  const [refreshKey, setRefreshKey] = useState(0);
   const composerRef = useRef<HTMLDivElement>(null);
 
-  const fetchPosts = useCallback(async (tab: FeedTab) => {
-    try {
-      setLoading(true);
-      const url = tab === 'following' ? '/api/posts?type=following' : '/api/posts';
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.data) setPosts(json.data);
-      else if (json.error) console.error(json.error);
-    } catch {
-      console.error('Failed to fetch posts');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchPosts(activeTab);
-  }, [activeTab, fetchPosts]);
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      const url = activeTab === 'following' ? '/api/posts?type=following' : '/api/posts';
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        if (!cancelled) {
+          if (json.data) setPosts(json.data);
+          else if (json.error) console.error(json.error);
+        }
+      } catch {
+        if (!cancelled) console.error('Failed to fetch posts');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [activeTab, refreshKey]);
+
+  const handleRefresh = () => {
+    setRefreshKey((k) => k + 1);
+  };
 
   const handleTabChange = (tab: FeedTab) => {
     setActiveTab(tab);
@@ -75,7 +83,7 @@ export default function MainFeed() {
 
       {/* Post Composer */}
       <div ref={composerRef} className="border-b border-gray-100">
-        <CreatePost onPostCreated={() => fetchPosts(activeTab)} />
+        <CreatePost onPostCreated={handleRefresh} />
       </div>
 
       {/* Feed Section */}
