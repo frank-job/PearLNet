@@ -36,10 +36,10 @@ export default async function AccountPage() {
       </header>
 
       {/* Profile Section */}
-      <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 mb-8">
+      <section className="bg-white rounded-2rem p-6 shadow-sm border border-gray-100 mb-8">
         <div className="flex flex-col sm:flex-row items-center gap-6">
           {/* Avatar */}
-          <div className="h-24 w-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-3xl font-bold uppercase flex-shrink-0">
+          <div className="h-24 w-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-3xl font-bold uppercase shrink-0">
             {profile?.image_url ? (
               <img
                 src={profile.image_url}

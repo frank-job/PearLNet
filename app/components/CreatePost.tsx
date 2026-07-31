@@ -93,7 +93,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
           U
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1">
           {/* Textarea */}
           <textarea
             placeholder="What's happening?"
@@ -170,3 +170,4 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
     </div>
   );
 }
+

@@ -85,7 +85,7 @@ export default function ImageFeed() {
       <div className="space-y-6">
         <h3 className="font-bold text-xl text-gray-800">Community Gallery</h3>
         {images.map((post: Post) => (
-          <div key={post.id} className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100">
+          <div key={post.id} className="bg-white rounded-2rem overflow-hidden shadow-sm border-2 border-gray-100">
             <img 
               src={post.image_url} 
               alt="Craft" 

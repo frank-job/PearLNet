@@ -95,3 +95,13 @@ export type ProfileData = {
   birth_year: number | null;
   date_of_birth: string | null;
 };
+
+// ===== Share Types =====
+
+export type Share = {
+  id: string;
+  post_id: string;
+  user_id: string;
+  shared_with_user_id: string | null;
+  created_at: string;
+};

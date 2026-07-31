@@ -60,7 +60,7 @@ export default function SignupForm() {
                 placeholder="Enter your username"
                 required
               />
-              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-18px w-18px -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
             </div>
           </div>
 
@@ -81,7 +81,7 @@ export default function SignupForm() {
                 placeholder="Enter your email"
                 required
               />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-18px w-18px -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
             </div>
           </div>
 
@@ -103,7 +103,7 @@ export default function SignupForm() {
                 required
                 minLength={6}
               />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-18px w-18px -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
             </div>
           </div>
 
@@ -119,7 +119,7 @@ export default function SignupForm() {
               id="gender"
               name="gender"
               required
-              className="block w-full rounded-xl border border-gray-200 bg-white py-[12px] pl-3 text-sm outline-none focus:ring-2 focus:ring-[#5F7161] transition-all"
+              className="block w-full rounded-xl border border-gray-200 bg-white py-12px pl-3 text-sm outline-none focus:ring-2 focus:ring-[#5F7161] transition-all"
             >
               <option value="">Select gender</option>
               <option value="male">Male</option>

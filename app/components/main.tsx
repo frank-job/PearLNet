@@ -91,7 +91,7 @@ export default function MainFeed() {
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="w-12 h-12 rounded-full border-2 border-white bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm"
+                className="w-12 h-12 rounded-full border-2 border-white bg-linear-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm"
                 style={{ zIndex: 5 - i }}
               >
                 {String.fromCharCode(64 + i)}

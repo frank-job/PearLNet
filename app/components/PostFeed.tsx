@@ -5,7 +5,7 @@ import ImageCard from './imageC';
 import Description from './description';
 import LikesSection from './likes';
 import CommentSection from './comment';
-import ShareButton from './ShareButton';
+import ShareDrawer from './ShareDrawer';
 import FollowButton from './FollowButton';
 import type { Post } from '@/app/lib/definitions';
 
@@ -29,7 +29,7 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
   return (
     <div className="space-y-6">
       {posts.map((post) => (
-        <div key={post.id} className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100">
+        <div key={post.id} className="bg-white  rounded-5rem overflow-hidden shadow-sm  border-gray-100">
           {/* Image */}
           <ImageCard imageUrl={post.image_url} alt="Post" />
 
@@ -77,7 +77,7 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
 
               {/* Right: Share + Views */}
               <div className="flex items-center gap-4">
-                <ShareButton postId={post.id} />
+                <ShareDrawer postId={post.id} />
                 {(post.view_count ?? 0) > 0 && (
                   <span className="flex items-center gap-1 text-xs text-gray-400">
                     <EyeIcon className="w-4 h-4" />
