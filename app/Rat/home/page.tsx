@@ -10,7 +10,7 @@ import MainFeed from '@/app/components/main';
 
 export default function RatHomePage() {
   return (
-    <main className="min-h-screen transition-all duration-300 ml-0 lg:ml-64 pb-24 lg:pb-8">
+    <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
         <header className="px-4 py-6 border-b border-gray-200">
           <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">

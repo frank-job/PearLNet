@@ -4,7 +4,7 @@ import { sql } from '@vercel/postgres';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import type { Post, Comment, ProfileData } from '@/app/lib/definitions';
+import type { Post, Comment, ProfileData, Notification } from '@/app/lib/definitions';
 
 // ============================================================
 // Types
@@ -169,15 +169,17 @@ export async function createPostAction(formData: FormData): Promise<ActionError 
   const session = await getSession();
   if (!session) return { message: 'You must be logged in to post.' };
 
-  const imageBase64 = String(formData.get('imageBase64') ?? '');
-  const caption = String(formData.get('caption') ?? '');
+  const imageBase64 = String(formData.get('imageBase64') ?? '').trim();
+  const caption = String(formData.get('caption') ?? '').trim();
 
-  if (!imageBase64) return { message: 'Please add a photo.' };
+  if (!imageBase64 && !caption) {
+    return { message: 'Please add a photo or a caption.' };
+  }
 
   try {
     await sql`
       INSERT INTO posts (image_url, caption, user_id, user_email)
-      VALUES (${imageBase64}, ${caption}, ${session.userId}, ${session.email})
+      VALUES (${imageBase64 || null}, ${caption}, ${session.userId}, ${session.email})
     `;
   } catch (err) {
     return { message: err instanceof Error ? err.message : 'Failed to create post' };
@@ -221,6 +223,16 @@ export async function getLikeState(postId: string): Promise<{ liked: boolean; co
   }
 
   return { liked, count };
+}
+
+export async function incrementViewCount(postId: string): Promise<void> {
+  try {
+    await sql`
+      UPDATE posts SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${postId}
+    `;
+  } catch {
+    // Silently fail if the column doesn't exist yet
+  }
 }
 
 // ============================================================
@@ -371,6 +383,69 @@ export async function updateProfile(
     `;
   } catch (err) {
     return { message: err instanceof Error ? err.message : 'Failed to update profile' };
+  }
+}
+
+// ============================================================
+// Notification Actions
+// ============================================================
+
+export async function createNotificationAction(
+  userId: string,
+  type: string,
+  message: string,
+  link?: string,
+): Promise<void> {
+  try {
+    await sql`
+      INSERT INTO notifications (user_id, type, message, link)
+      VALUES (${userId}, ${type}, ${message}, ${link ?? null})
+    `;
+  } catch {
+    // Silently fail - notifications are non-critical
+  }
+}
+
+export async function fetchNotifications(
+  userId: string,
+): Promise<ActionResult<Notification[]>> {
+  try {
+    const result = await sql<Notification>`
+      SELECT id, user_id, type, message, link, read, created_at
+      FROM notifications
+      WHERE user_id = ${userId}
+      ORDER BY created_at DESC
+      LIMIT 50
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to fetch notifications' };
+  }
+}
+
+export async function fetchUnreadNotificationCount(
+  userId: string,
+): Promise<number> {
+  try {
+    const result = await sql`
+      SELECT COUNT(*) as count FROM notifications
+      WHERE user_id = ${userId} AND read = FALSE
+    `;
+    return Number(result.rows[0]?.count ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+export async function markNotificationRead(
+  notificationId: string,
+): Promise<ActionError | void> {
+  try {
+    await sql`
+      UPDATE notifications SET read = TRUE WHERE id = ${notificationId}
+    `;
+  } catch (err) {
+    return { message: err instanceof Error ? err.message : 'Failed to mark notification as read' };
   }
 }
 

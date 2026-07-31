@@ -42,6 +42,19 @@ export default function FollowButton({ authorId }: { authorId: string }) {
       const data = await res.json();
       if (data.isFollowing !== undefined) {
         setIsFollowing(data.isFollowing);
+
+        if (data.isFollowing) {
+          await fetch('/api/notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: authorId,
+              type: 'follow',
+              message: `${currentUserId} started following you`,
+              link: `/Rat/account`,
+            }),
+          });
+        }
       }
     } catch (err) {
       console.error('Failed to toggle follow:', err);
@@ -56,6 +69,7 @@ export default function FollowButton({ authorId }: { authorId: string }) {
   return (
     <div className="flex flex-col items-end gap-1">
       <button
+        type="button"
         onClick={toggleFollow}
         disabled={loading}
         className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all active:scale-95 ${

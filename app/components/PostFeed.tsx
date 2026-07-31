@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline';
 import ImageCard from './imageC';
 import Description from './description';
 import LikesSection from './likes';
@@ -14,7 +14,7 @@ import type { Post } from '@/app/lib/definitions';
    - Renders a list of posts with full social features:
      * User info (avatar placeholder + email)
      * Image + caption
-     * Like ❤️, Comment 💬, Share 🔗 buttons
+     * Like ❤️, Comment 💬, Share 🔗, Views 👁 buttons
      * Follow ➕ button for other users
      * Expandable comment section
    ============================================================ */
@@ -31,14 +31,13 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
       {posts.map((post) => (
         <div key={post.id} className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100">
           {/* Image */}
-          <ImageCard imageUrl={post.image_url} alt="Craft" />
+          <ImageCard imageUrl={post.image_url} alt="Post" />
 
           {/* Content */}
           <div className="p-4">
             {/* ===== User Info Row ===== */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                {/* Avatar placeholder - colored circle with first letter of email */}
                 <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold uppercase">
                   {post.user_email ? post.user_email[0] : '?'}
                 </div>
@@ -65,10 +64,8 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
               {/* Left: Likes + Comments */}
               <div className="flex items-center gap-4">
-                {/* Likes */}
                 <LikesSection postId={post.id} />
 
-                {/* Comments Button */}
                 <button
                   onClick={() => toggleComments(post.id)}
                   className="flex items-center gap-1 text-gray-400 hover:text-blue-500 transition-colors text-sm"
@@ -78,8 +75,16 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
                 </button>
               </div>
 
-              {/* Right: Share button */}
-              <ShareButton postId={post.id} />
+              {/* Right: Share + Views */}
+              <div className="flex items-center gap-4">
+                <ShareButton postId={post.id} />
+                {(post.view_count ?? 0) > 0 && (
+                  <span className="flex items-center gap-1 text-xs text-gray-400">
+                    <EyeIcon className="w-4 h-4" />
+                    {post.view_count}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Expandable Comment Section */}

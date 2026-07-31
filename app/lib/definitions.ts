@@ -21,7 +21,8 @@ export type Post = {
   caption: string;
   created_at: string;
   user_id?: string;
-  user_email?: string;  // Added: email of the user who posted
+  user_email?: string;
+  view_count?: number;
 };
 
 // ===== Comment Types =====
@@ -71,6 +72,18 @@ export type NewSignup = {
   password: string;
 };
 
+
+// ===== Notification Types =====
+
+export type Notification = {
+  id: string;
+  user_id: string;
+  type: string;
+  message: string;
+  link: string | null;
+  read: boolean;
+  created_at: string;
+};
 
 export type ProfileData = {
   id: string;

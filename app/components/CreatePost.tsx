@@ -1,11 +1,12 @@
-"use client";
+'use client';
 import { useState, useRef } from 'react';
 import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 /* ============================================================
    CreatePost Component
    - Twitter-style post composer with image upload
-   - Allows user to add a photo and caption
+   - Allows text-only posts or posts with images
+   - Shows inline feedback instead of alert()
    - Calls onPostCreated callback to refresh the feed
    ============================================================ */
 
@@ -14,9 +15,13 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const clearFeedback = () => setFeedback(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearFeedback();
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
@@ -34,8 +39,13 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
   };
 
   const handleUpload = async () => {
-    if (!description.trim() && !file) return alert('Please add a photo or caption!');
-    
+    clearFeedback();
+
+    if (!description.trim() && !file) {
+      setFeedback({ type: 'error', message: 'Please add a photo or a caption.' });
+      return;
+    }
+
     setUploading(true);
     try {
       let imageBase64 = '';
@@ -56,17 +66,20 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
       const json = await res.json();
 
       if (json.error) {
-        alert(json.error);
+        setFeedback({ type: 'error', message: json.error });
         return;
       }
 
       setFile(null);
       setPreview(null);
       setDescription('');
+      setFeedback({ type: 'success', message: 'Post shared!' });
       onPostCreated();
+
+      setTimeout(clearFeedback, 3000);
     } catch (error) {
       console.error(error);
-      alert('Failed to create post. Please try again.');
+      setFeedback({ type: 'error', message: 'Failed to create post. Please try again.' });
     } finally {
       setUploading(false);
     }
@@ -85,7 +98,10 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
           <textarea
             placeholder="What's happening?"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              clearFeedback();
+            }}
             className="w-full resize-none border-none outline-none text-base text-gray-900 placeholder-gray-400 min-h-[60px] bg-transparent"
             rows={2}
           />
@@ -98,11 +114,25 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
                 onClick={() => {
                   setFile(null);
                   setPreview(null);
+                  clearFeedback();
                 }}
                 className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors"
               >
                 <XMarkIcon className="w-4 h-4" />
               </button>
+            </div>
+          )}
+
+          {/* Inline Feedback */}
+          {feedback && (
+            <div
+              className={`mt-2 text-sm font-medium px-3 py-2 rounded-xl ${
+                feedback.type === 'success'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}
+            >
+              {feedback.message}
             </div>
           )}
 
@@ -140,4 +170,3 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
     </div>
   );
 }
-

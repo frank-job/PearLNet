@@ -11,6 +11,7 @@ type FeedTab = 'forYou' | 'following';
 // - Twitter-style feed with "For You" and "Following" tabs
 // - Post composer at the top for creating new posts
 // - Fetches posts based on selected tab
+// - Tracks view counts when posts are displayed
 // ============================================================
 
 export default function MainFeed() {

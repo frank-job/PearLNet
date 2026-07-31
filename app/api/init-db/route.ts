@@ -16,6 +16,7 @@ export async function GET() {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error('Init DB error:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
