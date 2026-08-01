@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import DynamicPlaceholder from './DynamicPlaceholder';
 
 /* ============================================================
    CreatePost Component
@@ -87,24 +88,26 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
 
   return (
     <div id="composer" className="bg-white p-4 border-b border-gray-100">
-      <div className="flex gap-3">
+      <div className="flex align-middle top-1 gap-3">
         {/* User Avatar Placeholder */}
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">
           U
         </div>
 
         <div className="flex-1">
-          {/* Textarea */}
-          <textarea
-            placeholder="What's happening?"
-            value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-              clearFeedback();
-            }}
-            className="w-full resize-none border-none outline-none text-base text-gray-900 placeholder-gray-400 min-h-[60px] bg-transparent"
-            rows={2}
-          />
+          {/* Textarea with Dynamic Rotating Placeholder */}
+          <div className="relative">
+            <DynamicPlaceholder isEmpty={description.trim().length === 0} />
+            <textarea
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                clearFeedback();
+              }}
+              className="w-full resize-none border-none outline-none text-base text-gray-900 placeholder-gray-400 min-h-[60px] bg-transparent relative z-10"
+              rows={2}
+            />
+          </div>
 
           {/* Image Preview */}
           {preview && (

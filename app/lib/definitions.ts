@@ -105,3 +105,7 @@ export type Share = {
   shared_with_user_id: string | null;
   created_at: string;
 };
+export type greetings = {
+  id: string;
+  username: string;
+}
