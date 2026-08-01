@@ -77,7 +77,7 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
 
               {/* Right: Share + Views */}
               <div className="flex items-center gap-4">
-                <ShareDrawer postId={post.id} />
+                <ShareDrawer postId={post.id} postAuthorId={post.user_id ?? ''} />
                 {(post.view_count ?? 0) > 0 && (
                   <span className="flex items-center gap-1 text-xs text-gray-400">
                     <EyeIcon className="w-4 h-4" />

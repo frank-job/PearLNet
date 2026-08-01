@@ -190,7 +190,7 @@ export async function createPostAction(formData: FormData): Promise<ActionError 
 // Like Actions
 // ============================================================
 
-export async function toggleLikeAction(postId: string): Promise<ActionError | void> {
+export async function toggleLikeAction(postId: string): Promise<ActionError | { liked: boolean }> {
   const session = await getSession();
   if (!session) return { message: 'You must be logged in.' };
 
@@ -200,8 +200,23 @@ export async function toggleLikeAction(postId: string): Promise<ActionError | vo
 
   if ((existing.rowCount ?? 0) > 0) {
     await sql`DELETE FROM likes WHERE post_id = ${postId} AND user_id = ${session.userId}`;
+    return { liked: false };
   } else {
     await sql`INSERT INTO likes (post_id, user_id) VALUES (${postId}, ${session.userId})`;
+
+    // Notify the post author (skip if liking your own post)
+    const authorId = await getPostAuthor(postId);
+    if (authorId && authorId !== session.userId) {
+      const displayName = await getSessionDisplayName();
+      await createNotificationAction(
+        authorId,
+        'like',
+        `${displayName} liked your post`,
+        `/Rat/home`,
+      );
+    }
+
+    return { liked: true };
   }
 }
 
@@ -249,6 +264,20 @@ export async function addCommentAction(postId: string, content: string): Promise
       INSERT INTO comments (post_id, user_id, content, user_email)
       VALUES (${postId}, ${session.userId}, ${content.trim()}, ${session.email})
     `;
+
+    // Notify the post author (skip if commenting on your own post)
+    const authorId = await getPostAuthor(postId);
+    if (authorId && authorId !== session.userId) {
+      const displayName = await getSessionDisplayName();
+      const snippet = content.trim();
+      const preview = snippet.length > 40 ? `${snippet.slice(0, 40)}…` : snippet;
+      await createNotificationAction(
+        authorId,
+        'comment',
+        `${displayName} commented: "${preview}"`,
+        `/Rat/home`,
+      );
+    }
   } catch (err) {
     return { message: err instanceof Error ? err.message : 'Failed to add comment' };
   }
@@ -447,5 +476,40 @@ export async function markNotificationRead(
   } catch (err) {
     return { message: err instanceof Error ? err.message : 'Failed to mark notification as read' };
   }
+}
+
+export async function markAllNotificationsRead(userId: string): Promise<ActionError | void> {
+  try {
+    await sql`
+      UPDATE notifications SET read = TRUE WHERE user_id = ${userId} AND read = FALSE
+    `;
+  } catch (err) {
+    return { message: err instanceof Error ? err.message : 'Failed to mark notifications as read' };
+  }
+}
+
+export async function getPostAuthor(postId: string): Promise<string | null> {
+  try {
+    const result = await sql`
+      SELECT user_id FROM posts WHERE id = ${postId} LIMIT 1
+    `;
+    return result.rows[0]?.user_id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getSessionDisplayName(): Promise<string> {
+  const session = await getSession();
+  if (!session) return 'Someone';
+  try {
+    const profileResult = await getProfile(session.userId);
+    if ('data' in profileResult && profileResult.data?.username) {
+      return profileResult.data.username;
+    }
+  } catch {
+    // fall through to email prefix
+  }
+  return session.email.split('@')[0] || 'Someone';
 }
 

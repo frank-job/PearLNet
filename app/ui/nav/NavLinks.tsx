@@ -6,13 +6,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { Home, PlusSquare, UserCircle } from 'lucide-react';
+import { Home, PlusSquare, UserCircle, Bell } from 'lucide-react';
 
 const Links = [
   { name: 'Home', href: '/Rat', icon: Home },
   { name: 'Create', href: '/Rat/create', icon: PlusSquare },
+  { name: 'Notifications', href: '/Rat/Notification', icon: Bell },
   { name: 'Account', href: '/account', icon: UserCircle },
-  {name: 'notifications', href: '/Notification', icon: Home},
 ];
 
 export default function NavLinks() {

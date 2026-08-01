@@ -6,6 +6,7 @@ import { UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline';
 export default function FollowButton({ authorId }: { authorId: string }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserDisplayName, setCurrentUserDisplayName] = useState('Someone');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,7 +14,13 @@ export default function FollowButton({ authorId }: { authorId: string }) {
     fetch('/api/session')
       .then(r => r.json())
       .then(data => {
-        if (data.userId) setCurrentUserId(data.userId);
+        if (data.userId) {
+          setCurrentUserId(data.userId);
+          // Use the email prefix as a friendly display name
+          if (data.email) {
+            setCurrentUserDisplayName(data.email.split('@')[0]);
+          }
+        }
       })
       .catch(err => console.error('Failed to get session:', err));
   }, []);
@@ -50,7 +57,7 @@ export default function FollowButton({ authorId }: { authorId: string }) {
             body: JSON.stringify({
               userId: authorId,
               type: 'follow',
-              message: `${currentUserId} started following you`,
+              message: `${currentUserDisplayName} started following you`,
               link: `/Rat/account`,
             }),
           });

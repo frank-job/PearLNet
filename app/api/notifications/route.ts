@@ -3,6 +3,7 @@ import {
   fetchNotifications,
   fetchUnreadNotificationCount,
   markNotificationRead,
+  markAllNotificationsRead,
   createNotificationAction,
 } from '@/app/lib/action';
 import { getSession } from '@/app/lib/action';
@@ -63,7 +64,13 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { notificationId } = body;
+    const { notificationId, all } = body;
+
+    // Mark all of the current user's notifications as read
+    if (all) {
+      await markAllNotificationsRead(session.userId);
+      return NextResponse.json({ success: true });
+    }
 
     if (!notificationId) {
       return NextResponse.json(

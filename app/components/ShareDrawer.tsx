@@ -13,8 +13,9 @@ import { shareApps } from '@/app/lib/share-data';
      so all apps are accessible
    ============================================================ */
 
-export default function ShareDrawer({ postId }: { postId: string }) {
+export default function ShareDrawer({ postId, postAuthorId }: { postId: string; postAuthorId: string }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
   const [rotation, setRotation] = useState(0);
@@ -53,7 +54,7 @@ export default function ShareDrawer({ postId }: { postId: string }) {
     return `${window.location.origin}/post/${postId}`;
   };
 
-  const handleShare = (appName: string, url: string) => {
+  const handleShare = async (appName: string, url: string) => {
     const postUrl = getPostUrl();
 
     if (appName === 'Copy' || url === 'copy') {
@@ -64,6 +65,23 @@ export default function ShareDrawer({ postId }: { postId: string }) {
 
     const shareUrl = `${url}${encodeURIComponent(postUrl)}`;
     window.open(shareUrl, '_blank', 'noopener,noreferrer');
+
+    // Notify the post author that their post was shared
+    if (postAuthorId && !isSharing) {
+      setIsSharing(true);
+      try {
+        await fetch('/api/share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId, postAuthorId }),
+        });
+      } catch {
+        // Silently fail - share notifications are non-critical
+      } finally {
+        setIsSharing(false);
+      }
+    }
+
     setIsOpen(false);
   };
 

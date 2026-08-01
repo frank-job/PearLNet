@@ -66,7 +66,10 @@ export default function NotificationBell() {
 
   const handleToggle = async () => {
     if (!open) {
+      setLoading(true);
       await fetchNotifications();
+      await fetchUnreadCount();
+      setLoading(false);
     }
     setOpen(!open);
   };
@@ -77,7 +80,7 @@ export default function NotificationBell() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          notificationId: '__all__',
+          all: true,
         }),
       });
       setUnreadCount(0);

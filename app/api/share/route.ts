@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/app/lib/action';
+import { getSession, getSessionDisplayName } from '@/app/lib/action';
 import { createNotificationAction } from '@/app/lib/action';
 
 export async function POST(request: NextRequest) {
@@ -23,10 +23,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Cannot share your own post' });
     }
 
+    const displayName = await getSessionDisplayName();
+
     await createNotificationAction(
       postAuthorId,
       'share',
-      `${session.userId} shared your post`,
+      `${displayName} shared your post`,
       `/Rat/home`,
     );
 
