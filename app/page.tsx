@@ -3,8 +3,8 @@ import RatLogo from './ui/RatLogo';
 
 export default function WelcomePage() {
   const cards = [
-    { title: 'Main App', href: '/Rat', description: 'Primary feed, posts, and interactions' },
-    { title: 'Notes', href: '/notes', description: 'Quick DB-backed notes (Neon)' },
+    // { title: 'Main App', href: '/Rat', description: 'Primary feed, posts, and interactions' },
+    // { title: 'Notes', href: '/notes', description: 'Quick DB-backed notes (Neon)' },
     { title: 'Sign Up', href: '/signup', description: 'Create a new account' },
     { title: 'Log In', href: '/login', description: 'Access your account' },
   ];
@@ -16,11 +16,11 @@ export default function WelcomePage() {
           <RatLogo />
           <div>
             <h1 className="text-3xl font-extrabold text-blue-600">R A T</h1>
-            <p className="text-gray-500">A tiny social feed demo powered by Neon Postgres.</p>
+            {/* <p className="text-gray-500">A tiny social feed demo powered by Neon Postgres.</p> */}
           </div>
         </header>
 
-        <section className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <section className="mt-10 w-3xl h-20 grid grid-cols-1 sm:grid-cols-2 gap-6">
           {cards.map((c) => (
             <Link
               key={c.href}
@@ -34,9 +34,9 @@ export default function WelcomePage() {
           ))}
         </section>
 
-        <footer className="mt-12 text-center text-xs text-gray-400">
+        {/* <footer className="mt-12 text-center text-xs text-gray-400">
           <p>Folders map to routes: keep project structure meaningful.</p>
-        </footer>
+        </footer> */}
       </div>
     </main>
   );
