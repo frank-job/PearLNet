@@ -3,21 +3,27 @@ import { motion } from 'framer-motion';
 import { ShareApp } from '@/app/lib/share-data';
 
 const itemVariants = {
-  hidden: { scale: 0, opacity: 0, y: 20 },
-  visible: { scale: 1, opacity: 1, y: 0 }
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0 },
 };
 
 export default function AppIcon({ app, onShare }: { app: ShareApp; onShare?: () => void }) {
   return (
-    <motion.div 
+    <motion.div
       variants={itemVariants}
       className="flex flex-col items-center gap-2"
     >
-      <button 
-        className={`w-14 h-14 ${app.color} rounded-[1.2rem] flex items-center justify-center text-2xl shadow-lg active:scale-90 transition-transform`}
+      <button
+        className={`w-16 h-16 ${app.color} rounded-2xl flex items-center justify-center shadow-md active:scale-95 transition-transform overflow-hidden`}
         onClick={onShare}
+        aria-label={app.name}
       >
-        <span className="drop-shadow-md">{app.icon}</span>
+        <img
+          src={app.icon}
+          alt={app.name}
+          className="w-8 h-8 object-contain"
+          loading="lazy"
+        />
       </button>
       <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">
         {app.name}
@@ -25,3 +31,4 @@ export default function AppIcon({ app, onShare }: { app: ShareApp; onShare?: () 
     </motion.div>
   );
 }
+

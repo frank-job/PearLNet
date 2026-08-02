@@ -46,14 +46,14 @@ export default function Greetings({ userName }: { userName: string }) {
 
   return (
     <div className="py-6 px-4">
-      <motion.h1
+      <motion.h4
         variants={container}
         initial="hidden"
         animate="visible"
         className={`text-3xl md:text-4xl font-black tracking-tighter uppercase leading-none bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent animate-gradient`}
       >
         <motion.span variants={item}>{config.greet},</motion.span>
-      </motion.h1>
+      </motion.h4>
 
       <div className="flex items-center gap-2 mt-2">
         <motion.span

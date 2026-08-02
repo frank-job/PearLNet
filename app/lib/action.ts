@@ -142,7 +142,7 @@ export async function fetchPosts(): Promise<ActionResult<Post[]>> {
     const result = await sql<Post>`
       SELECT id, image_url, caption, created_at, user_id, user_email
       FROM posts
-      ORDER BY created_at DESC
+      ORDER BY RANDOM()
     `;
     return { data: result.rows };
   } catch (err) {
@@ -157,7 +157,7 @@ export async function fetchFollowingPosts(userId: string): Promise<ActionResult<
       FROM posts p
       INNER JOIN follows f ON p.user_id = f.following_id
       WHERE f.follower_id = ${userId}
-      ORDER BY p.created_at DESC
+      ORDER BY RANDOM()
     `;
     return { data: result.rows };
   } catch (err) {

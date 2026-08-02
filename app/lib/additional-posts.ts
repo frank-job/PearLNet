@@ -1,0 +1,273 @@
+// ============================================================
+// Additional Posts Data
+// - Extra sample posts to populate the feed for visitors
+// - Linked to the existing seeded demo users so the feed shows
+//   realistic usernames and avatars
+// - Deterministic UUIDs + ON CONFLICT DO NOTHING make this
+//   idempotent: running the seed multiple times won't duplicate
+// ============================================================
+
+export type SeedPost = {
+  id: string;
+  image_url: string | null; // null => text-only post
+  caption: string;
+  user_id: string;
+  user_email: string;
+};
+
+// The 20 seeded demo users (kept in sync with /api/seed + init.sql)
+export const SEED_USERS = [
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567801', username: 'frank_dev', email: 'frank_dev@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567802', username: 'handcrafted_haven', email: 'handcrafted_haven@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567803', username: 'maya_design', email: 'maya_design@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567804', username: 'wood_master', email: 'wood_master@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567805', username: 'jdm_vibes', email: 'jdm_vibes@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567806', username: 'sarah_create', email: 'sarah_create@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567807', username: 'mark_tech', email: 'mark_tech@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567808', username: 'elena_ceramics', email: 'elena_ceramics@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567809', username: 'city_snaps', email: 'city_snaps@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567810', username: 'dev_lina', email: 'dev_lina@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567811', username: 'retro_finds', email: 'retro_finds@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567812', username: 'plant_dad', email: 'plant_dad@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567813', username: 'hike_life', email: 'hike_life@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567814', username: 'pixel_perfect', email: 'pixel_perfect@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567815', username: 'hide_and_seek', email: 'hide_and_seek@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567816', username: 'chef_kitchen', email: 'chef_kitchen@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567817', username: 'remote_work', email: 'remote_work@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567818', username: 'shine_bright', email: 'shine_bright@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567819', username: 'arch_daily', email: 'arch_daily@example.com' },
+  { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567820', username: 'neon_beats', email: 'neon_beats@example.com' },
+];
+
+const u = (idx: number) => SEED_USERS[idx];
+
+export const additionalPosts: SeedPost[] = [
+  // --- Image + caption posts ---
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678001',
+    image_url: 'https://picsum.photos/seed/setup2/800/1200',
+    caption: 'Upgraded the battlestation with dual monitors. Productivity went 📈 #setup',
+    user_id: u(0).id,
+    user_email: u(0).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678002',
+    image_url: 'https://picsum.photos/seed/glaze2/800/1200',
+    caption: 'Second kiln run of the week. This raku glaze is pure magic. 🏺✨',
+    user_id: u(1).id,
+    user_email: u(1).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678003',
+    image_url: 'https://picsum.photos/seed/flatlay/800/1200',
+    caption: 'Designing a fresh brand kit. Neutrals + one bold accent. 🎨 #branding',
+    user_id: u(2).id,
+    user_email: u(2).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678004',
+    image_url: 'https://picsum.photos/seed/oak/800/1200',
+    caption: 'Cutting boards fresh off the router. The grain on this oak is unreal. 🪵',
+    user_id: u(3).id,
+    user_email: u(3).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678005',
+    image_url: 'https://picsum.photos/seed/garage/800/1200',
+    caption: 'Weekend project: full detail + ceramic coat on the Supra. 🔥🧼',
+    user_id: u(4).id,
+    user_email: u(4).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678006',
+    image_url: 'https://picsum.photos/seed/gallery/800/1200',
+    caption: 'The studio wall is full again. Time to curate a new collection. 🖼️',
+    user_id: u(5).id,
+    user_email: u(5).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678007',
+    image_url: 'https://picsum.photos/seed/cpu/800/1200',
+    caption: 'Finally water-cooled the rig. Idle temps dropped 20°C. 🥶💻',
+    user_id: u(6).id,
+    user_email: u(6).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678008',
+    image_url: 'https://picsum.photos/seed/wheel/800/1200',
+    caption: 'Throwing on the wheel after a long week. Nothing beats the feel of wet clay. 🏺',
+    user_id: u(7).id,
+    user_email: u(7).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678009',
+    image_url: 'https://picsum.photos/seed/street/800/1200',
+    caption: 'Street photography is just timing + curiosity. This shot took 40 minutes. 📷🌆',
+    user_id: u(8).id,
+    user_email: u(8).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678010',
+    image_url: 'https://picsum.photos/seed/terminal/800/1200',
+    caption: 'Refactored the whole codebase. 3k lines deleted. Best feeling ever. 🧹👨‍💻',
+    user_id: u(9).id,
+    user_email: u(9).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678011',
+    image_url: 'https://picsum.photos/seed/thrift/800/1200',
+    caption: 'Found a vintage Polaroid bundle for $20. Jackpot. 🎞️📸',
+    user_id: u(10).id,
+    user_email: u(10).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678012',
+    image_url: 'https://picsum.photos/seed/greenhouse/800/1200',
+    caption: 'Repotted the fiddle leaf fig today. Fingers crossed it thrives! 🌿',
+    user_id: u(11).id,
+    user_email: u(11).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678013',
+    image_url: 'https://picsum.photos/seed/trail/800/1200',
+    caption: 'Morning trail run. Best way to start the day. 🥾🌲',
+    user_id: u(12).id,
+    user_email: u(12).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678014',
+    image_url: 'https://picsum.photos/seed/mockup/800/1200',
+    caption: 'New dashboard mockup for the client. Feedback welcome! 📐🖥️',
+    user_id: u(13).id,
+    user_email: u(13).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678015',
+    image_url: 'https://picsum.photos/seed/tan/800/1200',
+    caption: 'Finished this minimal leather tote. Stitched by hand, built to last. 👜🪡',
+    user_id: u(14).id,
+    user_email: u(14).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678016',
+    image_url: 'https://picsum.photos/seed/pasta2/800/1200',
+    caption: 'Homemade tagliatelle with slow-cooked ragu. Sunday dinner sorted. 🍝',
+    user_id: u(15).id,
+    user_email: u(15).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678017',
+    image_url: 'https://picsum.photos/seed/coffee/800/1200',
+    caption: 'Work-from-café day. The latte art is mediocre but the wifi is elite. ☕💻',
+    user_id: u(16).id,
+    user_email: u(16).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678018',
+    image_url: 'https://picsum.photos/seed/detail2/800/1200',
+    caption: 'Paint correction on this classic. Mirror finish achieved. ✨🚗',
+    user_id: u(17).id,
+    user_email: u(17).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678019',
+    image_url: 'https://picsum.photos/seed/sketch/800/1200',
+    caption: 'Quick architectural sketch over lunch. Concrete + glass = ❤️. 🏢✏️',
+    user_id: u(18).id,
+    user_email: u(18).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678020',
+    image_url: 'https://picsum.photos/seed/mixer/800/1200',
+    caption: 'Sampling session tonight. Lo-fi beats for the late shift. 🎛️🎧',
+    user_id: u(19).id,
+    user_email: u(19).email,
+  },
+
+  // --- Text-only posts (no image) ---
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678021',
+    image_url: null,
+    caption: 'Hot take: the best commit message is a short one. "Fix bug" is a work of art. 💬',
+    user_id: u(0).id,
+    user_email: u(0).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678022',
+    image_url: null,
+    caption: 'Handmade things carry a little piece of the maker. That’s why they feel different. 🧵',
+    user_id: u(1).id,
+    user_email: u(1).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678023',
+    image_url: null,
+    caption: 'White space is not wasted space. It is breathing room for the eyes. 👁️',
+    user_id: u(2).id,
+    user_email: u(2).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678024',
+    image_url: null,
+    caption: 'Sanding to 220 is therapy. Sanding to 400 is a lifestyle. 🪵',
+    user_id: u(3).id,
+    user_email: u(3).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678025',
+    image_url: null,
+    caption: 'There is no such thing as too much tire shine. Change my mind. 🏎️',
+    user_id: u(4).id,
+    user_email: u(4).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678026',
+    image_url: null,
+    caption: 'Creativity is just letting your hands wander while your mind is quiet. 🎨',
+    user_id: u(5).id,
+    user_email: u(5).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678027',
+    image_url: null,
+    caption: 'Pro tip: save your work before trying anything "clever". Trust me. ⚠️',
+    user_id: u(6).id,
+    user_email: u(6).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678028',
+    image_url: null,
+    caption: 'Centering a pot on the wheel is 90% confidence, 10% technique. 🏺',
+    user_id: u(7).id,
+    user_email: u(7).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678029',
+    image_url: null,
+    caption: 'The best camera is the one that is with you when the moment happens. 📸',
+    user_id: u(8).id,
+    user_email: u(8).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678030',
+    image_url: null,
+    caption: 'Ship it. Perfect is the enemy of done. 🚀',
+    user_id: u(9).id,
+    user_email: u(9).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678031',
+    image_url: null,
+    caption: 'Vintage is just tech that was built to last. 📻',
+    user_id: u(10).id,
+    user_email: u(10).email,
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-f12345678032',
+    image_url: null,
+    caption: 'Talk to your plants. They are great listeners and they never interrupt. 🌱',
+    user_id: u(11).id,
+    user_email: u(11).email,
+  },
+];
+
