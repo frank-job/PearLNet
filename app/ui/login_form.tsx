@@ -27,7 +27,7 @@ export default function LoginForm() {
         <h1 className="mb-3 font-serif text-2xl text-blue-700 font-bold">
           Welcome back
         </h1>
-        <p className="text-sm text-black mb-6 italic">
+        <p className="text-sm text-bblue-500 mb-6 italic">
           Log in to your account.
         </p>
 
@@ -47,7 +47,7 @@ export default function LoginForm() {
             >
               Email Address
             </label>
-            <div className="relative">
+            <div className="relative text-blue-700">
               <input
                 className={inputBase}
                 id="email"
@@ -69,7 +69,7 @@ export default function LoginForm() {
             >
               Password
             </label>
-            <div className="relative">
+            <div className="relative text-black">
               <input
                 className={inputBase}
                 id="password"
@@ -80,7 +80,7 @@ export default function LoginForm() {
                 minLength={6}
                 autoComplete="current-password"
               />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-blue-950 peer-focus:text-[#5F7" />
+              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-blue-950 peer-focus:text-blue-950" />
             </div>
           </div>
         </div>

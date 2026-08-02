@@ -42,7 +42,7 @@ export default function SignupForm() {
           </div>
         )}
 
-        <div className="w-full space-y-4">
+        <div className="w-full space-y-4 ">
           {/* Username Field */}
           <div>
             <label
@@ -51,7 +51,7 @@ export default function SignupForm() {
             >
               Username
             </label>
-            <div className="relative">
+            <div className="relative text-stone-950">
               <input
                 className={inputBase}
                 id="username"
@@ -72,7 +72,7 @@ export default function SignupForm() {
             >
               Email Address
             </label>
-            <div className="relative">
+            <div className="relative text-blue-700">
               <input
                 className={inputBase}
                 id="email"
@@ -93,7 +93,7 @@ export default function SignupForm() {
             >
               Password
             </label>
-            <div className="relative">
+            <div className="relative text-black">
               <input
                 className={inputBase}
                 id="password"
@@ -119,7 +119,7 @@ export default function SignupForm() {
               id="gender"
               name="gender"
               required
-              className="block w-full rounded-xl border border-gray-200 bg-white py-12px pl-3 text-sm outline-none focus:ring-2 focus:ring-[#5F7161] transition-all"
+              className="block w-full rounded-xl border border-gray-200 text-blue-600 bg-white py-12px pl-3 text-sm outline-none focus:ring-2 focus:ring-blue-700 transition-all"
             >
               <option value="">Select gender</option>
               <option value="male">Male</option>
