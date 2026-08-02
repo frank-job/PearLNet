@@ -1,7 +1,8 @@
 'use client';
-import { useState, useRef } from 'react';
-import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useState, useRef, useEffect } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import DynamicPlaceholder from './DynamicPlaceholder';
+import LivePostPreview from './LivePostPreview';
 
 /* ============================================================
    CreatePost Component
@@ -17,9 +18,24 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [userName, setUserName] = useState('You');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const clearFeedback = () => setFeedback(null);
+
+  // Fetch the logged-in user's name for the live preview
+  useEffect(() => {
+    let active = true;
+    fetch('/api/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data.email) {
+          setUserName(data.email.split('@')[0] ?? 'You');
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     clearFeedback();
@@ -96,7 +112,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
 
         <div className="flex-1">
           {/* Textarea with Dynamic Rotating Placeholder */}
-          <div className="relative">
+          <div className="relative rounded-2xl border-2 border-gray-200 bg-gray-50 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 transition-all duration-200 px-4 py-2">
             <DynamicPlaceholder isEmpty={description.trim().length === 0} />
             <textarea
               value={description}
@@ -104,7 +120,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
                 setDescription(e.target.value);
                 clearFeedback();
               }}
-              className="w-full resize-none border-none outline-none text-base text-gray-900 placeholder-gray-400 min-h-[60px] bg-transparent relative z-10"
+              className="w-full resize-none outline-none text-base text-gray-900 placeholder-transparent min-h-[60px] bg-transparent relative z-10"
               rows={2}
             />
           </div>
@@ -168,6 +184,9 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
               {uploading ? 'Posting...' : 'Post'}
             </button>
           </div>
+
+          {/* Live Preview */}
+          <LivePostPreview userName={userName} caption={description} imageUrl={preview} />
         </div>
       </div>
     </div>

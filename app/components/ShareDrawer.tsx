@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShareIcon } from '@heroicons/react/24/outline';
+import { ShareIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { shareApps } from '@/app/lib/share-data';
 
 /* ============================================================
@@ -16,6 +16,7 @@ import { shareApps } from '@/app/lib/share-data';
 export default function ShareDrawer({ postId, postAuthorId }: { postId: string; postAuthorId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
   const [rotation, setRotation] = useState(0);
@@ -60,6 +61,8 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
     if (appName === 'Copy' || url === 'copy') {
       navigator.clipboard.writeText(postUrl);
       setIsOpen(false);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
       return;
     }
 
@@ -163,11 +166,30 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
       {/* Share Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 text-gray-400 hover:text-green-500 transition-colors text-sm"
-        title="Share this post"
+        className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-90 shadow-sm ${
+          copied
+            ? 'bg-emerald-500 text-white shadow-emerald-200 border border-emerald-500'
+            : isOpen
+            ? 'bg-emerald-50 text-emerald-600 shadow-emerald-100 border border-emerald-100'
+            : 'bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600 hover:shadow-emerald-100 border border-transparent hover:border-emerald-100'
+        }`}
+        title={copied ? 'Copied!' : 'Share this post'}
       >
-        <ShareIcon className="w-5 h-5" />
-        <span>Share</span>
+        {copied ? (
+          <>
+            <CheckIcon className="w-4 h-4" />
+            <span>Copied!</span>
+          </>
+        ) : (
+          <>
+            <ShareIcon
+              className={`w-4 h-4 transition-transform duration-300 group-hover:scale-110 ${
+                isOpen ? 'rotate-45 scale-110' : ''
+              }`}
+            />
+            <span>Share</span>
+          </>
+        )}
       </button>
 
       {/* Radial Circle Menu */}
@@ -246,7 +268,6 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
                             position: 'fixed',
                             left: buttonRect.left + buttonRect.width / 2 - 24,
                             top: buttonRect.top + buttonRect.height / 2 - 24,
-                            transform: `translate(${x}px, ${y}px)`,
                           }
                         : undefined
                     }

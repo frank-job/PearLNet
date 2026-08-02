@@ -12,7 +12,7 @@ const Links = [
   { name: 'Home', href: '/Rat', icon: Home },
   { name: 'Create', href: '/Rat/create', icon: PlusSquare },
   { name: 'Notifications', href: '/Rat/Notification', icon: Bell },
-  { name: 'Account', href: '/account', icon: UserCircle },
+  { name: 'Account', href: '/Rat/account', icon: UserCircle },
 ];
 
 export default function NavLinks() {

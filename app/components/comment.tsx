@@ -133,22 +133,39 @@ export default function CommentSection({ postId }: { postId: string }) {
       </div>
 
       {userId ? (
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            type="text"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
-            className="flex-1 text-sm bg-gray-50 rounded-xl px-3 py-2 border-none outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            disabled={loading || !newComment.trim()}
-            className="text-sm font-bold text-blue-600 disabled:text-gray-300 hover:text-blue-800 transition-colors"
-          >
-            {loading ? '...' : 'Post'}
-          </button>
-        </form>
+        <>
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => {
+                setNewComment(e.target.value);
+                setError(null);
+              }}
+              placeholder="Add a comment..."
+              className="flex-1 text-sm bg-gray-50 rounded-xl px-3 py-2 border-2 border-gray-200 outline-none transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            />
+            <button
+              type="submit"
+              disabled={loading || !newComment.trim()}
+              className="text-sm font-bold text-blue-600 disabled:text-gray-300 hover:text-blue-800 transition-colors"
+            >
+              {loading ? '...' : 'Post'}
+            </button>
+          </form>
+
+          {/* Live comment preview */}
+          {newComment.trim() && (
+            <div className="mt-2 rounded-xl bg-blue-50/50 border border-blue-100 px-3 py-2">
+              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">
+                Preview
+              </p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                {newComment}
+              </p>
+            </div>
+          )}
+        </>
       ) : (
         <p className="text-xs text-gray-400">Log in to comment</p>
       )}

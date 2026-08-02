@@ -9,12 +9,12 @@ export default function Greetings({ userName }: { userName: string }) {
     if (hour >= 5 && hour < 12) {
         greet = 'Good Morning';
         emoji = '☕';
-    } else if (hour >= 12 && hour < 17) {
+    } else if (hour >= 12 && hour < 15) {
         greet = 'Good Afternoon';
         emoji = '☀️';
-    } else if (hour >= 17 && hour < 21) {
+    } else if (hour >= 15 && hour < 21) {
         greet = 'Good Evening';
-        emoji = '🌆';
+        emoji = '🌙😊  ';
     } else {
         greet = 'Good Night';
         emoji = '🌙';
@@ -27,9 +27,9 @@ export default function Greetings({ userName }: { userName: string }) {
                 {greet},
             </h1>
             <div className="flex items-center gap-2 mt-2">
-                {/* <span className="text-2xl md:text-3xl font-bold text-blue-600"> */}
+                <span className="text-2xl md:text-3xl font-bold text-blue-600">
                 {/* <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent"> */}
-                <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent hover:animate-gradient">
+                {/* <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent hover:animate-gradient"> */}
                     {userName} {emoji}
                 </span>
             </div>

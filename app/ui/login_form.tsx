@@ -42,7 +42,7 @@ export default function LoginForm() {
           {/* Email Field */}
           <div>
             <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+              className="mb-3 mt-5 block text-xs font-medium text-black"
               htmlFor="email"
             >
               Email Address
@@ -57,7 +57,7 @@ export default function LoginForm() {
                 required
                 autoComplete="email"
               />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-black peer-focus:text-black" />
             </div>
           </div>
 
@@ -80,7 +80,7 @@ export default function LoginForm() {
                 minLength={6}
                 autoComplete="current-password"
               />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-blue-950 peer-focus:text-[#5F7" />
             </div>
           </div>
         </div>

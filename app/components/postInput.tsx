@@ -31,16 +31,18 @@ export default function PostInput({
 
   return (
     <div className="w-full">
-      <textarea
-        placeholder={dynamicPlaceholder}
-        value={description}
-        onChange={(e) => {
-          setDescription(e.target.value);
-          if (clearFeedback) clearFeedback();
-        }}
-        className="w-full resize-none border-none outline-none text-lg text-gray-900 placeholder-gray-400 min-h-[80px] bg-transparent leading-relaxed"
-        rows={2}
-      />
+      <div className="relative rounded-2xl border-2 border-gray-200 bg-gray-50 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 transition-all duration-200 px-4 py-2">
+        <textarea
+          placeholder={dynamicPlaceholder}
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            if (clearFeedback) clearFeedback();
+          }}
+          className="w-full resize-none outline-none text-lg text-gray-900 placeholder-gray-400 min-h-[80px] bg-transparent leading-relaxed"
+          rows={2}
+        />
+      </div>
       
       {/* Visual indicator of "Modern" UI: Character count or simple line */}
       <div className="flex justify-end pr-2">
