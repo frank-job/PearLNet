@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import NavBar from '../../ui/nav/NavBarr';
 import NewsApi from '@/app/components/news';
 import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
@@ -34,8 +35,10 @@ export default function NewsPage() {
           </div>
         </header>
 
-        <div className="px-4 py-6">
-          <NewsApi />
+<div className="px-4 py-6">
+          <Suspense fallback={<div className="py-8 text-center text-xs text-gray-400">Loading news...</div>}>
+            <NewsApi />
+          </Suspense>
         </div>
       </div>
 
