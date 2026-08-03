@@ -30,8 +30,8 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
     <div className="space-y-6">
       {posts.map((post) => (
         <div key={post.id} className="bg-white  rounded-5rem overflow-hidden shadow-sm  border-gray-100">
-          {/* Image */}
-          <ImageCard imageUrl={post.image_url} alt="Post" />
+{/* Image */}
+          <ImageCard imageUrl={post.image_url} images={post.images} alt="Post" />
 
           {/* Content */}
           <div className="p-4">

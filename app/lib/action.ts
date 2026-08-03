@@ -137,19 +137,39 @@ export async function logout() {
 // Post Actions
 // ============================================================
 
+function isMissingImagesColumn(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  const lower = message.toLowerCase();
+  return lower.includes('images') && lower.includes('does not exist');
+}
+
 export async function fetchPosts(
   limit = 30,
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
   try {
     const result = await sql<Post>`
-      SELECT id, image_url, caption, created_at, user_id, user_email
+      SELECT id, image_url, images, caption, created_at, user_id, user_email
       FROM posts
       ORDER BY RANDOM()
       LIMIT ${limit} OFFSET ${offset}
     `;
     return { data: result.rows };
   } catch (err) {
+    // Fall back gracefully if the `images` migration hasn't been applied yet.
+    if (isMissingImagesColumn(err)) {
+      try {
+        const result = await sql<Post>`
+          SELECT id, image_url, caption, created_at, user_id, user_email
+          FROM posts
+          ORDER BY RANDOM()
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+        return { data: result.rows };
+      } catch (err2) {
+        return { error: err2 instanceof Error ? err2.message : 'Failed to fetch posts' };
+      }
+    }
     return { error: err instanceof Error ? err.message : 'Failed to fetch posts' };
   }
 }
@@ -161,7 +181,7 @@ export async function fetchFollowingPosts(
 ): Promise<ActionResult<Post[]>> {
   try {
     const result = await sql<Post>`
-      SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email
+      SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email
       FROM posts p
       INNER JOIN follows f ON p.user_id = f.following_id
       WHERE f.follower_id = ${userId}
@@ -170,6 +190,22 @@ export async function fetchFollowingPosts(
     `;
     return { data: result.rows };
   } catch (err) {
+    // Fall back gracefully if the `images` migration hasn't been applied yet.
+    if (isMissingImagesColumn(err)) {
+      try {
+        const result = await sql<Post>`
+          SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email
+          FROM posts p
+          INNER JOIN follows f ON p.user_id = f.following_id
+          WHERE f.follower_id = ${userId}
+          ORDER BY RANDOM()
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+        return { data: result.rows };
+      } catch (err2) {
+        return { error: err2 instanceof Error ? err2.message : 'Failed to fetch following posts' };
+      }
+    }
     return { error: err instanceof Error ? err.message : 'Failed to fetch following posts' };
   }
 }
@@ -178,17 +214,32 @@ export async function createPostAction(formData: FormData): Promise<ActionError 
   const session = await getSession();
   if (!session) return { message: 'You must be logged in to post.' };
 
-  const imageBase64 = String(formData.get('imageBase64') ?? '').trim();
+  // Collect ALL image fields (single "imageBase64" for backward compat,
+  // plus repeated "imageBase64_0", "imageBase64_1", ... for multi-image posts).
+  const images: string[] = [];
+  const single = String(formData.get('imageBase64') ?? '').trim();
+  if (single) images.push(single);
+
+  let i = 0;
+  while (true) {
+    const value = String(formData.get(`imageBase64_${i}`) ?? '').trim();
+    if (!value) break;
+    images.push(value);
+    i++;
+  }
+
   const caption = String(formData.get('caption') ?? '').trim();
 
-  if (!imageBase64 && !caption) {
+  if (images.length === 0 && !caption) {
     return { message: 'Please add a photo or a caption.' };
   }
 
   try {
+    const firstImage = images[0] ?? null;
+    const imagesJson = images.length > 0 ? JSON.stringify(images) : null;
     await sql`
-      INSERT INTO posts (image_url, caption, user_id, user_email)
-      VALUES (${imageBase64 || null}, ${caption}, ${session.userId}, ${session.email})
+      INSERT INTO posts (image_url, images, caption, user_id, user_email)
+      VALUES (${firstImage}, ${imagesJson}, ${caption}, ${session.userId}, ${session.email})
     `;
   } catch (err) {
     return { message: err instanceof Error ? err.message : 'Failed to create post' };
@@ -360,13 +411,27 @@ export async function checkFollowStatus(authorId: string): Promise<boolean> {
 export async function fetchUserPosts(userId: string): Promise<ActionResult<Post[]>> {
   try {
     const result = await sql<Post>`
-      SELECT id, image_url, caption, created_at
+      SELECT id, image_url, images, caption, created_at
       FROM posts
       WHERE user_id = ${userId}
       ORDER BY created_at DESC
     `;
     return { data: result.rows };
   } catch (err) {
+    // Fall back gracefully if the `images` migration hasn't been applied yet.
+    if (isMissingImagesColumn(err)) {
+      try {
+        const result = await sql<Post>`
+          SELECT id, image_url, caption, created_at
+          FROM posts
+          WHERE user_id = ${userId}
+          ORDER BY created_at DESC
+        `;
+        return { data: result.rows };
+      } catch (err2) {
+        return { error: err2 instanceof Error ? err2.message : 'Failed to fetch user posts' };
+      }
+    }
     return { error: err instanceof Error ? err.message : 'Failed to fetch user posts' };
   }
 }
@@ -520,5 +585,95 @@ export async function getSessionDisplayName(): Promise<string> {
     // fall through to email prefix
   }
   return session.email.split('@')[0] || 'Someone';
+}
+
+// ============================================================
+// Search Actions
+// ============================================================
+
+export type SearchUserResult = {
+  user_id: string;
+  username: string;
+  email: string;
+  image_url: string | null;
+};
+
+export async function searchUsers(query: string, limit = 8): Promise<ActionResult<SearchUserResult[]>> {
+  try {
+    if (!query.trim()) {
+      return { data: [] };
+    }
+    const result = await sql<SearchUserResult>`
+      SELECT u.id AS user_id, u.username, u.email, p.image_url
+      FROM users u
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE u.username ILIKE ${`%${query.trim()}%`}
+         OR u.email ILIKE ${`%${query.trim()}%`}
+      ORDER BY u.username
+      LIMIT ${limit}
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to search users' };
+  }
+}
+
+export async function searchPosts(query: string, limit = 8): Promise<ActionResult<Post[]>> {
+  try {
+    if (!query.trim()) {
+      return { data: [] };
+    }
+    const result = await sql<Post>`
+      SELECT id, image_url, images, caption, created_at, user_id, user_email
+      FROM posts
+      WHERE caption ILIKE ${`%${query.trim()}%`}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    // Fall back gracefully if the `images` migration hasn't been applied yet.
+    if (isMissingImagesColumn(err)) {
+      try {
+        const result = await sql<Post>`
+          SELECT id, image_url, caption, created_at, user_id, user_email
+          FROM posts
+          WHERE caption ILIKE ${`%${query.trim()}%`}
+          ORDER BY created_at DESC
+          LIMIT ${limit}
+        `;
+        return { data: result.rows };
+      } catch (err2) {
+        return { error: err2 instanceof Error ? err2.message : 'Failed to search posts' };
+      }
+    }
+    return { error: err instanceof Error ? err.message : 'Failed to search posts' };
+  }
+}
+
+// ============================================================
+// Suggested Users ("Who to Follow")
+// ============================================================
+
+export async function fetchSuggestedUsers(
+  userId: string,
+  limit = 5,
+): Promise<ActionResult<SearchUserResult[]>> {
+  try {
+    const result = await sql<SearchUserResult>`
+      SELECT u.id AS user_id, u.username, u.email, p.image_url
+      FROM users u
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE u.id <> ${userId}
+        AND u.id NOT IN (
+          SELECT following_id FROM follows WHERE follower_id = ${userId}
+        )
+      ORDER BY RANDOM()
+      LIMIT ${limit}
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to fetch suggestions' };
+  }
 }
 

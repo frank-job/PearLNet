@@ -6,16 +6,17 @@ import LivePostPreview from './LivePostPreview';
 
 /* ============================================================
    CreatePost Component
-   - Twitter-style post composer with image upload
-   - Allows text-only posts or posts with images
-   - Shows inline feedback instead of alert()
+   - Twitter-style post composer with multi-image upload
+   - Allows text-only posts or posts with 1+ images
+   - Selected images show in a horizontal scrollable preview row
+   - Sends all images to the server (imageBase64_0, _1, ...)
    - Calls onPostCreated callback to refresh the feed
    ============================================================ */
 
 export default function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
   const [description, setDescription] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [userName, setUserName] = useState('You');
@@ -39,11 +40,21 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     clearFeedback();
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile));
-    }
+    const selected = e.target.files ? Array.from(e.target.files) : [];
+    if (selected.length === 0) return;
+
+    const newFiles = [...files, ...selected];
+    setFiles(newFiles);
+    setPreviews(newFiles.map((f) => URL.createObjectURL(f)));
+
+    // Allow re-selecting the same files next time
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
+    clearFeedback();
   };
 
   const toBase64 = (file: File): Promise<string> => {
@@ -58,21 +69,19 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
   const handleUpload = async () => {
     clearFeedback();
 
-    if (!description.trim() && !file) {
+    if (!description.trim() && files.length === 0) {
       setFeedback({ type: 'error', message: 'Please add a photo or a caption.' });
       return;
     }
 
     setUploading(true);
     try {
-      let imageBase64 = '';
-      if (file) {
-        imageBase64 = await toBase64(file);
-      }
-
       const formData = new FormData();
-      if (imageBase64) {
-        formData.append('imageBase64', imageBase64);
+
+      // Convert every selected image to base64 and append as imageBase64_0, _1, ...
+      for (let i = 0; i < files.length; i++) {
+        const imageBase64 = await toBase64(files[i]);
+        formData.append(`imageBase64_${i}`, imageBase64);
       }
       formData.append('caption', description.trim());
 
@@ -87,8 +96,8 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
         return;
       }
 
-      setFile(null);
-      setPreview(null);
+      setFiles([]);
+      setPreviews([]);
       setDescription('');
       setFeedback({ type: 'success', message: 'Post shared!' });
       onPostCreated();
@@ -125,20 +134,29 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
             />
           </div>
 
-          {/* Image Preview */}
-          {preview && (
-            <div className="relative mt-3 rounded-2xl overflow-hidden border border-gray-100">
-              <img src={preview} alt="Preview" className="w-full max-h-64 object-cover" />
-              <button
-                onClick={() => {
-                  setFile(null);
-                  setPreview(null);
-                  clearFeedback();
-                }}
-                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
+          {/* Multi-Image Preview Row (horizontal scroll, like TikTok/X/Facebook) */}
+          {previews.length > 0 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-2 snap-x">
+              {previews.map((preview, index) => (
+                <div
+                  key={index}
+                  className="relative flex-shrink-0 w-32 h-32 rounded-2xl overflow-hidden border border-gray-100 snap-start"
+                >
+                  <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full transition-colors"
+                    title="Remove"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                  {index === 0 && previews.length > 1 && (
+                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                      Cover
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
@@ -162,23 +180,29 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileChange}
                 className="hidden"
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
-                title="Add image"
+                title="Add images"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                 </svg>
               </button>
+              {previews.length > 0 && (
+                <span className="text-[10px] font-semibold text-gray-400">
+                  {previews.length} image{previews.length > 1 ? 's' : ''}
+                </span>
+              )}
             </div>
 
             <button
               onClick={handleUpload}
-              disabled={uploading || (!description.trim() && !file)}
+              disabled={uploading || (!description.trim() && files.length === 0)}
               className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-full transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
             >
               {uploading ? 'Posting...' : 'Post'}
@@ -186,10 +210,10 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
           </div>
 
           {/* Live Preview */}
-          <LivePostPreview userName={userName} caption={description} imageUrl={preview} />
+          <LivePostPreview userName={userName} caption={description} imageUrls={previews} />
         </div>
       </div>
     </div>
   );
 }
-
+// </content>

@@ -108,6 +108,15 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'posts' AND column_name = 'images'
+  ) THEN
+    ALTER TABLE posts ADD COLUMN images JSONB DEFAULT '[]'::jsonb;
+  END IF;
+END $$;
+
 -- ============================================================
 -- SEED DATA: Sample users, profiles, and posts
 -- ============================================================

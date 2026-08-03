@@ -1,6 +1,7 @@
 import NavBar from '../../ui/nav/NavBarr';
 import NewsApi from '@/app/components/news';
 import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
+import NewsSearch from '@/app/components/NewsSearch';
 
 // ============================================================
 // News Page
@@ -27,7 +28,10 @@ export default function NewsPage() {
               <NewspaperIcon className="w-6 h-6" />
             </a> */}
           </div>
-          <p className="text-sm text-gray-500 mt-1">Latest headlines</p>
+<p className="text-sm text-gray-500 mt-1">Latest headlines</p>
+          <div className="mt-4">
+            <NewsSearch />
+          </div>
         </header>
 
         <div className="px-4 py-6">

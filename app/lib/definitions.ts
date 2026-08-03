@@ -23,6 +23,7 @@ export type Post = {
   user_id?: string;
   user_email?: string;
   view_count?: number;
+  images?: string[];
 };
 
 // ===== Comment Types =====

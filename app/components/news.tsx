@@ -1,278 +1,332 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ArrowTopRightOnSquareIcon, NewspaperIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { NEWS_CATEGORIES, type NewsArticle, type NewsCategory } from '@/app/api/news/newsapi';
 
-/* ============================================================
-   NewsFeed Component
-   - Client component that fetches news from /api/news
-   - Category selector (technology, business, sports, etc.)
-   - Loading skeleton while fetching
-   - True infinite scroll: keeps fetching the next page of
-     articles as the user scrolls (no "end" message)
-   ============================================================ */
-
-const PAGE_SIZE = 100; // articles fetched per API request
+const PAGE_SIZE = 20;
+const DEFAULT_CATEGORY: NewsCategory = 'general';
 
 export default function NewsFeed() {
-  const [category, setCategory] = useState<NewsCategory>('general');
-  const [customQuery, setCustomQuery] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get('q') ?? null;
+
+  const [category, setCategory] = useState<NewsCategory>(DEFAULT_CATEGORY);
+  const [customQuery, setCustomQuery] = useState<string | null>(urlQuery);
   const [interests, setInterests] = useState<string[]>([]);
   const [interestInput, setInterestInput] = useState('');
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Load the first page when the category, custom query, or interests change.
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      setError(false);
-      setArticles([]);
-      setPage(1);
-      setHasMore(true);
-      const q = customQuery ?? interests.join(' OR ');
+  const buildQueryString = (pageToLoad: number) => {
+    const query = customQuery ?? interests.join(' OR ');
+    return `/api/news?category=${category}&limit=${PAGE_SIZE}&page=${pageToLoad}${query ? `&q=${encodeURIComponent(query)}` : ''}`;
+  };
+
+  const fetchArticles = useCallback(
+    async (pageToLoad: number, reset = false) => {
+      if (reset) {
+        setLoading(true);
+        setError(null);
+      } else {
+        setLoadingMore(true);
+      }
+
       try {
-        const res = await fetch(
-          `/api/news?category=${category}&limit=${PAGE_SIZE}&page=1${q ? `&q=${encodeURIComponent(q)}` : ''}`,
-        );
+        const res = await fetch(buildQueryString(pageToLoad));
         if (!res.ok) {
-          if (!cancelled) {
-            setError(true);
-            setHasMore(false);
-          }
-          return;
+          throw new Error('Unable to load news');
         }
+
         const data = await res.json();
-        if (!cancelled) {
-          const next = data.data ?? [];
-          setArticles(next);
-          setHasMore(next.length === PAGE_SIZE);
+        const nextArticles: NewsArticle[] = data.data ?? [];
+
+        if (reset) {
+          setArticles(nextArticles);
+        } else {
+          setArticles((prev) => {
+            const seen = new Set(prev.map((item) => item.url));
+            return [...prev, ...nextArticles.filter((item) => !seen.has(item.url))];
+          });
         }
+
+        setHasMore(nextArticles.length === PAGE_SIZE);
+        setPage(pageToLoad);
       } catch {
-        if (!cancelled) {
-          setError(true);
-          setHasMore(false);
-        }
+        setError('News feed is temporarily unavailable. Check your network or VPN.');
+        setHasMore(false);
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
+        setLoadingMore(false);
       }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [category, customQuery, interests]);
+    },
+    [customQuery, interests, category],
+  );
 
-  // Load the next page and append it.
-  const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const q = customQuery ?? interests.join(' OR ');
-      const res = await fetch(
-        `/api/news?category=${category}&limit=${PAGE_SIZE}&page=${nextPage}${q ? `&q=${encodeURIComponent(q)}` : ''}`,
-      );
-      if (!res.ok) {
-        setHasMore(false);
-        return;
-      }
-      const data = await res.json();
-      const next = data.data ?? [];
-      if (next.length === 0) {
-        setHasMore(false);
-        return;
-      }
-      setArticles((prev) => {
-        const seen = new Set(prev.map((a) => a.url));
-        const fresh = next.filter((a: NewsArticle) => !seen.has(a.url));
-        return [...prev, ...fresh];
-      });
-      setPage(nextPage);
-      setHasMore(next.length === PAGE_SIZE);
-    } catch {
-      setHasMore(false);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadingMore, hasMore, page, category, customQuery, interests]);
+  useEffect(() => {
+    fetchArticles(1, true);
+  }, [category, customQuery, interests, fetchArticles]);
 
-  // Auto-load more when the sentinel at the bottom becomes visible.
+  const retry = useCallback(() => {
+    fetchArticles(1, true);
+  }, [fetchArticles]);
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || loading || !hasMore) return;
+    fetchArticles(page + 1, false);
+  }, [fetchArticles, hasMore, loading, loadingMore, page]);
+
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !loading && !loadingMore) {
+        if (entries[0].isIntersecting && !loading && !loadingMore && hasMore) {
           loadMore();
         }
       },
-      { rootMargin: '600px 0px 0px 0px' },
+      { rootMargin: '500px 0px 0px 0px' },
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [loadMore, loading, loadingMore, articles]);
+  }, [hasMore, loadMore, loading, loadingMore]);
 
-return (
-    <div className=" w-full ">
-      <div className="w-full flex items-center gap-2 ">
-        <div className="p-2  bg-blue-50 rounded-xl">
+  return (
+    <div className="w-full">
+      <div className="w-full flex items-center gap-2 mb-4">
+        <div className="p-2 bg-blue-50 rounded-xl">
           <NewspaperIcon className="w-full h-5 text-blue-600" />
         </div>
-        <h2 className="text-sm  font-black text-black uppercase tracking-widest">
+        <h2 className="text-sm font-black text-black uppercase tracking-widest">
           Trending <span className="text-blue-600">Now</span>
         </h2>
       </div>
 
-{/* Category selector */}
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        {NEWS_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => {
-              setCategory(cat);
-              setCustomQuery(null);
-            }}
-            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-colors ${
-              category === cat && !customQuery
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <NewsCategorySelector
+        category={category}
+        customQuery={customQuery}
+        onSelectCategory={(cat) => {
+          setCategory(cat);
+          setCustomQuery(null);
+        }}
+      />
 
-      {/* Add your own interest */}
-      <div className="mb-6">
-        <form
-          className="flex items-center gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const value = interestInput.trim();
-            if (!value) return;
-            setInterests((prev) =>
-              prev.includes(value) ? prev : [...prev, value],
-            );
-            setInterestInput('');
-            setCustomQuery(null);
+      <InterestInput
+        interestInput={interestInput}
+        onChange={setInterestInput}
+        onAddInterest={(value) => {
+          setInterests((prev) => (prev.includes(value) ? prev : [...prev, value]));
+          setCustomQuery(null);
+          setInterestInput('');
+        }}
+      />
+
+      {interests.length > 0 && (
+        <InterestChips
+          interests={interests}
+          selectedInterest={customQuery}
+          onSelectInterest={(interest) => setCustomQuery(interest)}
+          onRemoveInterest={(removed) => {
+            setInterests((prev) => prev.filter((interest) => interest !== removed));
+            if (customQuery === removed) setCustomQuery(null);
           }}
-        >
-          <input
-            type="text"
-            value={interestInput}
-            onChange={(e) => setInterestInput(e.target.value)}
-            placeholder="Add your interest (e.g. movies, cars, space...)"
-            className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="p-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-            aria-label="Add interest"
-          >
-            <PlusIcon className="w-4 h-4" />
-          </button>
-        </form>
-
-        {/* Interest chips */}
-        {interests.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {interests.map((interest) => (
-              <button
-                key={interest}
-                type="button"
-                onClick={() => setCustomQuery(interest)}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-colors ${
-                  customQuery === interest
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
-                }`}
-              >
-                {interest}
-                <span
-                  className="ml-1.5 text-gray-400 hover:text-red-500"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setInterests((prev) => prev.filter((i) => i !== interest));
-                    if (customQuery === interest) setCustomQuery(null);
-                  }}
-                >
-                  ×
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+        />
+      )}
 
       <div className="w-full space-y-6">
         {loading ? (
           <NewsSkeleton />
-        ) : error ? (
-          <div className="py-4 text-center">
-            <p className="text-xs text-gray-400 font-medium italic">
-              News feed is temporarily unavailable.{' '}
-              <br />
-              (Check your VPN connection)
-            </p>
-          </div>
+) : error ? (
+          <ErrorBanner message={error} onRetry={retry} />
         ) : (
           <>
-            {articles.map((article, index) => (
-              <a
-                key={`${category}-${index}-${article.url}`}
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                // className="group block border-b  w-full border-gray-50 pb-4 last:border-0 last:pb-0"
-              >
-                {article.urlToImage && (
-                  <div className="mb-2 overflow-hidden rounded-xl">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={article.urlToImage}
-                      alt={article.title}
-                      loading="lazy"
-                      className="  rounded-xl group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                )}
-                <p className="text-[9px] font-bold text-gray-400 uppercase mb-1">
-                  {article.source.name}
-                </p>
-                <h3 className="text-sm font-bold text-black group-hover:text-blue-600 transition-colors leading-snug">
-                  {article.title}
-                </h3>
-                <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[8px] font-black text-blue-600 uppercase">Read Story</span>
-                  <ArrowTopRightOnSquareIcon className="w-3 h-3 text-blue-600" />
-                </div>
-              </a>
-            ))}
+            <div className="space-y-5">
+              {articles.map((article, index) => (
+                <NewsCard key={`${category}-${index}-${article.url}`} article={article} />
+              ))}
+            </div>
 
-            {/* Infinite scroll sentinel + loader */}
-            <div ref={sentinelRef} className="py-4 flex flex-col items-center justify-center">
+            <div className="py-4 flex flex-col items-center justify-center gap-2">
               {loadingMore && (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
                   <span className="text-[10px] text-gray-400 font-semibold">Loading more news...</span>
                 </div>
               )}
+              {!hasMore && articles.length > 0 && (
+                <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">
+                  You’ve reached the end of the feed.
+                </p>
+              )}
             </div>
           </>
         )}
       </div>
+
+      <div ref={sentinelRef} className="h-px w-full" />
+    </div>
+  );
+}
+
+function NewsCategorySelector({
+  category,
+  customQuery,
+  onSelectCategory,
+}: {
+  category: NewsCategory;
+  customQuery: string | null;
+  onSelectCategory: (category: NewsCategory) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2 mb-6">
+      {NEWS_CATEGORIES.map((cat) => (
+        <button
+          key={cat}
+          type="button"
+          onClick={() => onSelectCategory(cat)}
+          className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+            category === cat && !customQuery
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+          }`}
+        >
+          {cat}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function InterestInput({
+  interestInput,
+  onChange,
+  onAddInterest,
+}: {
+  interestInput: string;
+  onChange: (value: string) => void;
+  onAddInterest: (value: string) => void;
+}) {
+  return (
+    <form
+      className="flex items-center gap-2 mb-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const value = interestInput.trim();
+        if (!value) return;
+        onAddInterest(value);
+      }}
+    >
+      <input
+        type="text"
+        value={interestInput}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Add your interest (e.g. movies, cars, space...)"
+        className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        className="p-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+        aria-label="Add interest"
+      >
+        <PlusIcon className="w-4 h-4" />
+      </button>
+    </form>
+  );
+}
+
+function InterestChips({
+  interests,
+  selectedInterest,
+  onSelectInterest,
+  onRemoveInterest,
+}: {
+  interests: string[];
+  selectedInterest: string | null;
+  onSelectInterest: (interest: string) => void;
+  onRemoveInterest: (interest: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5 mb-6">
+      {interests.map((interest) => (
+        <button
+          key={interest}
+          type="button"
+          onClick={() => onSelectInterest(interest)}
+          className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-colors ${
+            selectedInterest === interest
+              ? 'bg-purple-600 text-white'
+              : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+          }`}
+        >
+          <span>{interest}</span>
+          <span
+            className="text-gray-400 hover:text-red-500"
+            onClick={(event) => {
+              event.stopPropagation();
+              onRemoveInterest(interest);
+            }}
+          >
+            ×
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function NewsCard({ article }: { article: NewsArticle }) {
+  return (
+    <a
+      href={article.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group block rounded-3xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      {article.urlToImage && (
+        <div className="mb-4 overflow-hidden rounded-3xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={article.urlToImage}
+            alt={article.title}
+            loading="lazy"
+            className="w-full rounded-3xl object-cover transition duration-300 group-hover:scale-105"
+          />
+        </div>
+      )}
+
+      <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-[0.35em]">
+        {article.source.name}
+      </p>
+      <h3 className="text-sm font-bold text-black transition-colors group-hover:text-blue-600 leading-snug">
+        {article.title}
+      </h3>
+      <div className="mt-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <span className="text-[9px] font-black text-blue-600 uppercase tracking-[0.3em]">Read Story</span>
+        <ArrowTopRightOnSquareIcon className="w-3 h-3 text-blue-600" />
+      </div>
+    </a>
+  );
+}
+
+function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-3xl border border-red-100 bg-red-50 px-5 py-6 text-center">
+      <p className="text-sm font-medium text-red-700">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-4 inline-flex items-center justify-center rounded-full bg-red-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-red-800"
+      >
+        Retry
+      </button>
     </div>
   );
 }
@@ -280,12 +334,14 @@ return (
 function NewsSkeleton() {
   return (
     <div className="space-y-5 animate-pulse">
-      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-        <div key={i} className="border-b border-gray-50 pb-4 last:border-0 last:pb-0">
-          <div className="bg-gray-100 rounded-xl h-32 mb-2" />
-          <div className="bg-gray-100 rounded h-2 w-16 mb-2" />
-          <div className="bg-gray-100 rounded h-3 w-full mb-1.5" />
-          <div className="bg-gray-100 rounded h-3 w-4/5" />
+      {[...Array(5)].map((_, index) => (
+        <div key={index} className="rounded-3xl border border-gray-100 bg-white p-4">
+          <div className="h-36 w-full rounded-3xl bg-gray-100 mb-4" />
+          <div className="h-3 w-24 rounded-full bg-gray-100 mb-3" />
+          <div className="space-y-2">
+            <div className="h-3 w-full rounded-full bg-gray-100" />
+            <div className="h-3 w-4/5 rounded-full bg-gray-100" />
+          </div>
         </div>
       ))}
     </div>

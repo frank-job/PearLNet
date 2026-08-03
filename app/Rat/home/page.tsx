@@ -2,9 +2,11 @@ import NavBar from '../../ui/nav/NavBarr';
 import MainFeed from '@/app/components/main';
 import Greetings from '@/app/ui/Greetings';
 import DynamicTagline from '@/app/components/DynamicTagline';
+import SearchBox from '@/app/components/SearchBox';
+import SuggestedUsers from '@/app/components/SuggestedUsers';
 import { getCurrentUser, getProfile } from '@/app/lib/action';
 import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
-import Link from 'next/link'; 
+import Link from 'next/link';
 // ============================================================
 // Rat Home Page
 // - Public feed with "For You" and "Following" tabs
@@ -34,23 +36,35 @@ export default async function RatHomePage() {
     <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
 <header className="px-4 py-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+<div className="flex items-center justify-between">
             <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
               R A T
             </h1>
-            <Link
-              href="/Rat/news"
-              className="flex items-center gap-2 p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-              title="News"
-            >
-              <NewspaperIcon className="w-6 h-6" />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/Rat/news"
+                className="flex items-center gap-2 p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                title="News"
+              >
+                <NewspaperIcon className="w-6 h-6" />
+              </Link>
+            </div>
+          </div>
+          <div className="mt-4">
+            <SearchBox />
           </div>
           <DynamicTagline />
         </header>
         <Greetings userName={displayName} />
 
-        <MainFeed />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <MainFeed />
+          </div>
+          <aside className="hidden lg:block">
+            <SuggestedUsers />
+          </aside>
+        </div>
       </div>
 
       <NavBar />
