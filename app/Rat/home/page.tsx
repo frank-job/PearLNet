@@ -49,6 +49,7 @@ export default async function RatHomePage() {
               >
                 <NewspaperIcon className="w-6 h-6" />
               </Link>
+              <ThemeToggle />
             </div>
           </div>
           <div className="mt-4">
