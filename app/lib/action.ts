@@ -137,12 +137,16 @@ export async function logout() {
 // Post Actions
 // ============================================================
 
-export async function fetchPosts(): Promise<ActionResult<Post[]>> {
+export async function fetchPosts(
+  limit = 30,
+  offset = 0,
+): Promise<ActionResult<Post[]>> {
   try {
     const result = await sql<Post>`
       SELECT id, image_url, caption, created_at, user_id, user_email
       FROM posts
       ORDER BY RANDOM()
+      LIMIT ${limit} OFFSET ${offset}
     `;
     return { data: result.rows };
   } catch (err) {
@@ -150,7 +154,11 @@ export async function fetchPosts(): Promise<ActionResult<Post[]>> {
   }
 }
 
-export async function fetchFollowingPosts(userId: string): Promise<ActionResult<Post[]>> {
+export async function fetchFollowingPosts(
+  userId: string,
+  limit = 30,
+  offset = 0,
+): Promise<ActionResult<Post[]>> {
   try {
     const result = await sql<Post>`
       SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email
@@ -158,6 +166,7 @@ export async function fetchFollowingPosts(userId: string): Promise<ActionResult<
       INNER JOIN follows f ON p.user_id = f.following_id
       WHERE f.follower_id = ${userId}
       ORDER BY RANDOM()
+      LIMIT ${limit} OFFSET ${offset}
     `;
     return { data: result.rows };
   } catch (err) {

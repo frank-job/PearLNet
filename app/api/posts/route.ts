@@ -5,13 +5,17 @@ import { getSession } from '@/app/lib/action';
 export async function GET(request: NextRequest) {
   const session = await getSession();
   const type = request.nextUrl.searchParams.get('type');
+  const limitRaw = request.nextUrl.searchParams.get('limit');
+  const offsetRaw = request.nextUrl.searchParams.get('offset');
+  const limit = limitRaw ? Number(limitRaw) : 30;
+  const offset = offsetRaw ? Number(offsetRaw) : 0;
 
   if (type === 'following' && session) {
-    const result = await fetchFollowingPosts(session.userId);
+    const result = await fetchFollowingPosts(session.userId, limit, offset);
     return NextResponse.json(result);
   }
 
-  const result = await fetchPosts();
+  const result = await fetchPosts(limit, offset);
   return NextResponse.json(result);
 }
 

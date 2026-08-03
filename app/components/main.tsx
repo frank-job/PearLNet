@@ -1,31 +1,41 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import PostFeed from './PostFeed';
 import CreatePost from './CreatePost';
 import type { Post } from '@/app/lib/definitions';
+import Link from 'next/link';
+import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
 
 type FeedTab = 'forYou' | 'following';
+
+const PAGE_SIZE = 30;
 
 // ============================================================
 // MainFeed Component
 // - Twitter-style feed with "For You" and "Following" tabs
 // - Post composer at the top for creating new posts
-// - Fetches posts based on selected tab
-// - Tracks view counts when posts are displayed
+// - Infinite scroll like X / TikTok: more posts are loaded
+//   automatically as the user scrolls near the bottom
 // ============================================================
 
 export default function MainFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const [refreshKey, setRefreshKey] = useState(0);
   const composerRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Load the first page of posts.
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       setLoading(true);
-      const url = activeTab === 'following' ? '/api/posts?type=following' : '/api/posts';
+      const url =
+        activeTab === 'following'
+          ? `/api/posts?type=following&limit=${PAGE_SIZE}&offset=0`
+          : `/api/posts?limit=${PAGE_SIZE}&offset=0`;
       try {
         const res = await fetch(url);
         const json = await res.json();
@@ -43,12 +53,58 @@ export default function MainFeed() {
     return () => { cancelled = true; };
   }, [activeTab, refreshKey]);
 
+  // Load the next page and append it to the list.
+  const loadMore = useCallback(async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    const url =
+      activeTab === 'following'
+        ? `/api/posts?type=following&limit=${PAGE_SIZE}&offset=${posts.length}`
+        : `/api/posts?limit=${PAGE_SIZE}&offset=${posts.length}`;
+    try {
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.data && (json.data as Post[]).length > 0) {
+        setPosts((prev) => {
+          const seen = new Set(prev.map((p) => p.id));
+          const fresh = (json.data as Post[]).filter((p) => !seen.has(p.id));
+          return [...prev, ...fresh];
+        });
+      }
+    } catch {
+      console.error('Failed to load more posts');
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, activeTab, posts.length]);
+
+  // Infinite scroll: watch a sentinel at the bottom of the list.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && !loadingMore) {
+          loadMore();
+        }
+      },
+      { rootMargin: '600px 0px 0px 0px' },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore, loading, loadingMore]);
+
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
+    setPosts([]);
   };
 
   const handleTabChange = (tab: FeedTab) => {
+    if (tab === activeTab) return;
     setActiveTab(tab);
+    setPosts([]);
   };
 
   return (
@@ -79,6 +135,13 @@ export default function MainFeed() {
             )}
           </button>
         </div>
+          <Link
+              href="/Rat/news"
+              className="flex items-center gap-2 p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+              title="News"
+            >
+              <NewspaperIcon className="w-6 h-6" />
+            </Link>
       </div>
 
       {/* Post Composer */}
@@ -96,7 +159,7 @@ export default function MainFeed() {
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
           {/* Placeholder Avatar Grid */}
           <div className="flex -space-x-3 mb-6">
-            {[1, 2, 3, 4, 5].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
                 className="w-12 h-12 rounded-full border-2 border-white bg-linear-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm"
@@ -116,8 +179,21 @@ export default function MainFeed() {
           </p>
         </div>
       ) : (
-        <PostFeed posts={posts} />
+        <>
+          <PostFeed posts={posts} />
+
+          {/* Infinite scroll sentinel + loader */}
+          <div ref={sentinelRef} className="py-8 flex flex-col items-center justify-center">
+            {loadingMore && (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+                <span className="text-xs text-gray-400 font-semibold">Loading more...</span>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
 }
+
