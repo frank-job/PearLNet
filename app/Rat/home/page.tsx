@@ -40,7 +40,7 @@ export default async function RatHomePage() {
 <header className="px-4 py-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
               <RatLogo  />
-            {/* <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
+            {/* <h1 className="text-blue-600 font-extrabold text-1xl justify-items-start md:text-4xl tracking-widest">
               R A T
             </h1> */}
          

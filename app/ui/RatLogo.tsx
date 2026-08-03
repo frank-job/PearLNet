@@ -68,7 +68,7 @@ export default function RatLogo({ size = 'md', className = "" }: RatLogoProps) {
             ${size === 'lg' ? 'text-[24px]' : ''}
             ${size === 'xl' ? 'text-[32px]' : ''}
           `}>
-            {/* RAT */}
+            RAT
           </span>
         </div>
       </div>
