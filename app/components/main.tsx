@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import PostFeed from './PostFeed';
 import CreatePost from './CreatePost';
+import LoadingSpinner from './LoadingSpinner';
 import type { Post } from '@/app/lib/definitions';
 import Link from 'next/link';
 import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
@@ -152,8 +153,7 @@ export default function MainFeed() {
       {/* Feed Section */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-          <p className="text-sm text-muted">Loading feed...</p>
+          <LoadingSpinner size="md" label="Loading feed..." />
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
@@ -182,15 +182,13 @@ export default function MainFeed() {
         <>
           <PostFeed posts={posts} />
 
+          <LoadingSpinner size="sm" label="Loading more..." />
           {/* Infinite scroll sentinel + loader */}
-          <div ref={sentinelRef} className="py-8 flex flex-col items-center justify-center">
+          {/* <div ref={sentinelRef} className="py-8 flex flex-col items-center justify-center">
             {loadingMore && (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
-                <span className="text-xs text-muted font-semibold">Loading more...</span>
-              </div>
-            )}
-          </div>
+            
+            )} */}
+          {/* </div> */}
         </>
       )}
     </div>
