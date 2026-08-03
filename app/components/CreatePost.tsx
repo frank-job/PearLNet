@@ -112,7 +112,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
   };
 
   return (
-    <div id="composer" className="bg-white p-4 border-b border-gray-100">
+    <div id="composer" className="bg-surface p-4 border-b border-border">
       <div className="flex align-middle top-1 gap-3">
         {/* User Avatar Placeholder */}
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">
@@ -121,7 +121,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
 
         <div className="flex-1">
           {/* Textarea with Dynamic Rotating Placeholder */}
-          <div className="relative rounded-2xl border-2 border-gray-200 bg-gray-50 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 transition-all duration-200 px-4 py-2">
+          <div className="relative rounded-2xl border-2 border-border bg-surface-strong focus-within:border-blue-500 focus-within:bg-surface focus-within:ring-4 focus-within:ring-blue-100 transition-all duration-200 px-4 py-2">
             <DynamicPlaceholder isEmpty={description.trim().length === 0} />
             <textarea
               value={description}
@@ -129,7 +129,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
                 setDescription(e.target.value);
                 clearFeedback();
               }}
-              className="w-full resize-none outline-none text-base text-gray-900 placeholder-transparent min-h-[60px] bg-transparent relative z-10"
+              className="w-full resize-none outline-none text-base text-foreground placeholder-transparent min-h-[60px] bg-transparent relative z-10"
               rows={2}
             />
           </div>
@@ -140,18 +140,18 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
               {previews.map((preview, index) => (
                 <div
                   key={index}
-                  className="relative flex-shrink-0 w-32 h-32 rounded-2xl overflow-hidden border border-gray-100 snap-start"
+                  className="relative flex-shrink-0 w-32 h-32 rounded-2xl overflow-hidden border border-border snap-start"
                 >
                   <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
                   <button
                     onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full transition-colors"
+                    className="absolute top-1 right-1 bg-surface-strong/80 hover:bg-surface text-foreground p-1 rounded-full transition-colors"
                     title="Remove"
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                   {index === 0 && previews.length > 1 && (
-                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    <span className="absolute bottom-1 left-1 bg-surface-strong/80 text-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                       Cover
                     </span>
                   )}
@@ -174,7 +174,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
             <div className="flex items-center gap-2">
               <input
                 ref={fileInputRef}

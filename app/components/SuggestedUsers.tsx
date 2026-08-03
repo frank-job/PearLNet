@@ -65,12 +65,12 @@ export default function SuggestedUsers() {
   if (!loading && users.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-[2.5rem] w-2.9 border border-gray-100 p-6 shadow-sm">
+    <div className="bg-surface rounded-[2.5rem] w-2.9 border border-border p-6 shadow-sm">
       <div className="flex items-center gap-2 mb-4">
         <div className="p-2 bg-purple-50 rounded-xl">
           <UserPlusIcon className="w-5 h-5 text-purple-600" />
         </div>
-        <h2 className="text-sm font-black text-black uppercase tracking-widest">
+        <h2 className="text-sm font-black text-foreground uppercase tracking-widest">
           Who to <span className="text-purple-600">Follow</span>
         </h2>
       </div>
@@ -110,8 +110,8 @@ export default function SuggestedUsers() {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{user.username}</p>
-                    <p className="text-[10px] text-gray-400 truncate">{user.email}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{user.username}</p>
+                    <p className="text-[10px] text-muted truncate">{user.email}</p>
                   </div>
                 </Link>
                 <button
@@ -119,7 +119,7 @@ export default function SuggestedUsers() {
                   onClick={() => handleFollow(user.user_id)}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors flex-shrink-0 ${
                     isFollowing
-                      ? 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      ? 'bg-surface-strong text-muted hover:bg-surface'
                       : 'bg-purple-600 text-white hover:bg-purple-700'
                   }`}
                 >

@@ -25,14 +25,14 @@ export default function NewsSearch() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-        <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 rounded-full px-4 py-2 bg-surface-strong focus-within:bg-surface focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+        <MagnifyingGlassIcon className="w-4 h-4 text-muted" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search news by topic..."
-          className="w-full bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none"
+          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted outline-none"
         />
       </div>
     </form>

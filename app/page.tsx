@@ -10,7 +10,7 @@ export default function WelcomePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-white ml-0 lg:ml-64 px-6 py-12">
+    <main className="min-h-screen bg-surface ml-0 lg:ml-64 px-6 py-12">
       <div className="max-w-4xl mx-auto">
         <header className="flex items-center gap-4">
           <RatLogo />
@@ -25,10 +25,10 @@ export default function WelcomePage() {
             <Link
               key={c.href}
               href={c.href}
-              className="block rounded-2xl border border-gray-100 p-6 bg-white hover:shadow-lg transition-shadow"
+              className="block rounded-2xl border border-border p-6 bg-surface hover:shadow-lg transition-shadow"
             >
-              <h3 className="text-lg font-semibold text-gray-900">{c.title}</h3>
-              <p className="text-sm text-gray-500 mt-2">{c.description}</p>
+              <h3 className="text-lg font-semibold text-foreground">{c.title}</h3>
+              <p className="text-sm text-muted mt-2">{c.description}</p>
               <p className="mt-4 text-xs text-blue-600 font-medium">Open {c.href}</p>
             </Link>
           ))}

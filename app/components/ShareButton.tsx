@@ -32,7 +32,7 @@ export default function ShareButton({ postId }: { postId: string }) {
     <div className="relative">
       <button
         onClick={handleShare}
-        className="flex items-center gap-1 text-gray-400 hover:text-green-500 transition-colors text-sm"
+        className="flex items-center gap-1 text-muted hover:text-green-500 transition-colors text-sm"
         title="Share this post"
       >
         <ShareIcon className="w-5 h-5" />
@@ -41,7 +41,7 @@ export default function ShareButton({ postId }: { postId: string }) {
 
       {/* Copied tooltip */}
       {copied && (
-        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap">
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-strong text-foreground text-[10px] px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
           Link copied!
         </span>
       )}

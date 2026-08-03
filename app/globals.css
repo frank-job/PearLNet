@@ -2,7 +2,24 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+  --surface: #ffffff;
+  --surface-strong: #f8fafc;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+  --accent: #0ea5e9;
+  color-scheme: light;
+}
+
+html.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface: #000000;
+  --surface-strong: #111111;
+  --border: rgba(255, 255, 255, 0.1);
+  --muted: #d1d5db;
+  --accent: #ffffff;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -12,17 +29,30 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: white;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.bg-surface {
+  background: var(--surface);
+}
+
+.bg-surface-strong {
+  background: var(--surface-strong);
+}
+
+.text-foreground {
+  color: var(--foreground);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.border-border {
+  border-color: var(--border);
 }
 
 /* Animated gradient text (referenced by Greetings.tsx) */

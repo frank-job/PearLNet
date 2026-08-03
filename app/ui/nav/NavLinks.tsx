@@ -30,7 +30,7 @@ export default function NavLinks() {
             key={link.name}
             href={link.href}
             className={clsx(
-              'flex h-48px grow items-center justify-center gap-2 rounded-md bg-white py-2 px-2 text-sm font-medium transition-colors hover:bg-sky-100 md:flex-none md:justify-start md:py-1 md:px-1',
+              'flex h-48px grow items-center justify-center gap-2 rounded-md bg-surface py-2 px-2 text-sm font-medium transition-colors hover:bg-surface-strong md:flex-none md:justify-start md:py-1 md:px-1',
               {
                 'bg-sky-100 text-blue-600': isActive,
                 'text-blue-600': !isActive,

@@ -110,7 +110,7 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors"
+        className="relative p-2 text-muted hover:text-foreground transition-colors"
         title="Notifications"
       >
         <BellIcon className="w-6 h-6" />
@@ -122,9 +122,9 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <h3 className="text-sm font-bold text-gray-800">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-80 bg-surface rounded-xl shadow-lg border border-border z-50 max-h-96 overflow-y-auto">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="text-sm font-bold text-foreground">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 type="button"
@@ -138,10 +138,10 @@ export default function NotificationBell() {
 
           {notifications.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-sm text-gray-400">No notifications yet</p>
+              <p className="text-sm text-muted">No notifications yet</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-surface-strong">
               {notifications.map((notification) => (
                 <button
                   key={notification.id}
@@ -152,20 +152,20 @@ export default function NotificationBell() {
                       notification.link,
                     )
                   }
-                  className={`w-full text-left p-3 hover:bg-gray-50 transition-colors ${
+                  className={`w-full text-left p-3 hover:bg-surface-strong transition-colors ${
                     !notification.read ? 'bg-blue-50/50' : ''
                   }`}
                 >
                   <p
                     className={`text-sm ${
                       !notification.read
-                        ? 'text-gray-900 font-medium'
-                        : 'text-gray-600'
+                        ? 'text-foreground font-medium'
+                        : 'text-muted'
                     }`}
                   >
                     {notification.message}
                   </p>
-                  <p className="text-[10px] text-gray-400 mt-1">
+                  <p className="text-[10px] text-muted mt-1">
                     {new Date(notification.created_at).toLocaleString()}
                   </p>
                 </button>

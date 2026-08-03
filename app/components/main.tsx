@@ -110,12 +110,12 @@ export default function MainFeed() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Sticky Header with Tabs */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
+      <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-md border-b border-border">
         <div className="flex">
           <button
             onClick={() => handleTabChange('forYou')}
             className={`flex-1 py-4 text-sm font-bold transition-colors relative ${
-              activeTab === 'forYou' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+              activeTab === 'forYou' ? 'text-blue-600' : 'text-muted hover:text-foreground'
             }`}
           >
             For You
@@ -126,7 +126,7 @@ export default function MainFeed() {
           <button
             onClick={() => handleTabChange('following')}
             className={`flex-1 py-4 text-sm font-bold transition-colors relative ${
-              activeTab === 'following' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+              activeTab === 'following' ? 'text-blue-600' : 'text-muted hover:text-foreground'
             }`}
           >
             Following
@@ -137,7 +137,7 @@ export default function MainFeed() {
         </div>
           <Link
               href="/Rat/news"
-              className="flex items-center gap-2 p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+              className="flex items-center gap-2 p-2 rounded-xl bg-surface-strong text-blue-600 hover:bg-surface transition-colors"
               title="News"
             >
               <NewspaperIcon className="w-6 h-6" />
@@ -145,7 +145,7 @@ export default function MainFeed() {
       </div>
 
       {/* Post Composer */}
-      <div ref={composerRef} className="border-b border-gray-100">
+      <div ref={composerRef} className="border-b border-border">
         <CreatePost onPostCreated={handleRefresh} />
       </div>
 
@@ -153,7 +153,7 @@ export default function MainFeed() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-          <p className="text-sm text-gray-400">Loading feed...</p>
+          <p className="text-sm text-muted">Loading feed...</p>
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
@@ -169,10 +169,10 @@ export default function MainFeed() {
               </div>
             ))}
           </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-2">
+          <h3 className="text-lg font-bold text-foreground mb-2">
             {activeTab === 'following' ? 'Follow people to see their posts' : 'No posts yet'}
           </h3>
-          <p className="text-sm text-gray-500 max-w-xs">
+          <p className="text-sm text-muted max-w-xs">
             {activeTab === 'following'
               ? 'When you follow someone, their posts will show up here.'
               : 'Be the first to share something! Create a post above to get started.'}
@@ -187,7 +187,7 @@ export default function MainFeed() {
             {loadingMore && (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
-                <span className="text-xs text-gray-400 font-semibold">Loading more...</span>
+                <span className="text-xs text-muted font-semibold">Loading more...</span>
               </div>
             )}
           </div>

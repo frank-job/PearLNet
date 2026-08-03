@@ -29,7 +29,7 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
   return (
     <div className="space-y-6">
       {posts.map((post) => (
-        <div key={post.id} className="bg-white  rounded-5rem overflow-hidden shadow-sm  border-gray-100">
+        <div key={post.id} className="bg-surface rounded-5rem overflow-hidden shadow-sm border-border">
 {/* Image */}
           <ImageCard imageUrl={post.image_url} images={post.images} alt="Post" />
 
@@ -42,10 +42,10 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
                   {post.user_email ? post.user_email[0] : '?'}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">
+                  <p className="text-sm font-semibold text-foreground">
                     {post.user_email ? post.user_email.split('@')[0] : 'Anonymous'}
                   </p>
-                  <p className="text-[10px] text-gray-400">
+                  <p className="text-[10px] text-muted">
                     {new Date(post.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -61,14 +61,14 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
             <Description caption={post.caption} />
 
             {/* ===== Action Buttons Row ===== */}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
               {/* Left: Likes + Comments */}
               <div className="flex items-center gap-4">
                 <LikesSection postId={post.id} />
 
                 <button
                   onClick={() => toggleComments(post.id)}
-                  className="flex items-center gap-1 text-gray-400 hover:text-blue-500 transition-colors text-sm"
+                  className="flex items-center gap-1 text-muted hover:text-blue-500 transition-colors text-sm"
                 >
                   <ChatBubbleLeftIcon className="w-5 h-5" />
                   <span>Comments</span>
@@ -79,7 +79,7 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
               <div className="flex items-center gap-4">
                 <ShareDrawer postId={post.id} postAuthorId={post.user_id ?? ''} />
                 {(post.view_count ?? 0) > 0 && (
-                  <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <span className="flex items-center gap-1 text-xs text-muted">
                     <EyeIcon className="w-4 h-4" />
                     {post.view_count}
                   </span>

@@ -102,10 +102,10 @@ export default function NewsFeed() {
   return (
     <div className="w-full">
       <div className="w-full flex items-center gap-2 mb-4">
-        <div className="p-2 bg-blue-50 rounded-xl">
+        <div className="p-2 rounded-xl bg-surface-strong">
           <NewspaperIcon className="w-full h-5 text-blue-600" />
         </div>
-        <h2 className="text-sm font-black text-black uppercase tracking-widest">
+        <h2 className="text-sm font-black text-foreground uppercase tracking-widest">
           Trending <span className="text-blue-600">Now</span>
         </h2>
       </div>
@@ -158,11 +158,11 @@ export default function NewsFeed() {
               {loadingMore && (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
-                  <span className="text-[10px] text-gray-400 font-semibold">Loading more news...</span>
+                  <span className="text-[10px] text-muted font-semibold">Loading more news...</span>
                 </div>
               )}
               {!hasMore && articles.length > 0 && (
-                <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">
+                <p className="text-[10px] text-muted uppercase tracking-[0.2em]">
                   You’ve reached the end of the feed.
                 </p>
               )}
@@ -195,7 +195,7 @@ function NewsCategorySelector({
           className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide transition-colors ${
             category === cat && !customQuery
               ? 'bg-blue-600 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              : 'bg-surface-strong text-muted hover:bg-surface'
           }`}
         >
           {cat}
@@ -229,7 +229,7 @@ function InterestInput({
         value={interestInput}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Add your interest (e.g. movies, cars, space...)"
-        className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex-1 px-3 py-2 rounded-xl border border-border text-xs font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
         type="submit"
@@ -263,12 +263,12 @@ function InterestChips({
           className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-colors ${
             selectedInterest === interest
               ? 'bg-purple-600 text-white'
-              : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+              : 'bg-surface-strong text-purple-600 hover:bg-surface'
           }`}
         >
           <span>{interest}</span>
           <span
-            className="text-gray-400 hover:text-red-500"
+            className="text-muted hover:text-red-500"
             onClick={(event) => {
               event.stopPropagation();
               onRemoveInterest(interest);
@@ -288,7 +288,7 @@ function NewsCard({ article }: { article: NewsArticle }) {
       href={article.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block rounded-3xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group block rounded-3xl border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       {article.urlToImage && (
         <div className="mb-4 overflow-hidden rounded-3xl">
@@ -302,10 +302,10 @@ function NewsCard({ article }: { article: NewsArticle }) {
         </div>
       )}
 
-      <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-[0.35em]">
+      <p className="text-[10px] font-bold text-muted uppercase mb-2 tracking-[0.35em]">
         {article.source.name}
       </p>
-      <h3 className="text-sm font-bold text-black transition-colors group-hover:text-blue-600 leading-snug">
+      <h3 className="text-sm font-bold text-foreground transition-colors group-hover:text-blue-600 leading-snug">
         {article.title}
       </h3>
       <div className="mt-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -335,12 +335,12 @@ function NewsSkeleton() {
   return (
     <div className="space-y-5 animate-pulse">
       {[...Array(5)].map((_, index) => (
-        <div key={index} className="rounded-3xl border border-gray-100 bg-white p-4">
-          <div className="h-36 w-full rounded-3xl bg-gray-100 mb-4" />
-          <div className="h-3 w-24 rounded-full bg-gray-100 mb-3" />
+        <div key={index} className="rounded-3xl border border-border bg-surface p-4">
+          <div className="h-36 w-full rounded-3xl bg-surface-strong mb-4" />
+          <div className="h-3 w-24 rounded-full bg-surface-strong mb-3" />
           <div className="space-y-2">
-            <div className="h-3 w-full rounded-full bg-gray-100" />
-            <div className="h-3 w-4/5 rounded-full bg-gray-100" />
+            <div className="h-3 w-full rounded-full bg-surface-strong" />
+            <div className="h-3 w-4/5 rounded-full bg-surface-strong" />
           </div>
         </div>
       ))}

@@ -4,6 +4,7 @@ import Greetings from '@/app/ui/Greetings';
 import DynamicTagline from '@/app/components/DynamicTagline';
 import SearchBox from '@/app/components/SearchBox';
 import SuggestedUsers from '@/app/components/SuggestedUsers';
+import ThemeToggle from '@/app/ui/theme/ThemeToggle';
 import { getCurrentUser, getProfile } from '@/app/lib/action';
 import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
 import Link from 'next/link';

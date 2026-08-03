@@ -73,10 +73,10 @@ export default function NotificationList() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-6 border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 py-6 border-b border-border">
         <div className="flex items-center gap-2">
           <BellIcon className="w-6 h-6 text-blue-600" />
-          <h1 className="text-xl font-black text-gray-900 tracking-tight uppercase">
+          <h1 className="text-xl font-black text-foreground tracking-tight uppercase">
             Notifications
           </h1>
           {unreadCount > 0 && (
@@ -103,16 +103,16 @@ export default function NotificationList() {
         </div>
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-surface-strong flex items-center justify-center mb-4">
             <BellIcon className="w-8 h-8 text-blue-300" />
           </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-1">No notifications yet</h3>
-          <p className="text-sm text-gray-500 max-w-xs">
+          <h3 className="text-lg font-bold text-foreground mb-1">No notifications yet</h3>
+          <p className="text-sm text-muted max-w-xs">
             When people like, comment, share, or follow you, it will show up here.
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-surface-strong">
           {notifications.map((notification) => (
             <button
               key={notification.id}
@@ -126,7 +126,7 @@ export default function NotificationList() {
                 {/* Type icon */}
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center text-sm shrink-0 ${
-                    !notification.read ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
+                    !notification.read ? 'bg-blue-100 text-blue-600' : 'bg-surface-strong text-muted'
                   }`}
                 >
                   {notification.type === 'like' ? '❤️' : notification.type === 'comment' ? '💬' : notification.type === 'share' ? '🔗' : '👤'}
@@ -140,7 +140,7 @@ export default function NotificationList() {
                   >
                     {notification.message}
                   </p>
-                  <p className="text-[11px] text-gray-400 mt-1">
+                  <p className="text-[11px] text-muted mt-1">
                     {new Date(notification.created_at).toLocaleString()}
                   </p>
                 </div>

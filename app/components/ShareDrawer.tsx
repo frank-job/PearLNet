@@ -69,7 +69,7 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
             ? 'bg-emerald-500 text-white shadow-emerald-200 border border-emerald-500'
             : isOpen
             ? 'bg-emerald-50 text-emerald-600 shadow-emerald-100 border border-emerald-100'
-            : 'bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600 hover:shadow-emerald-100 border border-transparent hover:border-emerald-100'
+            : 'bg-surface-strong text-muted hover:bg-surface hover:text-emerald-600 hover:shadow-emerald-100 border border-transparent hover:border-emerald-100'
         }`}
         title={copied ? 'Copied!' : 'Share this post'}
       >
@@ -109,17 +109,17 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pb-8 z-50 shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-3xl p-6 pb-8 z-50 shadow-2xl"
             >
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-black text-gray-800 tracking-tighter">
+                <h3 className="text-lg font-black text-foreground tracking-tighter">
                   Send to...
                 </h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  className="p-2 bg-surface-strong hover:bg-surface rounded-full transition-colors"
                 >
-                  <XMarkIcon className="w-5 h-5 text-gray-600" />
+                  <XMarkIcon className="w-5 h-5 text-muted" />
                 </button>
               </div>
 
@@ -139,7 +139,7 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
                     }}
                     transition={{ duration: 0.25 }}
                     onClick={() => handleShare(app.name, app.url)}
-                    className="flex flex-col items-center gap-2 rounded-2xl border border-gray-100 p-3 hover:bg-gray-50 hover:shadow-md active:scale-95 transition-all duration-200"
+                    className="flex flex-col items-center gap-2 rounded-2xl border border-border p-3 hover:bg-surface-strong hover:shadow-md active:scale-95 transition-all duration-200"
                   >
                     <div
                       className={`w-12 h-12 ${app.color} rounded-xl flex items-center justify-center shadow-sm overflow-hidden`}
@@ -151,7 +151,7 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
                         loading="lazy"
                       />
                     </div>
-                    <span className="text-[11px] font-bold text-gray-600 truncate max-w-full">
+                    <span className="text-[11px] font-bold text-muted truncate max-w-full">
                       {app.name}
                     </span>
                   </motion.button>

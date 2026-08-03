@@ -95,8 +95,8 @@ export default function CommentSection({ postId }: { postId: string }) {
   };
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-100">
-      <h4 className="text-sm font-bold text-gray-700 mb-3">
+    <div className="mt-4 pt-4 border-t border-border">
+      <h4 className="text-sm font-bold text-foreground mb-3">
         Comments ({comments.length})
       </h4>
 
@@ -143,12 +143,12 @@ export default function CommentSection({ postId }: { postId: string }) {
                 setError(null);
               }}
               placeholder="Add a comment..."
-              className="flex-1 text-sm bg-gray-50 rounded-xl px-3 py-2 border-2 border-gray-200 outline-none transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+              className="flex-1 text-sm bg-surface-strong rounded-xl px-3 py-2 border-2 border-border outline-none transition-all duration-200 focus:border-blue-500 focus:bg-surface focus:ring-4 focus:ring-blue-100"
             />
             <button
               type="submit"
               disabled={loading || !newComment.trim()}
-              className="text-sm font-bold text-blue-600 disabled:text-gray-300 hover:text-blue-800 transition-colors"
+              className="text-sm font-bold text-blue-600 disabled:text-muted hover:text-blue-800 transition-colors"
             >
               {loading ? '...' : 'Post'}
             </button>
@@ -156,18 +156,18 @@ export default function CommentSection({ postId }: { postId: string }) {
 
           {/* Live comment preview */}
           {newComment.trim() && (
-            <div className="mt-2 rounded-xl bg-blue-50/50 border border-blue-100 px-3 py-2">
+            <div className="mt-2 rounded-xl bg-surface-strong border border-border px-3 py-2">
               <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">
                 Preview
               </p>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+              <p className="text-sm text-foreground whitespace-pre-wrap break-words">
                 {newComment}
               </p>
             </div>
           )}
         </>
       ) : (
-        <p className="text-xs text-gray-400">Log in to comment</p>
+        <p className="text-xs text-muted">Log in to comment</p>
       )}
     </div>
   );

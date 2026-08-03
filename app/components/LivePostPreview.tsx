@@ -49,12 +49,12 @@ export default function LivePostPreview({
 
   return (
     <div className="mt-4">
-      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5">
+      <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
         Live Preview
       </p>
 
-      <div className="rounded-2xl border border-blue-100 bg-white overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface overflow-hidden shadow-sm">
         {images.length > 0 && (
           <div className="relative">
             <div
@@ -78,7 +78,7 @@ export default function LivePostPreview({
                   type="button"
                   aria-label="Previous preview image"
                   onClick={() => scrollBy(-1)}
-                  className={`absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-sm transition-opacity ${
+                  className={`absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-surface-strong/70 text-foreground flex items-center justify-center backdrop-blur-sm transition-opacity ${
                     canPrev ? 'opacity-100' : 'opacity-0 pointer-events-none'
                   }`}
                 >
@@ -88,7 +88,7 @@ export default function LivePostPreview({
                   type="button"
                   aria-label="Next preview image"
                   onClick={() => scrollBy(1)}
-                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-sm transition-opacity ${
+                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-surface-strong/70 text-foreground flex items-center justify-center backdrop-blur-sm transition-opacity ${
                     canNext ? 'opacity-100' : 'opacity-0 pointer-events-none'
                   }`}
                 >
