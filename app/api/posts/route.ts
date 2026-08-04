@@ -7,7 +7,8 @@ export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get('type');
   const limitRaw = request.nextUrl.searchParams.get('limit');
   const offsetRaw = request.nextUrl.searchParams.get('offset');
-  const limit = limitRaw ? Number(limitRaw) : 30;
+  // When no limit is provided, fetch ALL posts (limitless, like TikTok).
+  const limit = limitRaw ? Number(limitRaw) : undefined;
   const offset = offsetRaw ? Number(offsetRaw) : 0;
 
   if (type === 'following' && session) {

@@ -6,8 +6,7 @@ import SearchBox from '@/app/components/SearchBox';
 // import SuggestedUsers from '@/app/components/SuggestedUsers';
 import ThemeToggle from '@/app/ui/theme/ThemeToggle';
 import { getCurrentUser, getProfile } from '@/app/lib/action';
-import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
-import Link from 'next/link';
+import SettingsMenu from '@/app/components/SettingsMenu';
 import RatLogo from '@/app/ui/RatLogo'; 
 // ============================================================
 // Rat Home Page
@@ -44,14 +43,8 @@ export default async function RatHomePage() {
               R A T
             </h1> */}
          
-            <div className="flex items-center gap-2">
-              <Link
-                href="/Rat/news"
-                className="flex items-center gap-2 p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                title="News"
-              >
-                <NewspaperIcon className="w-6 h-6" />
-              </Link>
+<div className="flex items-center gap-2">
+              <SettingsMenu />
               <ThemeToggle />
             </div>
           </div>

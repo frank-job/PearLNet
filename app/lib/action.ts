@@ -144,27 +144,39 @@ function isMissingImagesColumn(err: unknown): boolean {
 }
 
 export async function fetchPosts(
-  limit = 100,
+  limit?: number,
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
   try {
-    const result = await sql<Post>`
-      SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
-      FROM posts
-      ORDER BY RANDOM()
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    const result = limit
+      ? await sql<Post>`
+          SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
+          FROM posts
+          ORDER BY RANDOM()
+          LIMIT ${limit} OFFSET ${offset}
+        `
+      : await sql<Post>`
+          SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
+          FROM posts
+          ORDER BY RANDOM()
+        `;
     return { data: result.rows };
   } catch (err) {
     // Fall back gracefully if the `images` migration hasn't been applied yet.
     if (isMissingImagesColumn(err)) {
       try {
-        const result = await sql<Post>`
-          SELECT id, image_url, caption, created_at, user_id, user_email, view_count
-          FROM posts
-          ORDER BY RANDOM()
-          LIMIT ${limit} OFFSET ${offset}
-        `;
+        const result = limit
+          ? await sql<Post>`
+              SELECT id, image_url, caption, created_at, user_id, user_email, view_count
+              FROM posts
+              ORDER BY RANDOM()
+              LIMIT ${limit} OFFSET ${offset}
+            `
+          : await sql<Post>`
+              SELECT id, image_url, caption, created_at, user_id, user_email, view_count
+              FROM posts
+              ORDER BY RANDOM()
+            `;
         return { data: result.rows };
       } catch (err2) {
         return { error: err2 instanceof Error ? err2.message : 'Failed to fetch posts' };
@@ -176,31 +188,47 @@ export async function fetchPosts(
 
 export async function fetchFollowingPosts(
   userId: string,
-  limit = 30,
+  limit?: number,
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
   try {
-const result = await sql<Post>`
-      SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
-      FROM posts p
-      INNER JOIN follows f ON p.user_id = f.following_id
-      WHERE f.follower_id = ${userId}
-      ORDER BY RANDOM()
-      LIMIT ${limit} OFFSET ${offset}
-    `;
-    return { data: result.rows };
-  } catch (err) {
-    // Fall back gracefully if the `images` migration hasn't been applied yet.
-    if (isMissingImagesColumn(err)) {
-      try {
-        const result = await sql<Post>`
-          SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+    const result = limit
+      ? await sql<Post>`
+          SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
           FROM posts p
           INNER JOIN follows f ON p.user_id = f.following_id
           WHERE f.follower_id = ${userId}
           ORDER BY RANDOM()
           LIMIT ${limit} OFFSET ${offset}
+        `
+      : await sql<Post>`
+          SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+          FROM posts p
+          INNER JOIN follows f ON p.user_id = f.following_id
+          WHERE f.follower_id = ${userId}
+          ORDER BY RANDOM()
         `;
+    return { data: result.rows };
+  } catch (err) {
+    // Fall back gracefully if the `images` migration hasn't been applied yet.
+    if (isMissingImagesColumn(err)) {
+      try {
+        const result = limit
+          ? await sql<Post>`
+              SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+              FROM posts p
+              INNER JOIN follows f ON p.user_id = f.following_id
+              WHERE f.follower_id = ${userId}
+              ORDER BY RANDOM()
+              LIMIT ${limit} OFFSET ${offset}
+            `
+          : await sql<Post>`
+              SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+              FROM posts p
+              INNER JOIN follows f ON p.user_id = f.following_id
+              WHERE f.follower_id = ${userId}
+              ORDER BY RANDOM()
+            `;
         return { data: result.rows };
       } catch (err2) {
         return { error: err2 instanceof Error ? err2.message : 'Failed to fetch following posts' };
