@@ -4,7 +4,7 @@ import Greetings from '@/app/ui/Greetings';
 import DynamicTagline from '@/app/components/DynamicTagline';
 import SearchBox from '@/app/components/SearchBox';
 // import SuggestedUsers from '@/app/components/SuggestedUsers';
-import ThemeToggle from '@/app/ui/theme/ThemeToggle';
+
 import { getCurrentUser, getProfile } from '@/app/lib/action';
 import SettingsMenu from '@/app/components/SettingsMenu';
 import RatLogo from '@/app/ui/RatLogo'; 
@@ -45,7 +45,7 @@ export default async function RatHomePage() {
          
 <div className="flex items-center gap-2">
               <SettingsMenu />
-              <ThemeToggle />
+            
             </div>
           </div>
           <div className="mt-4">

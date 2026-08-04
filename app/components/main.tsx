@@ -59,7 +59,7 @@ export default function MainFeed() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide transition-colors whitespace-nowrap ${
+              className={`px-3 py-1 rounded-full scroll-ml-2.5 text-[10px] font-semibold uppercase tracking-wide transition-colors  ${
                 activeCategory === cat
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-surface-strong text-muted hover:bg-surface'
