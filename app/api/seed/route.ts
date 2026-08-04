@@ -65,6 +65,7 @@ export async function POST() {
 async function handleSeed() {
   try {
     const dropTables = `
+      DROP TABLE IF EXISTS post_views CASCADE;
       DROP TABLE IF EXISTS notifications CASCADE;
       DROP TABLE IF EXISTS follows CASCADE;
       DROP TABLE IF EXISTS likes CASCADE;
@@ -144,7 +145,7 @@ async function handleSeed() {
       )
     `);
 
-    await sql.query(`
+await sql.query(`
       CREATE TABLE notifications (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -154,6 +155,25 @@ async function handleSeed() {
         read BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
+    `);
+
+    await sql.query(`
+      CREATE TABLE post_views (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        guest_id TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await sql.query(`
+      CREATE UNIQUE INDEX idx_post_views_user
+        ON post_views(post_id, user_id) WHERE user_id IS NOT NULL
+    `);
+    await sql.query(`
+      CREATE UNIQUE INDEX idx_post_views_guest
+        ON post_views(post_id, guest_id) WHERE guest_id IS NOT NULL
     `);
 
     for (const user of SEED_USERS) {

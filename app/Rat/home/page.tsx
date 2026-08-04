@@ -3,7 +3,7 @@ import MainFeed from '@/app/components/main';
 import Greetings from '@/app/ui/Greetings';
 import DynamicTagline from '@/app/components/DynamicTagline';
 import SearchBox from '@/app/components/SearchBox';
-import SuggestedUsers from '@/app/components/SuggestedUsers';
+// import SuggestedUsers from '@/app/components/SuggestedUsers';
 import ThemeToggle from '@/app/ui/theme/ThemeToggle';
 import { getCurrentUser, getProfile } from '@/app/lib/action';
 import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
@@ -66,9 +66,9 @@ export default async function RatHomePage() {
           <div className="lg:col-span-2">
             <MainFeed />
           </div>
-          <aside className="hidden lg:block">
+          {/* <aside className="hidden lg:block">
             <SuggestedUsers />
-          </aside>
+          </aside> */}
         </div>
       </div>
 

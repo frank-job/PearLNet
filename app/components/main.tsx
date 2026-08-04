@@ -135,6 +135,7 @@ export default function MainFeed() {
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-blue-600 rounded-full" />
             )}
           </button>
+          
         </div>
           <Link
               href="/Rat/news"

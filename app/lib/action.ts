@@ -144,12 +144,12 @@ function isMissingImagesColumn(err: unknown): boolean {
 }
 
 export async function fetchPosts(
-  limit = 30,
+  limit = 100,
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
   try {
     const result = await sql<Post>`
-      SELECT id, image_url, images, caption, created_at, user_id, user_email
+      SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
       FROM posts
       ORDER BY RANDOM()
       LIMIT ${limit} OFFSET ${offset}
@@ -160,7 +160,7 @@ export async function fetchPosts(
     if (isMissingImagesColumn(err)) {
       try {
         const result = await sql<Post>`
-          SELECT id, image_url, caption, created_at, user_id, user_email
+          SELECT id, image_url, caption, created_at, user_id, user_email, view_count
           FROM posts
           ORDER BY RANDOM()
           LIMIT ${limit} OFFSET ${offset}
@@ -180,8 +180,8 @@ export async function fetchFollowingPosts(
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
   try {
-    const result = await sql<Post>`
-      SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email
+const result = await sql<Post>`
+      SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
       FROM posts p
       INNER JOIN follows f ON p.user_id = f.following_id
       WHERE f.follower_id = ${userId}
@@ -194,7 +194,7 @@ export async function fetchFollowingPosts(
     if (isMissingImagesColumn(err)) {
       try {
         const result = await sql<Post>`
-          SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email
+          SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
           FROM posts p
           INNER JOIN follows f ON p.user_id = f.following_id
           WHERE f.follower_id = ${userId}
@@ -411,7 +411,7 @@ export async function checkFollowStatus(authorId: string): Promise<boolean> {
 export async function fetchUserPosts(userId: string): Promise<ActionResult<Post[]>> {
   try {
     const result = await sql<Post>`
-      SELECT id, image_url, images, caption, created_at
+      SELECT id, image_url, images, caption, created_at, view_count
       FROM posts
       WHERE user_id = ${userId}
       ORDER BY created_at DESC
@@ -422,7 +422,7 @@ export async function fetchUserPosts(userId: string): Promise<ActionResult<Post[
     if (isMissingImagesColumn(err)) {
       try {
         const result = await sql<Post>`
-          SELECT id, image_url, caption, created_at
+          SELECT id, image_url, caption, created_at, view_count
           FROM posts
           WHERE user_id = ${userId}
           ORDER BY created_at DESC
@@ -624,7 +624,7 @@ export async function searchPosts(query: string, limit = 8): Promise<ActionResul
       return { data: [] };
     }
     const result = await sql<Post>`
-      SELECT id, image_url, images, caption, created_at, user_id, user_email
+      SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
       FROM posts
       WHERE caption ILIKE ${`%${query.trim()}%`}
       ORDER BY created_at DESC
@@ -636,7 +636,7 @@ export async function searchPosts(query: string, limit = 8): Promise<ActionResul
     if (isMissingImagesColumn(err)) {
       try {
         const result = await sql<Post>`
-          SELECT id, image_url, caption, created_at, user_id, user_email
+          SELECT id, image_url, caption, created_at, user_id, user_email, view_count
           FROM posts
           WHERE caption ILIKE ${`%${query.trim()}%`}
           ORDER BY created_at DESC

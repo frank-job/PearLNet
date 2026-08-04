@@ -77,6 +77,23 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 8. POST VIEWS TABLE (deduplicate views per user / guest)
+CREATE TABLE IF NOT EXISTS post_views (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  guest_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_post_views_user
+  ON post_views(post_id, user_id) WHERE user_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_post_views_guest
+  ON post_views(post_id, guest_id) WHERE guest_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_post_views_post_id ON post_views(post_id);
+
 -- ============================================================
 -- Migrations: Add missing columns to existing tables
 -- ============================================================
