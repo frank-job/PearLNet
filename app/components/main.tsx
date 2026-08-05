@@ -54,7 +54,7 @@ export default function MainFeed() {
         </div>
 
         {/* Category Chips (placeholders for future APIs) */}
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+        <div  className="flex gap-2 overflow-x-auto no-scrollbar py-2">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}

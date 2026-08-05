@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import PostFeed from './PostFeed';
 import CreatePost from './CreatePost';
-import LoadingSpinner from './LoadingSpinner';
+import PostSkeleton from './PostSkeleton';
 import type { Post } from '@/app/lib/definitions';
 
 // ============================================================
@@ -18,7 +18,7 @@ export default function ForYouFeed() {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
-// Load all posts (no limit).
+// Load ALL posts (no limit) just like TikTok's endless feed.
   useEffect(() => {
     let cancelled = false;
     fetch('/api/posts')
@@ -29,7 +29,7 @@ export default function ForYouFeed() {
         else if (json.error) console.error(json.error);
       })
       .catch(() => {
-        if (!cancelled) console.error('Failed to fetch posts');
+        if (!cancelled) console.error('Failed to fetch posts sorry ');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -51,10 +51,12 @@ export default function ForYouFeed() {
         <CreatePost onPostCreated={handleRefresh} />
       </div>
 
-      {/* Feed Section */}
+{/* Feed Section */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <LoadingSpinner size="md" label="Loading feed..." />
+        <div className="space-y-6 py-6">
+          <PostSkeleton />
+          <PostSkeleton />
+          <PostSkeleton />
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">

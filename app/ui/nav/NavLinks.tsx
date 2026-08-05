@@ -29,10 +29,10 @@ export default function NavLinks() {
           <Link
             key={link.name}
             href={link.href}
-            className={clsx(
-              'flex h-48px grow items-center justify-center gap-2 rounded-md bg-surface py-2 px-2 text-sm font-medium transition-colors hover:bg-surface-strong md:flex-none md:justify-start md:py-1 md:px-1',
+className={clsx(
+              'flex h-12 grow items-center justify-center gap-2 rounded-xl bg-surface py-2 px-2 text-sm font-medium transition-colors hover:bg-surface-strong md:flex-none md:justify-start md:py-1 md:px-1',
               {
-                'bg-sky-100 text-blue-600': isActive,
+                'bg-blue-50 text-blue-600': isActive,
                 'text-blue-600': !isActive,
               }
             )}

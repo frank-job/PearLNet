@@ -36,22 +36,23 @@ export default async function RatHomePage() {
   return (
     <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
-<header className="px-4 py-6 border-b border-gray-200">
+<header className="px-4 pb-4 pt-5 border-b border-gray-200">
           <div className="flex items-center justify-between">
-              <RatLogo  />
-            {/* <h1 className="text-blue-600 font-extrabold text-1xl justify-items-start md:text-4xl tracking-widest">
-              R A T
-            </h1> */}
-         
-<div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <RatLogo size="sm" />
+              <h1 className="text-blue-600 font-extrabold text-2xl tracking-widest">
+                R A T
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <DynamicTagline />
               <SettingsMenu />
-            
             </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-3">
             <SearchBox />
           </div>
-          <DynamicTagline />
         </header>
         <Greetings userName={displayName} />
 

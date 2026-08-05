@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import PostFeed from './PostFeed';
-import LoadingSpinner from './LoadingSpinner';
+import PostSkeleton from './PostSkeleton';
 import type { Post } from '@/app/lib/definitions';
 
 // ============================================================
@@ -15,7 +15,7 @@ export default function FollowingFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load all following posts (no limit).
+// Load ALL following posts (no limit).
   useEffect(() => {
     let cancelled = false;
     fetch('/api/posts?type=following')
@@ -38,9 +38,11 @@ export default function FollowingFeed() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <LoadingSpinner size="md" label="Loading feed..." />
+{loading ? (
+        <div className="space-y-6 py-6">
+          <PostSkeleton />
+          <PostSkeleton />
+          <PostSkeleton />
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">

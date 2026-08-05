@@ -28,7 +28,7 @@ export default function SignupForm() {
   return (
     <form action={formAction} className="space-y-3">
       <div className="flex-1 rounded-3xl bg-white px-6 pb-8 pt-8 shadow-sm border border-gray-100">
-        <h1 className="mb-3 font-serif text-2xl text-blue-700 font-bold">
+<h1 className="mb-3 font-serif text-2xl text-blue-600 font-bold">
           Create your account
         </h1>
         <p className="text-sm text-gray-500 mb-6 italic">
@@ -119,7 +119,7 @@ export default function SignupForm() {
               id="gender"
               name="gender"
               required
-              className="block w-full rounded-xl border border-gray-200 text-blue-600 bg-white py-12px pl-3 text-sm outline-none focus:ring-2 focus:ring-blue-700 transition-all"
+className="block w-full rounded-xl border border-gray-200 text-blue-600 bg-white py-[12px] pl-3 text-sm outline-none focus:ring-2 focus:ring-blue-600 transition-all"
             >
               <option value="">Select gender</option>
               <option value="male">Male</option>
@@ -132,7 +132,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-500 px-4 text-sm font-bold text-white transition-all hover:bg-blue-700 active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-bold text-white transition-all hover:bg-blue-700 active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Creating account..." : "Sign up"}
           <ArrowRightIcon className="ml-auto h-5 w-5 text-blue-950" />

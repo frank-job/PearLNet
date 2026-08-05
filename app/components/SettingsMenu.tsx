@@ -83,11 +83,10 @@ const handleLogout = async () => {
             <NewspaperIcon className="w-5 h-5 text-blue-600" />
             News
           </Link>
-          <div className='px-3 flex gap-2 text-blue-800'>
-            <  ThemeToggle />
-
-            light mode
-            </div>
+<div className="flex items-center justify-between px-4 py-2.5">
+            <span className="text-sm font-medium text-foreground">Theme</span>
+            <ThemeToggle />
+          </div>
             
           <div className="border-t border-border my-1" />
             
