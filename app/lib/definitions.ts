@@ -97,6 +97,16 @@ export type ProfileData = {
   date_of_birth: string | null;
 };
 
+// ===== User List Item (for followers / following lists) =====
+
+export type UserListItem = {
+  id: string;
+  username: string;
+  email: string;
+  image_url: string | null;
+  bio: string | null;
+};
+
 // ===== Share Types =====
 
 export type Share = {

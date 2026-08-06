@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ForYouFeed from './ForYouFeed';
 import FollowingFeed from './FollowingFeed';
+import SearchBox from './SearchBox';
 
 type FeedTab = 'forYou' | 'following';
 
@@ -18,6 +20,7 @@ const CATEGORIES = ['News', 'Movies', 'Sports', 'Music', 'Gaming', 'Food', 'Trav
 export default function MainFeed() {
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const [activeCategory, setActiveCategory] = useState<string>('News');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleTabChange = (tab: FeedTab) => {
     if (tab === activeTab) return;
@@ -26,9 +29,9 @@ export default function MainFeed() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Sticky Header with Tabs */}
+{/* Sticky Header with Tabs */}
       <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-md border-b border-border">
-        <div className="flex">
+        <div className="flex items-center px-4">
           <button
             onClick={() => handleTabChange('forYou')}
             className={`flex-1 py-4 text-sm font-bold transition-colors relative ${
@@ -51,7 +54,25 @@ export default function MainFeed() {
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-blue-600 rounded-full" />
             )}
           </button>
+
+{/* Search (lens) icon - toggles the search bar */}
+          <button
+            onClick={() => setSearchOpen((o) => !o)}
+            aria-label="Search"
+            className={`p-2 transition-colors ${
+              searchOpen ? 'text-blue-600' : 'text-muted hover:text-blue-600'
+            }`}
+          >
+            <MagnifyingGlassIcon className="w-5 h-5" />
+          </button>
         </div>
+
+        {/* Search box appears only when the lens icon is clicked */}
+        {searchOpen && (
+          <div className="px-4 pb-3">
+            <SearchBox />
+          </div>
+        )}
 
         {/* Category Chips (placeholders for future APIs) */}
         <div  className="flex gap-2 overflow-x-auto no-scrollbar py-2">

@@ -1,13 +1,13 @@
 import NavBar from '../../ui/nav/NavBarr';
 import MainFeed from '@/app/components/main';
 import Greetings from '@/app/ui/Greetings';
-import DynamicTagline from '@/app/components/DynamicTagline';
+// import DynamicTagline from '@/app/components/DynamicTagline';
 import SearchBox from '@/app/components/SearchBox';
-// import SuggestedUsers from '@/app/components/SuggestedUsers';
+import SuggestedUsers from '@/app/components/SuggestedUsers';
 
 import { getCurrentUser, getProfile } from '@/app/lib/action';
 import SettingsMenu from '@/app/components/SettingsMenu';
-import RatLogo from '@/app/ui/RatLogo'; 
+import RatLogo from '@/app/ui/RatLogo';
 // ============================================================
 // Rat Home Page
 // - Public feed with "For You" and "Following" tabs
@@ -39,14 +39,14 @@ export default async function RatHomePage() {
 <header className="px-4 pb-4 pt-5 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <RatLogo size="sm" />
+              <RatLogo size="md" />
               <h1 className="text-blue-600 font-extrabold text-2xl tracking-widest">
                 R A T
               </h1>
             </div>
 
-            <div className="flex items-center gap-2">
-              <DynamicTagline />
+<div className="flex items-center gap-2">
+              {/* <DynamicTagline /> */}
               <SettingsMenu />
             </div>
           </div>
@@ -60,9 +60,9 @@ export default async function RatHomePage() {
           <div className="lg:col-span-2">
             <MainFeed />
           </div>
-          {/* <aside className="hidden lg:block">
+          <aside className="hidden lg:block">
             <SuggestedUsers />
-          </aside> */}
+          </aside>
         </div>
       </div>
 

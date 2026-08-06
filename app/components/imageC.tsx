@@ -34,6 +34,7 @@ export default function ImageCard({
       <img
         src={list[0]}
         alt={alt}
+        loading='lazy'
         className="w-full aspect-square object-cover"
       />
     );
@@ -62,6 +63,8 @@ export default function ImageCard({
             key={idx}
             src={src}
             alt={`${alt} ${idx + 1}`}
+            loading="lazy"
+            decoding="async"
             className="w-full aspect-square object-cover flex-shrink-0 snap-start"
           />
         ))}

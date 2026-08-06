@@ -4,7 +4,7 @@ import { sql } from '@vercel/postgres';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import type { Post, Comment, ProfileData, Notification } from '@/app/lib/definitions';
+import type { Post, Comment, ProfileData, Notification, UserListItem } from '@/app/lib/definitions';
 
 // ============================================================
 // Types
@@ -50,6 +50,50 @@ export async function clearSession() {
 }
 
 // ============================================================
+// Input validation / sanitization helpers
+// ============================================================
+
+// Max lengths to prevent abuse / oversized payloads.
+const MAX_EMAIL_LENGTH = 254;
+const MAX_USERNAME_LENGTH = 50;
+const MAX_PASSWORD_LENGTH = 128;
+const MAX_SEARCH_LENGTH = 100;
+const MAX_CAPTION_LENGTH = 2000;
+const MAX_COMMENT_LENGTH = 1000;
+
+// Remove control characters (including null bytes, newlines, etc.)
+// that attackers may use to smuggle payloads.
+function sanitize(input: string): string {
+  // eslint-disable-next-line no-control-regex
+  return input.replace(/[\u0000-\u001F\u007F]/g, '');
+}
+
+// Reject strings that contain typical SQL injection markers so we
+// fail fast (defense in depth on top of parameterized queries).
+function hasSqlInjectionPatterns(input: string): boolean {
+  const lower = input.toLowerCase();
+  const patterns = [
+    /--/,
+    /;\s*(drop|delete|update|insert|alter|create|truncate|exec)\b/,
+    /\bunion\s+select\b/i,
+    /\bselect\s+.*\s+from\b/i,
+    /\binsert\s+into\b/i,
+    /\bdelete\s+from\b/i,
+    /\bdrop\s+table\b/i,
+    /\b(or|and)\s+1\s*=\s*1\b/i,
+    /['"]\s*(or|and)\b/i,
+    /\bxp_cmdshell\b/i,
+    /\bsleep\s*\(/i,
+  ];
+  return patterns.some((p) => p.test(lower));
+}
+
+function isValidEmail(email: string): boolean {
+  // Simple but strict enough client-style validation.
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
+// ============================================================
 // Auth Actions
 // ============================================================
 
@@ -57,19 +101,38 @@ export async function signUp(
   state: { message: string } | undefined,
   formData: FormData,
 ): Promise<ActionError | undefined> {
-  const username = String(formData.get('username') ?? '').trim();
-  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const username = sanitize(String(formData.get('username') ?? '')).trim();
+  const email = sanitize(String(formData.get('email') ?? '')).trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
-  const gender = String(formData.get('gender') ?? 'other').trim().toLowerCase();
+  const gender = sanitize(String(formData.get('gender') ?? 'other')).trim().toLowerCase();
+  const agreedToTerms = formData.get('terms') === 'on';
 
   if (!username || !email || !password || !gender) {
     return { message: 'Please fill in all fields before continuing.' };
   }
-  if (!email.includes('@')) {
+  if (!agreedToTerms) {
+    return { message: 'You must agree to the Terms of Service to create an account.' };
+  }
+  if (username.length > MAX_USERNAME_LENGTH) {
+    return { message: `Username must be ${MAX_USERNAME_LENGTH} characters or fewer.` };
+  }
+  if (hasSqlInjectionPatterns(username)) {
+    return { message: 'Please enter a valid username.' };
+  }
+  if (!isValidEmail(email)) {
     return { message: 'Please enter a valid email address.' };
+  }
+  if (email.length > MAX_EMAIL_LENGTH) {
+    return { message: 'Email address is too long.' };
   }
   if (password.length < 6) {
     return { message: 'Password must be at least 6 characters long.' };
+  }
+  if (password.length > MAX_PASSWORD_LENGTH) {
+    return { message: 'Password is too long.' };
+  }
+  if (hasSqlInjectionPatterns(password)) {
+    return { message: 'Password contains invalid characters.' };
   }
 
   const existingUser = await sql`
@@ -104,11 +167,24 @@ export async function login(
   state: { message: string } | undefined,
   formData: FormData,
 ): Promise<ActionError | undefined> {
-  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+const email = sanitize(String(formData.get('email') ?? '')).trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
+  const agreedToTerms = formData.get('terms') === 'on';
 
   if (!email || !password) {
     return { message: 'Please enter both your email and password.' };
+  }
+  if (!agreedToTerms) {
+    return { message: 'You must agree to the Terms of Service to continue.' };
+  }
+  if (!isValidEmail(email)) {
+    return { message: 'Please enter a valid email address.' };
+  }
+  if (email.length > MAX_EMAIL_LENGTH) {
+    return { message: 'Email address is too long.' };
+  }
+  if (password.length > MAX_PASSWORD_LENGTH) {
+    return { message: 'Password is too long.' };
   }
 
   const result = await sql`
@@ -148,34 +224,34 @@ export async function fetchPosts(
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
   try {
-    const result = limit
+const result = limit
       ? await sql<Post>`
           SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
           FROM posts
-          ORDER BY RANDOM()
+          ORDER BY created_at DESC
           LIMIT ${limit} OFFSET ${offset}
         `
       : await sql<Post>`
           SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
           FROM posts
-          ORDER BY RANDOM()
+          ORDER BY created_at DESC
         `;
     return { data: result.rows };
   } catch (err) {
     // Fall back gracefully if the `images` migration hasn't been applied yet.
     if (isMissingImagesColumn(err)) {
       try {
-        const result = limit
+const result = limit
           ? await sql<Post>`
               SELECT id, image_url, caption, created_at, user_id, user_email, view_count
               FROM posts
-              ORDER BY RANDOM()
+              ORDER BY created_at DESC
               LIMIT ${limit} OFFSET ${offset}
             `
           : await sql<Post>`
               SELECT id, image_url, caption, created_at, user_id, user_email, view_count
               FROM posts
-              ORDER BY RANDOM()
+              ORDER BY created_at DESC
             `;
         return { data: result.rows };
       } catch (err2) {
@@ -192,13 +268,13 @@ export async function fetchFollowingPosts(
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
   try {
-    const result = limit
+const result = limit
       ? await sql<Post>`
           SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
           FROM posts p
           INNER JOIN follows f ON p.user_id = f.following_id
           WHERE f.follower_id = ${userId}
-          ORDER BY RANDOM()
+          ORDER BY p.created_at DESC
           LIMIT ${limit} OFFSET ${offset}
         `
       : await sql<Post>`
@@ -206,20 +282,20 @@ export async function fetchFollowingPosts(
           FROM posts p
           INNER JOIN follows f ON p.user_id = f.following_id
           WHERE f.follower_id = ${userId}
-          ORDER BY RANDOM()
+          ORDER BY p.created_at DESC
         `;
     return { data: result.rows };
   } catch (err) {
     // Fall back gracefully if the `images` migration hasn't been applied yet.
     if (isMissingImagesColumn(err)) {
       try {
-        const result = limit
+const result = limit
           ? await sql<Post>`
               SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
               FROM posts p
               INNER JOIN follows f ON p.user_id = f.following_id
               WHERE f.follower_id = ${userId}
-              ORDER BY RANDOM()
+              ORDER BY p.created_at DESC
               LIMIT ${limit} OFFSET ${offset}
             `
           : await sql<Post>`
@@ -227,7 +303,7 @@ export async function fetchFollowingPosts(
               FROM posts p
               INNER JOIN follows f ON p.user_id = f.following_id
               WHERE f.follower_id = ${userId}
-              ORDER BY RANDOM()
+              ORDER BY p.created_at DESC
             `;
         return { data: result.rows };
       } catch (err2) {
@@ -256,10 +332,13 @@ export async function createPostAction(formData: FormData): Promise<ActionError 
     i++;
   }
 
-  const caption = String(formData.get('caption') ?? '').trim();
+const caption = sanitize(String(formData.get('caption') ?? '')).trim();
 
   if (images.length === 0 && !caption) {
     return { message: 'Please add a photo or a caption.' };
+  }
+  if (caption.length > MAX_CAPTION_LENGTH) {
+    return { message: `Caption must be ${MAX_CAPTION_LENGTH} characters or fewer.` };
   }
 
   try {
@@ -345,19 +424,24 @@ export async function incrementViewCount(postId: string): Promise<void> {
 export async function addCommentAction(postId: string, content: string): Promise<ActionError | void> {
   const session = await getSession();
   if (!session) return { message: 'You must be logged in to comment.' };
-  if (!content.trim()) return { message: 'Comment cannot be empty.' };
+
+  const cleanContent = sanitize(content).trim();
+  if (!cleanContent) return { message: 'Comment cannot be empty.' };
+  if (cleanContent.length > MAX_COMMENT_LENGTH) {
+    return { message: `Comment must be ${MAX_COMMENT_LENGTH} characters or fewer.` };
+  }
 
   try {
     await sql`
       INSERT INTO comments (post_id, user_id, content, user_email)
-      VALUES (${postId}, ${session.userId}, ${content.trim()}, ${session.email})
+      VALUES (${postId}, ${session.userId}, ${cleanContent}, ${session.email})
     `;
 
     // Notify the post author (skip if commenting on your own post)
     const authorId = await getPostAuthor(postId);
     if (authorId && authorId !== session.userId) {
       const displayName = await getSessionDisplayName();
-      const snippet = content.trim();
+      const snippet = cleanContent;
       const preview = snippet.length > 40 ? `${snippet.slice(0, 40)}…` : snippet;
       await createNotificationAction(
         authorId,
@@ -466,6 +550,93 @@ export async function fetchUserPosts(userId: string): Promise<ActionResult<Post[
 
 export async function getCurrentUser(): Promise<{ userId: string; email: string } | null> {
   return getSession();
+}
+
+// ============================================================
+// Account stats & lists (likes, followers, following)
+// ============================================================
+
+export type UserStats = {
+  posts: number;
+  likes: number;
+  followers: number;
+  following: number;
+};
+
+export async function fetchUserStats(userId: string): Promise<UserStats> {
+  const [posts, likes, followers, following] = await Promise.all([
+    sql`SELECT COUNT(*) AS c FROM posts WHERE user_id = ${userId}`,
+    sql`SELECT COUNT(*) AS c FROM likes WHERE user_id = ${userId}`,
+    sql`SELECT COUNT(*) AS c FROM follows WHERE following_id = ${userId}`,
+    sql`SELECT COUNT(*) AS c FROM follows WHERE follower_id = ${userId}`,
+  ]);
+  return {
+    posts: Number(posts.rows[0]?.c ?? 0),
+    likes: Number(likes.rows[0]?.c ?? 0),
+    followers: Number(followers.rows[0]?.c ?? 0),
+    following: Number(following.rows[0]?.c ?? 0),
+  };
+}
+
+export async function fetchUserLikes(userId: string): Promise<ActionResult<Post[]>> {
+  try {
+    const result = await sql<Post>`
+      SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+      FROM posts p
+      INNER JOIN likes l ON l.post_id = p.id
+      WHERE l.user_id = ${userId}
+      ORDER BY l.created_at DESC
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    if (isMissingImagesColumn(err)) {
+      try {
+        const result = await sql<Post>`
+          SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+          FROM posts p
+          INNER JOIN likes l ON l.post_id = p.id
+          WHERE l.user_id = ${userId}
+          ORDER BY l.created_at DESC
+        `;
+        return { data: result.rows };
+      } catch (err2) {
+        return { error: err2 instanceof Error ? err2.message : 'Failed to fetch liked posts' };
+      }
+    }
+    return { error: err instanceof Error ? err.message : 'Failed to fetch liked posts' };
+  }
+}
+
+export async function fetchFollowers(userId: string): Promise<ActionResult<UserListItem[]>> {
+  try {
+    const result = await sql<UserListItem>`
+      SELECT u.id, u.username, u.email, p.image_url, p.bio
+      FROM follows f
+      INNER JOIN users u ON u.id = f.follower_id
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE f.following_id = ${userId}
+      ORDER BY f.created_at DESC
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to fetch followers' };
+  }
+}
+
+export async function fetchFollowing(userId: string): Promise<ActionResult<UserListItem[]>> {
+  try {
+    const result = await sql<UserListItem>`
+      SELECT u.id, u.username, u.email, p.image_url, p.bio
+      FROM follows f
+      INNER JOIN users u ON u.id = f.following_id
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE f.follower_id = ${userId}
+      ORDER BY f.created_at DESC
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to fetch following' };
+  }
 }
 
 export async function getProfile(userId: string): Promise<ActionResult<ProfileData | null>> {
@@ -628,15 +799,19 @@ export type SearchUserResult = {
 
 export async function searchUsers(query: string, limit = 8): Promise<ActionResult<SearchUserResult[]>> {
   try {
-    if (!query.trim()) {
+    const cleanQuery = sanitize(query).trim();
+    if (!cleanQuery) {
+      return { data: [] };
+    }
+    if (cleanQuery.length > MAX_SEARCH_LENGTH) {
       return { data: [] };
     }
     const result = await sql<SearchUserResult>`
       SELECT u.id AS user_id, u.username, u.email, p.image_url
       FROM users u
       LEFT JOIN profiles p ON p.user_id = u.id
-      WHERE u.username ILIKE ${`%${query.trim()}%`}
-         OR u.email ILIKE ${`%${query.trim()}%`}
+      WHERE u.username ILIKE ${`%${cleanQuery}%`}
+         OR u.email ILIKE ${`%${cleanQuery}%`}
       ORDER BY u.username
       LIMIT ${limit}
     `;
@@ -647,14 +822,18 @@ export async function searchUsers(query: string, limit = 8): Promise<ActionResul
 }
 
 export async function searchPosts(query: string, limit = 8): Promise<ActionResult<Post[]>> {
+  const cleanQuery = sanitize(query).trim();
+  if (!cleanQuery) {
+    return { data: [] };
+  }
+  if (cleanQuery.length > MAX_SEARCH_LENGTH) {
+    return { data: [] };
+  }
   try {
-    if (!query.trim()) {
-      return { data: [] };
-    }
     const result = await sql<Post>`
       SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
       FROM posts
-      WHERE caption ILIKE ${`%${query.trim()}%`}
+      WHERE caption ILIKE ${`%${cleanQuery}%`}
       ORDER BY created_at DESC
       LIMIT ${limit}
     `;
@@ -666,7 +845,7 @@ export async function searchPosts(query: string, limit = 8): Promise<ActionResul
         const result = await sql<Post>`
           SELECT id, image_url, caption, created_at, user_id, user_email, view_count
           FROM posts
-          WHERE caption ILIKE ${`%${query.trim()}%`}
+          WHERE caption ILIKE ${`%${cleanQuery}%`}
           ORDER BY created_at DESC
           LIMIT ${limit}
         `;

@@ -46,16 +46,22 @@ function PostCard({
 
       {/* Content */}
       <div className="p-4">
-        {/* ===== User Info Row ===== */}
+{/* ===== User Info Row ===== */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold uppercase">
+            <a
+              href={post.user_id ? `/Rat/account?id=${post.user_id}` : undefined}
+              className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold uppercase"
+            >
               {post.user_email ? post.user_email[0] : '?'}
-            </div>
+            </a>
             <div>
-              <p className="text-sm font-semibold text-foreground">
+              <a
+                href={post.user_id ? `/Rat/account?id=${post.user_id}` : undefined}
+                className="text-sm font-semibold text-foreground hover:text-blue-600 transition-colors"
+              >
                 {post.user_email ? post.user_email.split('@')[0] : 'Anonymous'}
-              </p>
+              </a>
               <p className="text-[10px] text-muted">
                 {new Date(post.created_at).toLocaleDateString()}
               </p>

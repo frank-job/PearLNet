@@ -72,7 +72,8 @@ export default function SearchBox() {
     <div ref={boxRef} className="relative w-full max-w-sm">
       <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
         <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
-        <input
+<input
+          id="feed-search-input"
           type="text"
           value={query}
           onChange={(e) => {

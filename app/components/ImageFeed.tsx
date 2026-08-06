@@ -89,6 +89,7 @@ export default function ImageFeed() {
             <img 
               src={post.image_url} 
               alt="Craft" 
+              loading='lazy'
               className="w-full aspect-square object-cover"
             />
             <div className="p-4 flex justify-between items-center">

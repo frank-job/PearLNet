@@ -85,6 +85,26 @@ export default function LoginForm() {
           </div>
         </div>
 
+{/* Agree to Terms */}
+        <label className="flex items-start gap-2 mt-6 text-sm text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            name="terms"
+            required
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span>
+            I agree to the{" "}
+            <a href="/terms" className="text-blue-600 font-semibold hover:underline">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" className="text-blue-600 font-semibold hover:underline">
+              Privacy Policy
+            </a>
+          </span>
+        </label>
+
         <button
           type="submit"
           disabled={isPending}

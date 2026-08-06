@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import type { Comment } from '@/app/lib/definitions';
 
 export default function CommentSection({ postId }: { postId: string }) {
@@ -110,10 +111,19 @@ export default function CommentSection({ postId }: { postId: string }) {
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="flex justify-between items-start">
-              <div>
-                <p className="text-xs font-semibold text-gray-500">
-                  {comment.user_email?.split('@')[0] ?? comment.user_id?.slice(0, 8)}
-                </p>
+<div>
+                {comment.user_id ? (
+                  <Link
+                    href={`/Rat/account?id=${comment.user_id}`}
+                    className="text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    {comment.user_email?.split('@')[0] ?? comment.user_id?.slice(0, 8)}
+                  </Link>
+                ) : (
+                  <p className="text-xs font-semibold text-gray-500">
+                    {comment.user_email?.split('@')[0] ?? comment.user_id?.slice(0, 8)}
+                  </p>
+                )}
                 <p className="text-sm text-gray-700">{comment.content}</p>
                 <p className="text-[10px] text-gray-400 mt-1">
                   {new Date(comment.created_at).toLocaleDateString()}
