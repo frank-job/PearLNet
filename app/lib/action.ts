@@ -1,6 +1,7 @@
 'use server';
 
 import { sql } from '@vercel/postgres';
+import { put } from '@vercel/blob';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
@@ -316,22 +317,48 @@ export async function createPostAction(formData: FormData): Promise<ActionError 
   const session = await getSession();
   if (!session) return { message: 'You must be logged in to post.' };
 
-  // Text-only posts for now. Image upload is disabled to avoid the
-  // Vercel Blob "Access denied" token error. Re-enable image support
-  // only once a valid BLOB_READ_WRITE_TOKEN is configured.
-  const caption = sanitize(String(formData.get('caption') ?? '')).trim();
+  // Collect ALL image fields (single "imageBase64" for backward compat,
+  // plus repeated "imageBase64_0", "imageBase64_1", ... for multi-image posts).
+  const images: string[] = [];
+  const single = String(formData.get('imageBase64') ?? '').trim();
+  if (single) images.push(single);
 
-  if (!caption) {
-    return { message: 'Please write something to post.' };
+  let i = 0;
+  while (true) {
+    const value = String(formData.get(`imageBase64_${i}`) ?? '').trim();
+    if (!value) break;
+    images.push(value);
+    i++;
+  }
+
+const caption = sanitize(String(formData.get('caption') ?? '')).trim();
+
+  if (images.length === 0 && !caption) {
+    return { message: 'Please add a photo or a caption.' };
   }
   if (caption.length > MAX_CAPTION_LENGTH) {
     return { message: `Caption must be ${MAX_CAPTION_LENGTH} characters or fewer.` };
   }
 
+const uploadedUrls: string[] = [];
   try {
+    // Upload images to Vercel Blob, storing ONLY the resulting URLs in Neon.
+    for (const dataUrl of images) {
+      const blob = base64DataUrlToBlob(dataUrl);
+      if (!blob) continue;
+      const ext = (blob.type.split('/')[1] || 'bin').replace(/[^a-z0-9]/gi, '');
+      const pathname = `posts/${session.userId}/${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}.${ext}`;
+      const { url } = await put(pathname, blob, { access: 'public' });
+      uploadedUrls.push(url);
+    }
+
+    const firstImage = uploadedUrls[0] ?? null;
+    const imagesJson = uploadedUrls.length > 0 ? JSON.stringify(uploadedUrls) : null;
     await sql`
       INSERT INTO posts (image_url, images, caption, user_id, user_email)
-      VALUES (NULL, NULL, ${caption}, ${session.userId}, ${session.email})
+      VALUES (${firstImage}, ${imagesJson}, ${caption}, ${session.userId}, ${session.email})
     `;
   } catch (err) {
     return { message: err instanceof Error ? err.message : 'Failed to create post' };
