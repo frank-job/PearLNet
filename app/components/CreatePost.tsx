@@ -1,26 +1,21 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
 import DynamicPlaceholder from './DynamicPlaceholder';
 import LivePostPreview from './LivePostPreview';
 
 /* ============================================================
    CreatePost Component
-   - Twitter-style post composer with multi-image upload
-   - Allows text-only posts or posts with 1+ images
-   - Selected images show in a horizontal scrollable preview row
-   - Sends all images to the server (imageBase64_0, _1, ...)
-   - Calls onPostCreated callback to refresh the feed
+   - Text-only post composer (words only for now)
+   - Image upload is intentionally disabled to avoid the Vercel
+     Blob "Access denied" token error. Re-enable once a valid
+     Blob token is configured in the environment.
    ============================================================ */
 
 export default function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
   const [description, setDescription] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const [posting, setPosting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [userName, setUserName] = useState('You');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const clearFeedback = () => setFeedback(null);
 
@@ -38,51 +33,17 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
     return () => { active = false; };
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    clearFeedback();
-    const selected = e.target.files ? Array.from(e.target.files) : [];
-    if (selected.length === 0) return;
-
-    const newFiles = [...files, ...selected];
-    setFiles(newFiles);
-    setPreviews(newFiles.map((f) => URL.createObjectURL(f)));
-
-    // Allow re-selecting the same files next time
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const removeImage = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
-    clearFeedback();
-  };
-
-  const toBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-    });
-  };
-
   const handleUpload = async () => {
     clearFeedback();
 
-    if (!description.trim() && files.length === 0) {
-      setFeedback({ type: 'error', message: 'Please add a photo or a caption.' });
+    if (!description.trim()) {
+      setFeedback({ type: 'error', message: 'Please write something to post.' });
       return;
     }
 
-    setUploading(true);
+    setPosting(true);
     try {
       const formData = new FormData();
-
-      // Convert every selected image to base64 and append as imageBase64_0, _1, ...
-      for (let i = 0; i < files.length; i++) {
-        const imageBase64 = await toBase64(files[i]);
-        formData.append(`imageBase64_${i}`, imageBase64);
-      }
       formData.append('caption', description.trim());
 
       const res = await fetch('/api/posts', {
@@ -96,8 +57,6 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
         return;
       }
 
-      setFiles([]);
-      setPreviews([]);
       setDescription('');
       setFeedback({ type: 'success', message: 'Post shared!' });
       onPostCreated();
@@ -107,7 +66,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
       console.error(error);
       setFeedback({ type: 'error', message: 'Failed to create post. Please try again.' });
     } finally {
-      setUploading(false);
+      setPosting(false);
     }
   };
 
@@ -134,32 +93,6 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
             />
           </div>
 
-          {/* Multi-Image Preview Row (horizontal scroll, like TikTok/X/Facebook) */}
-          {previews.length > 0 && (
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-2 snap-x">
-              {previews.map((preview, index) => (
-                <div
-                  key={index}
-                  className="relative flex-shrink-0 w-32 h-32 rounded-2xl overflow-hidden border border-border snap-start"
-                >
-                  <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-surface-strong/80 hover:bg-surface text-foreground p-1 rounded-full transition-colors"
-                    title="Remove"
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </button>
-                  {index === 0 && previews.length > 1 && (
-                    <span className="absolute bottom-1 left-1 bg-surface-strong/80 text-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                      Cover
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* Inline Feedback */}
           {feedback && (
             <div
@@ -175,42 +108,21 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
 
           {/* Actions */}
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <div className="flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
-                title="Add images"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                </svg>
-              </button>
-              {previews.length > 0 && (
-                <span className="text-[10px] font-semibold text-gray-400">
-                  {previews.length} image{previews.length > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
+            <span className="text-[10px] font-semibold text-muted">
+              Text-only post
+            </span>
 
             <button
               onClick={handleUpload}
-              disabled={uploading || (!description.trim() && files.length === 0)}
+              disabled={posting || !description.trim()}
               className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-full transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
             >
-              {uploading ? 'Posting...' : 'Post'}
+              {posting ? 'Posting...' : 'Post'}
             </button>
           </div>
 
           {/* Live Preview */}
-          <LivePostPreview userName={userName} caption={description} imageUrls={previews} />
+          <LivePostPreview userName={userName} caption={description} imageUrls={[]} />
         </div>
       </div>
     </div>

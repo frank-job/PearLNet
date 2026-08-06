@@ -3,7 +3,6 @@
 -- Run this in your Supabase SQL Editor or via psql
 -- ============================================================
 
--- 1. USERS TABLE
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(255) NOT NULL UNIQUE,
@@ -11,6 +10,128 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- 2. PROFILES TABLE
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  username VARCHAR(255),
+  email VARCHAR(255),
+  gender VARCHAR(16) DEFAULT 'other',
+  bio TEXT DEFAULT 'Hello! I am new to Handcrafted.',
+  location TEXT DEFAULT '',
+  image_url TEXT,
+  birth_year INTEGER,
+  date_of_birth DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. POSTS TABLE
+CREATE TABLE IF NOT EXISTS posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  image_url TEXT,
+  caption TEXT,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  user_email VARCHAR(255),
+  view_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. COMMENTS TABLE
+CREATE TABLE IF NOT EXISTS comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  user_email VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. LIKES TABLE
+CREATE TABLE IF NOT EXISTS likes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(post_id, user_id)
+);
+
+-- 6. FOLLOWS TABLE
+CREATE TABLE IF NOT EXISTS follows (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  follower_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  following_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(follower_id, following_id)
+);
+
+-- 7. NOTIFICATIONS TABLE
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type VARCHAR(20) NOT NULL DEFAULT 'follow',
+  message TEXT NOT NULL,
+  link TEXT,
+  read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. POST VIEWS TABLE (deduplicate views per user / guest)
+CREATE TABLE IF NOT EXISTS post_views (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  guest_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_post_views_user
+  ON post_views(post_id, user_id) WHERE user_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_post_views_guest
+  ON post_views(post_id, guest_id) WHERE guest_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_post_views_post_id ON post_views(post_id);
+
+-- ============================================================
+-- Migrations: Add missing columns to existing tables
+-- ============================================================
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'posts' AND column_name = 'view_count'
+  ) THEN
+    ALTER TABLE posts ADD COLUMN view_count INTEGER DEFAULT 0;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'posts' AND column_name = 'image_url' AND is_nullable = 'NO'
+  ) THEN
+    ALTER TABLE posts ALTER COLUMN image_url DROP NOT NULL;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'notifications' AND column_name = 'link'
+  ) THEN
+    ALTER TABLE notifications ADD COLUMN link TEXT;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'posts' AND column_name = 'images'
+  ) THEN
+    ALTER TABLE posts ADD COLUMN images JSONB DEFAULT '[]'::jsonb;
+  END IF;
+END $$;
 
 -- 2. PROFILES TABLE
 CREATE TABLE IF NOT EXISTS profiles (

@@ -12,7 +12,7 @@ RAT is a full-stack social feed application built with **Next.js 16 (App Router)
 - **For You / Following tabs** — browse posts from everyone or only from people you follow
 - **Randomized post order** — the feed shuffles posts so every refresh feels fresh
 - **Infinite scroll pagination** — 30 posts load at a time with a "Load more posts" button and de-duplication by post ID
-- **Post creation** — attach an image (base64, preview included) and/or a caption
+- **Post creation** — currently **text-only** posts (image upload is disabled until a valid `BLOB_READ_WRITE_TOKEN` is configured)
 - **Image feed** — visual grid of image posts
 
 ### ❤️ Engagement
@@ -141,6 +141,9 @@ NEWS_API_KEY=your_newsapi_key_here
 
 # Optional: Neon database URL (if using Neon via utils/db)
 DATABASE_URL=postgres://...
+
+# Vercel Blob (REQUIRED only if you re-enable image uploads)
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxx
 ```
 
 ### 4. Initialize the database
@@ -151,8 +154,15 @@ You can also hit the **init-db** or **seed** endpoints after booting the app:
 
 ```bash
 # Start the dev server first, then:
+curl http://localhost:3000/api/init-db        # runs the full schema + migrations
 curl -X POST http://localhost:3000/api/posts/seed   # non-destructive, idempotent
 ```
+
+> **If you get `column "images" of relation "posts" does not exist`:** your `posts` table is missing the `images` column that the app reads. Run the ready-made migration `app/lib/db/migrate-images.sql` once against your database (or hit `GET /api/init-db`). The core statement is:
+>
+> ```sql
+> ALTER TABLE posts ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
+> ```
 
 ### 5. Run the dev server
 
