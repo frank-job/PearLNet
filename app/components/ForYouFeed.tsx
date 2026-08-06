@@ -18,37 +18,19 @@ export default function ForYouFeed() {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
-// Load posts incrementally: fetch the first 2 posts fast, then
-// fetch the rest in the background so the page paints quickly.
+// Load a single, bounded page of posts. The server applies a default
+// LIMIT (see action.ts), so we never request the entire table in one go.
+// This removes the previous duplicate fetches that re-downloaded every
+// post's base64 image bytes twice on every mount.
 useEffect(() => {
     let cancelled = false;
 
-    // Fast first paint: newest 2 posts.
-    fetch('/api/posts?limit=2')
+    fetch('/api/posts?limit=20')
       .then((res) => res.json())
       .then((json) => {
         if (cancelled) return;
-        if (json.data && json.data.length > 0) setPosts(json.data);
-      })
-      .catch(() => {
-        if (!cancelled) console.error('Failed to fetch first posts');
-      });
-
-    // Background: load the rest, then merge without duplicates.
-    fetch('/api/posts')
-      .then((res) => res.json())
-      .then((json) => {
-        if (cancelled) return;
-        if (json.data) {
-          setPosts((prev) => {
-            const seen = new Set(prev.map((p) => p.id));
-            const merged = [...prev];
-            json.data.forEach((p: Post) => {
-              if (!seen.has(p.id)) merged.push(p);
-            });
-            return merged;
-          });
-        } else if (json.error) console.error(json.error);
+        if (json.data) setPosts(json.data);
+        else if (json.error) console.error(json.error);
       })
       .catch(() => {
         if (!cancelled) console.error('Failed to fetch posts');

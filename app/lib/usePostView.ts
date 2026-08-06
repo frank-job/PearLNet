@@ -19,6 +19,17 @@ export function usePostView(postId: string, onView?: () => void) {
   const ref = useRef<HTMLDivElement | null>(null);
   const countedRef = useRef(false);
 
+// Keep the latest callback in a ref so the effect does NOT re-run
+  // every render simply because a new `onView` function identity is
+  // created by the parent (which would otherwise trigger a feedback
+  // loop: setState -> re-render -> new callback -> effect re-runs).
+  const onViewRef = useRef(onView);
+
+  useEffect(() => {
+    // Update the ref whenever the callback identity changes.
+    onViewRef.current = onView;
+  }, [onView]);
+
   useEffect(() => {
     const el = ref.current;
     if (!el || countedRef.current) return;
@@ -32,7 +43,7 @@ export function usePostView(postId: string, onView?: () => void) {
       // Fire-and-forget async request; failures are non-critical.
       fetch(`/api/posts/${postId}/view`, { method: 'POST' }).catch(() => {});
       // Let the caller optimistically bump the local eye-count.
-      onView?.();
+      onViewRef.current?.();
     };
 
     if (typeof IntersectionObserver === 'undefined') {
@@ -59,7 +70,8 @@ export function usePostView(postId: string, onView?: () => void) {
     return () => {
       observer?.disconnect();
     };
-  }, [postId, onView]);
+    // Intentionally NOT depending on `onView` — we use a ref instead.
+  }, [postId]);
 
   return ref;
 }

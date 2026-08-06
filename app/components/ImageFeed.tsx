@@ -7,8 +7,9 @@ export default function ImageFeed() {
   const [images, setImages] = useState<Post[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  const fetchPosts = async () => {
-    const res = await fetch('/api/posts');
+const fetchPosts = async () => {
+    // Bounded page of posts (server applies a default LIMIT).
+    const res = await fetch('/api/posts?limit=20');
     const json = await res.json();
     if (json.data) setImages(json.data);
   };
@@ -16,7 +17,7 @@ export default function ImageFeed() {
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      const res = await fetch('/api/posts');
+      const res = await fetch('/api/posts?limit=20');
       const json = await res.json();
       if (!mounted) return;
       if (json.data) setImages(json.data);

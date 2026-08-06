@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline';
 import ImageCard from './imageC';
 import Description from './description';
@@ -131,14 +131,22 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
     setViewCounts((prev) => ({ ...prev, ...initial }));
   }, [posts]);
 
-  const toggleComments = (postId: string) => {
-    setExpandedPostId(expandedPostId === postId ? null : postId);
-  };
+const toggleComments = useCallback((postId: string) => {
+    setExpandedPostId((prevId) => (prevId === postId ? null : postId));
+  }, []);
 
   // Optimistically bump the local eye-count when a post becomes visible.
-  const bumpView = (postId: string) => {
+  // Wrapped in useCallback so the `onView` prop identity stays stable across
+  // renders. This prevents `usePostView`'s effect from re-running and avoids
+  // a setState -> re-render -> new-callback feedback loop.
+  const bumpView = useCallback((postId: string) => {
     setViewCounts((prev) => ({ ...prev, [postId]: (prev[postId] ?? 0) + 1 }));
-  };
+  }, []);
+
+  const handleView = useCallback(
+    (postId: string) => () => bumpView(postId),
+    [bumpView],
+  );
 
 return (
     <div className="space-y-6">
@@ -148,8 +156,8 @@ return (
           post={post}
           viewCount={viewCounts[post.id] ?? post.view_count ?? 0}
           expanded={expandedPostId === post.id}
-          onToggleComments={() => toggleComments(post.id)}
-          onView={() => bumpView(post.id)}
+onToggleComments={() => toggleComments(post.id)}
+          onView={handleView(post.id)}
         />
       ))}
     </div>

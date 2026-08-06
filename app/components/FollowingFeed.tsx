@@ -15,36 +15,18 @@ export default function FollowingFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-// Load following posts incrementally: fetch first 2 fast, then the rest in background.
+// Load a single, bounded page of following posts. The server applies a
+// default LIMIT (see action.ts), so we never request the entire table at
+// once. This removes the previous duplicate fetches on mount.
   useEffect(() => {
     let cancelled = false;
 
-    // Fast first paint: newest 2 following posts.
-    fetch('/api/posts?type=following&limit=2')
+    fetch('/api/posts?type=following&limit=20')
       .then((res) => res.json())
       .then((json) => {
         if (cancelled) return;
-        if (json.data && json.data.length > 0) setPosts(json.data);
-      })
-      .catch(() => {
-        if (!cancelled) console.error('Failed to fetch following posts');
-      });
-
-    // Background: load the rest, then merge without duplicates.
-    fetch('/api/posts?type=following')
-      .then((res) => res.json())
-      .then((json) => {
-        if (cancelled) return;
-        if (json.data) {
-          setPosts((prev) => {
-            const seen = new Set(prev.map((p) => p.id));
-            const merged = [...prev];
-            json.data.forEach((p: Post) => {
-              if (!seen.has(p.id)) merged.push(p);
-            });
-            return merged;
-          });
-        } else if (json.error) console.error(json.error);
+        if (json.data) setPosts(json.data);
+        else if (json.error) console.error(json.error);
       })
       .catch(() => {
         if (!cancelled) console.error('Failed to fetch following posts');

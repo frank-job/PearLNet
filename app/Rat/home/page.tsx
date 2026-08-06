@@ -41,7 +41,8 @@ export default async function RatHomePage() {
             <div className="flex items-center gap-3">
               <RatLogo size="md" />
               <h1 className="text-blue-600 font-extrabold text-2xl tracking-widest">
-                R A T
+                {/* R A T */}
+                Triangle
               </h1>
             </div>
 

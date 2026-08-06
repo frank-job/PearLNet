@@ -1,6 +1,7 @@
 'use server';
 
 import { sql } from '@vercel/postgres';
+import { put } from '@vercel/blob';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
@@ -219,40 +220,35 @@ function isMissingImagesColumn(err: unknown): boolean {
   return lower.includes('images') && lower.includes('does not exist');
 }
 
+// Default page size to prevent a single request from dumping every post
+// (and every post's base64 image bytes) across the network. This is a key
+// fix for the excessive Vercel/Neon network transfer.
+const DEFAULT_POST_LIMIT = 20;
+const MAX_POST_LIMIT = 100;
+
 export async function fetchPosts(
   limit?: number,
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
+  const safeLimit = Math.min(Math.max(limit ?? DEFAULT_POST_LIMIT, 1), MAX_POST_LIMIT);
   try {
-const result = limit
-      ? await sql<Post>`
-          SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
-          FROM posts
-          ORDER BY created_at DESC
-          LIMIT ${limit} OFFSET ${offset}
-        `
-      : await sql<Post>`
-          SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
-          FROM posts
-          ORDER BY created_at DESC
-        `;
+    const result = await sql<Post>`
+        SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
+        FROM posts
+        ORDER BY created_at DESC
+        LIMIT ${safeLimit} OFFSET ${offset}
+      `;
     return { data: result.rows };
   } catch (err) {
     // Fall back gracefully if the `images` migration hasn't been applied yet.
-    if (isMissingImagesColumn(err)) {
+if (isMissingImagesColumn(err)) {
       try {
-const result = limit
-          ? await sql<Post>`
-              SELECT id, image_url, caption, created_at, user_id, user_email, view_count
-              FROM posts
-              ORDER BY created_at DESC
-              LIMIT ${limit} OFFSET ${offset}
-            `
-          : await sql<Post>`
-              SELECT id, image_url, caption, created_at, user_id, user_email, view_count
-              FROM posts
-              ORDER BY created_at DESC
-            `;
+        const result = await sql<Post>`
+          SELECT id, image_url, caption, created_at, user_id, user_email, view_count
+          FROM posts
+          ORDER BY created_at DESC
+          LIMIT ${safeLimit} OFFSET ${offset}
+        `;
         return { data: result.rows };
       } catch (err2) {
         return { error: err2 instanceof Error ? err2.message : 'Failed to fetch posts' };
@@ -267,50 +263,53 @@ export async function fetchFollowingPosts(
   limit?: number,
   offset = 0,
 ): Promise<ActionResult<Post[]>> {
+  const safeLimit = Math.min(Math.max(limit ?? DEFAULT_POST_LIMIT, 1), MAX_POST_LIMIT);
   try {
-const result = limit
-      ? await sql<Post>`
-          SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
-          FROM posts p
-          INNER JOIN follows f ON p.user_id = f.following_id
-          WHERE f.follower_id = ${userId}
-          ORDER BY p.created_at DESC
-          LIMIT ${limit} OFFSET ${offset}
-        `
-      : await sql<Post>`
-          SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
-          FROM posts p
-          INNER JOIN follows f ON p.user_id = f.following_id
-          WHERE f.follower_id = ${userId}
-          ORDER BY p.created_at DESC
-        `;
+    const result = await sql<Post>`
+        SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+        FROM posts p
+        INNER JOIN follows f ON p.user_id = f.following_id
+        WHERE f.follower_id = ${userId}
+        ORDER BY p.created_at DESC
+        LIMIT ${safeLimit} OFFSET ${offset}
+      `;
     return { data: result.rows };
   } catch (err) {
     // Fall back gracefully if the `images` migration hasn't been applied yet.
     if (isMissingImagesColumn(err)) {
       try {
-const result = limit
-          ? await sql<Post>`
-              SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
-              FROM posts p
-              INNER JOIN follows f ON p.user_id = f.following_id
-              WHERE f.follower_id = ${userId}
-              ORDER BY p.created_at DESC
-              LIMIT ${limit} OFFSET ${offset}
-            `
-          : await sql<Post>`
-              SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
-              FROM posts p
-              INNER JOIN follows f ON p.user_id = f.following_id
-              WHERE f.follower_id = ${userId}
-              ORDER BY p.created_at DESC
-            `;
+        const result = await sql<Post>`
+          SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+          FROM posts p
+          INNER JOIN follows f ON p.user_id = f.following_id
+          WHERE f.follower_id = ${userId}
+          ORDER BY p.created_at DESC
+          LIMIT ${safeLimit} OFFSET ${offset}
+        `;
         return { data: result.rows };
       } catch (err2) {
         return { error: err2 instanceof Error ? err2.message : 'Failed to fetch following posts' };
       }
     }
     return { error: err instanceof Error ? err.message : 'Failed to fetch following posts' };
+  }
+}
+
+// Convert a base64 data-URL (e.g. "data:image/png;base64,....") into a
+// Blob so it can be uploaded to Vercel Blob. Returns null if malformed.
+function base64DataUrlToBlob(dataUrl: string): Blob | null {
+  try {
+    const commaIndex = dataUrl.indexOf(',');
+    if (commaIndex === -1) return null;
+    const header = dataUrl.slice(0, commaIndex);
+    const b64 = dataUrl.slice(commaIndex + 1);
+    const mimeMatch = /^data:([^;,]+);base64$/.exec(header);
+    if (!mimeMatch) return null;
+    const mime = mimeMatch[1];
+    const binary = Buffer.from(b64, 'base64');
+    return new Blob([new Uint8Array(binary)], { type: mime });
+  } catch {
+    return null;
   }
 }
 
@@ -342,8 +341,26 @@ const caption = sanitize(String(formData.get('caption') ?? '')).trim();
   }
 
   try {
-    const firstImage = images[0] ?? null;
-    const imagesJson = images.length > 0 ? JSON.stringify(images) : null;
+    // ============================================================
+    // Upload images to Vercel Blob, storing ONLY the resulting URLs
+    // in Neon. This stops base64 image bytes from being stored in /
+    // transferred through the database (the root cause of the Vercel
+    // network-transfer limit and the Neon data-transfer quota).
+    // ============================================================
+    const uploadedUrls: string[] = [];
+    for (const dataUrl of images) {
+      const blob = base64DataUrlToBlob(dataUrl);
+      if (!blob) continue;
+      const ext = (blob.type.split('/')[1] || 'bin').replace(/[^a-z0-9]/gi, '');
+      const pathname = `posts/${session.userId}/${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}.${ext}`;
+      const { url } = await put(pathname, blob, { access: 'public' });
+      uploadedUrls.push(url);
+    }
+
+    const firstImage = uploadedUrls[0] ?? null;
+    const imagesJson = uploadedUrls.length > 0 ? JSON.stringify(uploadedUrls) : null;
     await sql`
       INSERT INTO posts (image_url, images, caption, user_id, user_email)
       VALUES (${firstImage}, ${imagesJson}, ${caption}, ${session.userId}, ${session.email})
