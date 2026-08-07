@@ -25,6 +25,7 @@ export default function SignupPage() {
               Log in here
             </Link>
           </p>
+          <p className="text-blue-700">sign up with Google</p>
         </div>
       </div>
     </main>
