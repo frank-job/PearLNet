@@ -10,6 +10,7 @@ import {
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   NewspaperIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 // ============================================================
@@ -82,6 +83,15 @@ const handleLogout = async () => {
           >
             <NewspaperIcon className="w-5 h-5 text-blue-600" />
             News
+          </Link>
+
+          <Link
+            href="/Rat/dev"
+            onClick={() => setOpen(false)}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-strong transition-colors"
+          >
+            <SparklesIcon className="w-5 h-5 text-purple-600" />
+            Dev Panel
           </Link>
 <div className="flex items-center justify-between px-4 py-2.5">
             <span className="text-sm font-medium text-foreground">Theme</span>
