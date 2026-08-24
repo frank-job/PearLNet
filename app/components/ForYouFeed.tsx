@@ -6,7 +6,7 @@ import PostSkeleton from './PostSkeleton';
 import type { Post } from '@/app/lib/definitions';
 
 const INITIAL_LIMIT = 5;
-const LOAD_MORE_LIMIT = 5;
+const LOAD_MORE_LIMIT = 10;
 
 export default function ForYouFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
