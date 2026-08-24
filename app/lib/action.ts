@@ -239,7 +239,7 @@ const email = sanitize(String(formData.get('email') ?? '')).trim().toLowerCase()
   }
 
   await setSession(user.id, email);
-  redirect('/Rat');
+  redirect('/PearlNett');
 }
 
 export async function logout() {
