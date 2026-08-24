@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Comment } from '@/app/lib/definitions';
@@ -114,7 +114,7 @@ export default function CommentSection({ postId }: { postId: string }) {
 <div>
                 {comment.user_id ? (
                   <Link
-                    href={`/Rat/account?id=${comment.user_id}`}
+                    href={`/PearLNet/account?id=${comment.user_id}`}
                     className="text-xs font-semibold text-blue-600 hover:underline"
                   >
                     {comment.user_email?.split('@')[0] ?? comment.user_id?.slice(0, 8)}
@@ -182,4 +182,5 @@ export default function CommentSection({ postId }: { postId: string }) {
     </div>
   );
 }
+
 

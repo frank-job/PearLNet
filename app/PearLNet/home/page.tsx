@@ -1,4 +1,4 @@
-import NavBar from '../../ui/nav/NavBarr';
+// import NavBar from '../../ui/nav/NavBarr';
 import MainFeed from '@/app/components/main';
 import Greetings from '@/app/ui/Greetings';
 // import DynamicTagline from '@/app/components/DynamicTagline';
@@ -6,7 +6,6 @@ import SearchBox from '@/app/components/SearchBox';
 import SuggestedUsers from '@/app/components/SuggestedUsers';
 
 import { getCurrentUser, getProfile } from '@/app/lib/action';
-import SettingsMenu from '@/app/components/SettingsMenu';
 import RatLogo from '@/app/ui/RatLogo';
 // ============================================================
 // Rat Home Page
@@ -34,25 +33,25 @@ export default async function RatHomePage() {
   }
 
   return (
+    <>
     <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
-<header className="px-4 pb-4 pt-5 border-b border-gray-200">
+<header className="">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <RatLogo size="md" />
-              <h1 className="text-blue-600 font-extrabold text-2xl tracking-widest">
+              {/* <RatLogo size="md" /> */}
+              {/* <h1 className="text-blue-600 font-extrabold text-2xl tracking-widest"> */}
                 {/* R A T */}
-                Triangle
-              </h1>
+                {/* PearLNet */}
+              {/* </h1> */}
             </div>
 
 <div className="flex items-center gap-2">
               {/* <DynamicTagline /> */}
-              <SettingsMenu />
             </div>
           </div>
           <div className="mt-3">
-            <SearchBox />
+            {/* <SearchBox /> */}
           </div>
         </header>
         <Greetings userName={displayName} />
@@ -62,12 +61,12 @@ export default async function RatHomePage() {
             <MainFeed />
           </div>
           <aside className="hidden lg:block">
-            <SuggestedUsers />
+            {/* <SuggestedUsers /> */}
           </aside>
         </div>
       </div>
 
-      <NavBar />
-    </main>
+      </main>
+      </>
   );
 }

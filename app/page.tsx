@@ -9,7 +9,7 @@ export default function WelcomePage() {
         <div className="flex flex-col items-center text-center">
           <RatLogo size="lg" />
           <h1 className="mt-4 text-3xl font-extrabold text-blue-600 tracking-widest">
-            R A T
+            PearLNet 
           </h1>
           <p className="mt-2 text-sm text-muted">
             Your premium social network. Connect, share, and discover.

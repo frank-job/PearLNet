@@ -17,7 +17,7 @@ export default function TermsPage() {
         </h1>
         <div className="space-y-4 text-sm leading-relaxed">
           <p>
-            Welcome to Rat! These Terms of Service govern your use of our
+            Welcome to <span className='text-4xl text-blue-600 font-mono italic'>PearlNet</span> These Terms of Service govern your use of our
             application. By creating an account, you agree to abide by these
             terms.
           </p>

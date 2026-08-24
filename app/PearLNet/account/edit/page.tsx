@@ -1,8 +1,7 @@
-'use client';
+﻿'use client';
 
 import { redirect } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import NavBar from '../../../ui/nav/NavBarr';
 import { getCurrentUser, getProfile, updateProfile } from '@/app/lib/action';
 import type { ProfileData } from '@/app/lib/definitions';
 import { useActionState } from 'react';
@@ -47,7 +46,7 @@ export default function EditProfilePage() {
           R A T
         </h1>
         <Link
-          href="/Rat/account"
+          href="/PearLNet/account"
           className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
         >
           Back to profile
@@ -167,7 +166,6 @@ export default function EditProfilePage() {
         </div>
       </div>
 
-      <NavBar />
     </main>
   );
 }

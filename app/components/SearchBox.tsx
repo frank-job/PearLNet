@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
@@ -106,7 +106,7 @@ export default function SearchBox() {
                   {users.map((user) => (
                     <Link
                       key={user.user_id}
-                      href={`/Rat/account?id=${user.user_id}`}
+                      href={`/PearLNet/account?id=${user.user_id}`}
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors"
                     >
@@ -139,7 +139,7 @@ export default function SearchBox() {
                   {posts.map((post) => (
                     <Link
                       key={post.id}
-                      href="/Rat/home"
+                      href="/PearLNet/home"
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors"
                     >
@@ -167,4 +167,5 @@ export default function SearchBox() {
     </div>
   );
 }
+
 

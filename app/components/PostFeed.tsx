@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline';
 import ImageCard from './imageC';
@@ -50,14 +50,14 @@ function PostCard({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <a
-              href={post.user_id ? `/Rat/account?id=${post.user_id}` : undefined}
+              href={post.user_id ? `/PearLNet/account?id=${post.user_id}` : undefined}
               className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold uppercase"
             >
               {post.user_email ? post.user_email[0] : '?'}
             </a>
             <div>
               <a
-                href={post.user_id ? `/Rat/account?id=${post.user_id}` : undefined}
+                href={post.user_id ? `/PearLNet/account?id=${post.user_id}` : undefined}
                 className="text-sm font-semibold text-foreground hover:text-blue-600 transition-colors"
               >
                 {post.user_email ? post.user_email.split('@')[0] : 'Anonymous'}
@@ -115,7 +115,7 @@ function PostCard({
 
 export default function PostFeed({ posts }: { posts: Post[] }) {
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-  // Local view counts so the 👁 number updates live.
+  // Local view counts so the ðŸ‘ number updates live.
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
   const initialCountsRef = useRef<Record<string, number>>({});
 
@@ -163,3 +163,4 @@ onToggleComments={() => toggleComments(post.id)}
     </div>
   );
 }
+

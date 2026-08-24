@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { UserPlusIcon } from '@heroicons/react/24/outline';
@@ -94,7 +94,7 @@ export default function SuggestedUsers() {
             return (
               <div key={user.user_id} className="flex items-center justify-between gap-2">
                 <Link
-                  href={`/Rat/account?id=${user.user_id}`}
+                  href={`/PearLNet/account?id=${user.user_id}`}
                   className="flex items-center gap-3 min-w-0"
                 >
                   {user.image_url ? (
@@ -133,3 +133,4 @@ export default function SuggestedUsers() {
     </div>
   );
 }
+

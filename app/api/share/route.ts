@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getSession, getSessionDisplayName } from '@/app/lib/action';
 import { createNotificationAction } from '@/app/lib/action';
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       postAuthorId,
       'share',
       `${displayName} shared your post`,
-      `/Rat/home`,
+      `/PearLNet/home`,
     );
 
     return NextResponse.json({ success: true });
@@ -41,3 +41,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

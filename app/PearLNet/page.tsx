@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,7 @@ export default function RatRedirectPage() {
   useEffect(() => {
     // 1. Wait for 2.5 seconds to show the cool animation
     const timer = setTimeout(() => {
-      router.push('/Rat/home');
+      router.push('/PearLNet/home');
     }, 2500);
 
     return () => clearTimeout(timer);
@@ -67,7 +67,7 @@ export default function RatRedirectPage() {
           className="text-center"
         >
           <h1 className="text-4xl font-black text-black tracking-tighter uppercase">
-            R A T
+            PearlNet
           </h1>
           <div className="mt-4 flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce"></span>
@@ -75,7 +75,7 @@ export default function RatRedirectPage() {
             <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
           </div>
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-6">
-            Welcome  to <span className="text-blue-600"> R A T</span>
+            Welcome  to <span className="text-blue-600"> PearlNet</span>
           </p>
         </motion.div>
       </div>

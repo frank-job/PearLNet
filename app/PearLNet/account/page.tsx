@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation';
+﻿import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import NavBar from '../../ui/nav/NavBarr';
 import LogoutButton from '@/app/components/LogoutButton';
 import AccountTabs from '@/app/components/AccountTabs';
 import FollowButton from '@/app/components/FollowButton';
@@ -102,7 +101,7 @@ export default async function AccountPage({
             {(profile?.birth_year || profile?.date_of_birth) && (
               <p className="text-xs text-gray-400 mt-1">
                 {profile.birth_year ?? ''}
-                {profile.birth_year && profile.date_of_birth ? ' • ' : ''}
+                {profile.birth_year && profile.date_of_birth ? ' â€¢ ' : ''}
                 {profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : ''}
               </p>
             )}
@@ -116,7 +115,7 @@ export default async function AccountPage({
             {isOwnProfile ? (
               <>
                 <a
-                  href="/Rat/account/edit"
+                  href="/PearLNet/account/edit"
                   className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-colors"
                 >
                   Edit profile
@@ -127,7 +126,7 @@ export default async function AccountPage({
               <>
                 <FollowButton authorId={viewUserId} />
                 <Link
-                  href="/Rat/account"
+                  href="/PearLNet/account"
                   className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors"
                 >
                   Your profile
@@ -160,7 +159,7 @@ export default async function AccountPage({
         isOwnProfile={isOwnProfile}
       />
 
-      <NavBar />
     </main>
   );
 }
+

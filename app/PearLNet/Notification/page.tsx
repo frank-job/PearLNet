@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import NavBar from '../../ui/nav/NavBarr';
 import NotificationList from '@/app/components/NotificationList';
 import { getCurrentUser } from '@/app/lib/action';
 
@@ -18,7 +17,6 @@ export default async function NotificationPage() {
   return (
     <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
       <NotificationList />
-      <NavBar />
     </main>
   );
 }

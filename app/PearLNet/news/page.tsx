@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import NavBar from '../../ui/nav/NavBarr';
 import NewsApi from '@/app/components/news';
 import NewspaperIcon from '@heroicons/react/24/outline/NewspaperIcon';
 import ThemeToggle from '@/app/ui/theme/ThemeToggle';
@@ -37,7 +36,6 @@ export default function NewsPage() {
         </div>
       </div>
 
-      <NavBar />
     </main>
   );
 }

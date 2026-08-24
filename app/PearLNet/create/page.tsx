@@ -1,6 +1,5 @@
 'use client';
 
-import NavBar from '../../ui/nav/NavBarr';
 import CreatePost from '@/app/components/CreatePost';
 
 // ============================================================
@@ -26,7 +25,6 @@ export default function CreatePostPage() {
           <CreatePost onPostCreated={() => {}} />
         </div>
 
-        <NavBar />
       </main>
     </>
   );

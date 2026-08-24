@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline';
@@ -58,7 +58,7 @@ export default function FollowButton({ authorId }: { authorId: string }) {
               userId: authorId,
               type: 'follow',
               message: `${currentUserDisplayName} started following you`,
-              link: `/Rat/account`,
+              link: `/PearLNet/account`,
             }),
           });
         }
@@ -104,4 +104,5 @@ export default function FollowButton({ authorId }: { authorId: string }) {
     </div>
   );
 }
+
 

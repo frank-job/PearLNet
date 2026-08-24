@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 /* ============================================================
    NewsSearch Component
    - Search box for the news page
-   - On submit, navigates to /Rat/news?q=<keyword> so the news
+   - On submit, navigates to /PearLNet/news?q=<keyword> so the news
      feed searches for that topic
    ============================================================ */
 
@@ -19,7 +19,7 @@ export default function NewsSearch() {
     e.preventDefault();
     const q = query.trim();
     if (!q) return;
-    router.push(`/Rat/news?q=${encodeURIComponent(q)}`);
+    router.push(`/PearLNet/news?q=${encodeURIComponent(q)}`);
     setQuery('');
   };
 
@@ -38,4 +38,5 @@ export default function NewsSearch() {
     </form>
   );
 }
+
 

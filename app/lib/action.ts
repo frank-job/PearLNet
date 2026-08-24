@@ -1,10 +1,11 @@
-'use server';
+﻿"use server";
 
 import { sql } from '@vercel/postgres';
 import { put } from '@vercel/blob';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
+import crypto from 'crypto';
 import type { Post, Comment, ProfileData, Notification, UserListItem } from '@/app/lib/definitions';
 
 // ============================================================
@@ -22,15 +23,45 @@ type ActionResult<T> = { data: T } | { error: string };
 // ============================================================
 
 const SESSION_COOKIE = 'rat_session';
+const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 1 week
+
+function signPayload(payload: string): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) return payload; // dev fallback: unsigned
+  const sig = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  return `${payload}.${sig}`;
+}
+
+function verifySignedPayload(signed: string): string | null {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) return signed; // dev fallback
+  const idx = signed.lastIndexOf('.');
+  if (idx === -1) return null;
+  const payload = signed.slice(0, idx);
+  const sig = signed.slice(idx + 1);
+  const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  try {
+    if (crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+      return payload;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 export async function setSession(userId: string, email: string) {
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, JSON.stringify({ userId, email }), {
+  const expiresAt = Date.now() + SESSION_TTL_SECONDS * 1000;
+  const payloadObj = { userId, email, exp: expiresAt };
+  const payload = Buffer.from(JSON.stringify(payloadObj)).toString('base64');
+  const signed = signPayload(payload);
+  cookieStore.set(SESSION_COOKIE, signed, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 1 week
+    maxAge: SESSION_TTL_SECONDS,
   });
 }
 
@@ -38,8 +69,14 @@ export async function getSession(): Promise<{ userId: string; email: string } | 
   const cookieStore = await cookies();
   const session = cookieStore.get(SESSION_COOKIE);
   if (!session?.value) return null;
+  const raw = session.value;
+  const verified = verifySignedPayload(raw);
+  if (!verified) return null;
   try {
-    return JSON.parse(session.value);
+    const decoded = Buffer.from(verified, 'base64').toString('utf8');
+    const obj = JSON.parse(decoded) as { userId: string; email: string; exp?: number };
+    if (obj.exp && Date.now() > obj.exp) return null;
+    return { userId: obj.userId, email: obj.email };
   } catch {
     return null;
   }
@@ -391,7 +428,7 @@ export async function toggleLikeAction(postId: string): Promise<ActionError | { 
         authorId,
         'like',
         `${displayName} liked your post`,
-        `/Rat/home`,
+        `/PearLNet/home`,
       );
     }
 
@@ -454,12 +491,12 @@ export async function addCommentAction(postId: string, content: string): Promise
     if (authorId && authorId !== session.userId) {
       const displayName = await getSessionDisplayName();
       const snippet = cleanContent;
-      const preview = snippet.length > 40 ? `${snippet.slice(0, 40)}…` : snippet;
+      const preview = snippet.length > 40 ? `${snippet.slice(0, 40)}â€¦` : snippet;
       await createNotificationAction(
         authorId,
         'comment',
         `${displayName} commented: "${preview}"`,
-        `/Rat/home`,
+        `/PearLNet/home`,
       );
     }
   } catch (err) {
@@ -895,4 +932,5 @@ export async function fetchSuggestedUsers(
     return { error: err instanceof Error ? err.message : 'Failed to fetch suggestions' };
   }
 }
+
 

@@ -1,19 +1,14 @@
 // // Rat Logo
-// export default function RatLogo() {
-//     return (
-//         <>
-//             <div className="bg-blue-600 w-25 rounded-2xl h-20 sticky flex border-20 border-r-blue-600">
-//                <p className="text-white py-3  rounded-2xl  text-center uppercase shadow-blue-500  flex px-3"> RAT </p>
-//             </div>
-//         </>
-//     )
-// }
 
 
 
 'use client';
 
 import React from 'react';
+
+
+
+
 
 interface RatLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -60,7 +55,7 @@ export default function RatLogo({ size = 'md', className = "" }: RatLogoProps) {
         </svg>
 
         {/* LOGO TEXT OVERLAY (Centered inside the triangle) */}
-        <div className="absolute inset-0 flex items-center justify-center pt-4">
+        {/* <div className=" flex items-center justify-center pt-4">
           <span className={`
             font-black text-white tracking-tighter uppercase
             ${size === 'sm' ? 'text-[8px]' : ''}
@@ -68,17 +63,24 @@ export default function RatLogo({ size = 'md', className = "" }: RatLogoProps) {
             ${size === 'lg' ? 'text-[24px]' : ''}
             ${size === 'xl' ? 'text-[32px]' : ''}
           `}>
-            {/* Nexel */}
+       
           </span>
-        </div>
+        </div> */}
+
+
       </div>
+      <div className="text-5xl font-mono italic tracking-tight text-gray-900">
+  Pearl<span className="text-blue-600">Net</span>
+</div>
+
+          
 
       {/* Optional Tagline (Only for Large sizes) */}
-      {(size === 'lg' || size === 'xl') && (
+      {/* {(size === 'lg' || size === 'xl') && (
         <span className="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.4em] animate-pulse">
           Premium Network
-        </span>
-      )}
+        </span> */}
+      {/* )} */}
     </div>
   );
 }
