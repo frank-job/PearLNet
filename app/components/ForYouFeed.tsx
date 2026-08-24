@@ -14,19 +14,7 @@ export default function ForYouFeed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
-    if (loadingMore) return;
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore && !loadingMore) {
-        handleLoadMore();
-      }
-    });
-
-    if (node) observerRef.current.observe(node);
-  }, [loadingMore, hasMore]);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const fetchPosts = useCallback(
     async (limit: number, excludeIds: string[] = []) => {
@@ -71,8 +59,8 @@ export default function ForYouFeed() {
     setRefreshKey((k) => k + 1);
   };
 
-  const handleLoadMore = async () => {
-    if (loadingMore) return;
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
     setLoadingMore(true);
 
     const excludeIds = posts.map((p) => p.id);
@@ -86,7 +74,19 @@ export default function ForYouFeed() {
     }
 
     setLoadingMore(false);
-  };
+  }, [fetchPosts, hasMore, loadingMore, posts]);
+
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || !hasMore) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) void handleLoadMore();
+    }, { rootMargin: '600px 0px' });
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [handleLoadMore, hasMore]);
 
   return (
     <div className="max-w-2xl mx-auto">
