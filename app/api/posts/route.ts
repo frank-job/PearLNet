@@ -7,16 +7,20 @@ export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get('type');
   const limitRaw = request.nextUrl.searchParams.get('limit');
   const offsetRaw = request.nextUrl.searchParams.get('offset');
-  // When no limit is provided, fetch ALL posts (limitless, like TikTok).
+  const randomRaw = request.nextUrl.searchParams.get('random');
+  const excludeRaw = request.nextUrl.searchParams.get('exclude');
+
   const limit = limitRaw ? Number(limitRaw) : undefined;
   const offset = offsetRaw ? Number(offsetRaw) : 0;
+  const random = randomRaw === '1' || randomRaw === 'true';
+  const excludeIds = excludeRaw ? excludeRaw.split(',').filter(Boolean) : [];
 
   if (type === 'following' && session) {
     const result = await fetchFollowingPosts(session.userId, limit, offset);
     return NextResponse.json(result);
   }
 
-  const result = await fetchPosts(limit, offset);
+  const result = await fetchPosts(limit, offset, random, excludeIds);
   return NextResponse.json(result);
 }
 

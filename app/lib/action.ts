@@ -266,26 +266,47 @@ const MAX_POST_LIMIT = 100;
 export async function fetchPosts(
   limit?: number,
   offset = 0,
+  random = false,
+  excludeIds: string[] = [],
 ): Promise<ActionResult<Post[]>> {
   const safeLimit = Math.min(Math.max(limit ?? DEFAULT_POST_LIMIT, 1), MAX_POST_LIMIT);
+  const hasExclusions = excludeIds.length > 0;
+
+  const baseSelect = `
+    SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
+    FROM posts
+  `;
+
+  const orderClause = random ? 'ORDER BY random()' : 'ORDER BY created_at DESC';
+
   try {
-    const result = await sql<Post>`
-        SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
-        FROM posts
-        ORDER BY created_at DESC
-        LIMIT ${safeLimit} OFFSET ${offset}
-      `;
+    if (hasExclusions) {
+      const placeholders = excludeIds.map((_, i) => `$${i + 1}`).join(', ');
+      const query = `${baseSelect} WHERE id::text <> ALL(ARRAY[${placeholders}]::text[]) ${orderClause} LIMIT $${excludeIds.length + 1} OFFSET $${excludeIds.length + 2}`;
+      const result = await sql.query<Post>(query, [...excludeIds, safeLimit, offset]);
+      return { data: result.rows };
+    }
+
+    const query = `${baseSelect} ${orderClause} LIMIT $1 OFFSET $2`;
+    const result = await sql.query<Post>(query, [safeLimit, offset]);
     return { data: result.rows };
   } catch (err) {
-    // Fall back gracefully if the `images` migration hasn't been applied yet.
-if (isMissingImagesColumn(err)) {
+    if (isMissingImagesColumn(err)) {
       try {
-        const result = await sql<Post>`
+        const fallbackSelect = `
           SELECT id, image_url, caption, created_at, user_id, user_email, view_count
           FROM posts
-          ORDER BY created_at DESC
-          LIMIT ${safeLimit} OFFSET ${offset}
         `;
+
+        if (hasExclusions) {
+          const placeholders = excludeIds.map((_, i) => `$${i + 1}`).join(', ');
+          const query = `${fallbackSelect} WHERE id::text <> ALL(ARRAY[${placeholders}]::text[]) ${orderClause} LIMIT $${excludeIds.length + 1} OFFSET $${excludeIds.length + 2}`;
+          const result = await sql.query<Post>(query, [...excludeIds, safeLimit, offset]);
+          return { data: result.rows };
+        }
+
+        const query = `${fallbackSelect} ${orderClause} LIMIT $1 OFFSET $2`;
+        const result = await sql.query<Post>(query, [safeLimit, offset]);
         return { data: result.rows };
       } catch (err2) {
         return { error: err2 instanceof Error ? err2.message : 'Failed to fetch posts' };
