@@ -65,7 +65,7 @@ export default function SuggestedUsers() {
   if (!loading && users.length === 0) return null;
 
   return (
-    <div className="bg-surface rounded-[2.5rem] w-2.9 border border-border p-6 shadow-sm">
+    <div className="bg-surface rounded-[2.5rem] w-90 h-100 sticky top-5 border border-border py-5 px-5 p-6 shadow-sm">
       <div className="flex items-center gap-2 mb-4">
         <div className="p-2 bg-purple-50 rounded-xl">
           <UserPlusIcon className="w-5 h-5 text-purple-600" />
@@ -78,7 +78,7 @@ export default function SuggestedUsers() {
       <div className="space-y-4">
         {loading ? (
           <div className="space-y-3 animate-pulse">
-            {[0, 1, 2].map((i) => (
+            {[0, 1, 2,3,5,6,7,8,9,10].map((i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gray-100 rounded-full" />
                 <div className="flex-1 space-y-1.5">
