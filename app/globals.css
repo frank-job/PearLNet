@@ -6,7 +6,7 @@
   --surface: #ffffff;
   --surface-strong: #f8fafc;
   --border: #e5e7eb;
-  --muted: #6b7280;
+  --muted: #e5edfd;
   --accent: #0ea5e9;
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
@@ -15,14 +15,14 @@
 }
 
 html.dark {
-  --background: #000000;
+  --background: #181818;
   --foreground: #ffffff;
   --surface: #000000;
-  --surface-strong: #111111;
-  --border: rgba(255, 255, 255, 0.1);
-  --muted: #d1d5db;
+  --surface-strong: #282727;
+  --border: rgba(23, 19, 19, 0.1);
+  --muted: #eff2f7;
   --accent: #ffffff;
-  color-scheme: dark;
+  color-scheme: white;
 }
 
 @theme inline {

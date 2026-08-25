@@ -15,7 +15,7 @@ export default function CreatePostPage() {
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">
           <div>
             <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-              R A T
+            PearlNet
             </h1>
             <p className="text-sm text-gray-500 mt-1">Create a new post</p>
           </div>

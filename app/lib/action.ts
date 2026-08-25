@@ -198,9 +198,9 @@ export async function signUp(
   `;
 
   await setSession(user.id, email);
-  redirect('/Rat');
+  redirect('/PearLNet');
 }
-
+0746093475
 export async function login(
   state: { message: string } | undefined,
   formData: FormData,
