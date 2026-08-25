@@ -19,7 +19,7 @@ export default function NewsPage() {
         <header className="px-4 py-6 bg-surface-strong border-b border-border">
           <div className="flex items-center justify-between">
             <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-              R A T
+              PearlNet <span className="text-muted">News</span>
             </h1>
             <ThemeToggle />
           </div>
