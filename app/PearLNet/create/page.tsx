@@ -17,7 +17,7 @@ export default function CreatePostPage() {
             <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
             PearlNet
             </h1>
-            <p className="text-sm text-gray-500 mt-1">Create a new post</p>
+             <p className="text-sm text-muted mt-1">Create a new post</p>
           </div>
         </header>
 

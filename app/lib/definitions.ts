@@ -120,3 +120,27 @@ export type greetings = {
   id: string;
   username: string;
 }
+
+export type SavedPost = {
+  id: string;
+  user_id: string;
+  post_id: string;
+  created_at: string;
+};
+
+export type Story = {
+  id: string;
+  user_id: string;
+  image_url: string;
+  caption: string | null;
+  expires_at: string;
+  created_at: string;
+};
+
+export type StoryUser = {
+  id: string;
+  username: string;
+  email: string;
+  image_url: string | null;
+  hasStory: boolean;
+};

@@ -17,15 +17,15 @@ export default async function UpperHeader() {
     displayName = 'friend';
   }
 return (
-  <header className="relative w-full px-6 pt-12 pb-8 round-md overflow-hidden bg-white/80 backdrop-filter backdrop-blur-md border-b border-slate-100">
+  <header className="relative w-full px-6 pt-12 pb-8 round-md overflow-hidden bg-surface/80 backdrop-filter backdrop-blur-md border-b border-border">
     {/* MODERN BACKGROUND: Mesh Gradient Blobs */}
     <div className="absolute top-0 left-0 w-full h-full -z-10 select-none pointer-events-none">
       {/* Blue Blur */}
-      <div className="absolute -top-10 -left-10 w-72 h-72 bg-blue-400/20 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse"></div>
+      <div className="absolute -top-10 -left-10 w-72 h-72 bg-blue-500/20 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse"></div>
       {/* Cyan/Green Blur */}
-      <div className="absolute top-0 right-20 w-64 h-64 bg-cyan-300/10 rounded-full mix-blend-multiply filter blur-[100px]"></div>
+      <div className="absolute top-0 right-20 w-64 h-64 bg-cyan-400/10 rounded-full mix-blend-multiply filter blur-[100px]"></div>
       {/* Subtle Bottom Glow */}
-      <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full h-32 bg-gradient-to-t from-blue-50/50 to-transparent"></div>
+      <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full h-32 bg-gradient-to-t from-blue-500/10 to-transparent"></div>
     </div>
 
     {/* CONTENT CONTAINER */}

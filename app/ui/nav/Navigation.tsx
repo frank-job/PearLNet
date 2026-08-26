@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import {
   Bell,
+  BookmarkIcon,
   Home,
   Menu,
   Newspaper,
@@ -19,10 +20,11 @@ const navigationLinks = [
   { name: 'Create', href: '/PearLNet/create', icon: PlusSquare },
   { name: 'Notifications', href: '/PearLNet/Notification', icon: Bell },
   { name: 'Account', href: '/PearLNet/account', icon: UserCircle },
+  { name: 'Saved', href: '/PearLNet/saved', icon: BookmarkIcon },
   { name: 'News', href: '/PearLNet/news', icon: Newspaper },
 ];
 
-const primaryLinks = navigationLinks.slice(0, 4);
+const primaryLinks = navigationLinks.slice(0, 5);
 
 function NavigationLink({
   link,
@@ -43,7 +45,7 @@ function NavigationLink({
         'flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors',
         compact && 'min-w-0 flex-1 flex-col gap-1 px-2 py-2 text-xs',
         isActive
-          ? 'bg-blue-50 text-blue-600'
+          ? 'bg-blue-600/10 text-blue-400'
           : 'text-foreground hover:bg-surface-strong'
       )}
     >
@@ -81,7 +83,7 @@ function SettingsPanel() {
       <button
         type="button"
         onClick={handleLogout}
-        className="w-full rounded-xl px-3 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+        className="w-full rounded-xl px-3 py-3 text-left text-sm font-medium text-red-500 hover:bg-red-600/10"
       >
         Log out
       </button>

@@ -99,7 +99,7 @@ export default function ImageCard({
         {list.map((_, idx) => (
           <span
             key={idx}
-            className="w-1.5 h-1.5 rounded-full bg-white/80 shadow"
+            className="w-1.5 h-1.5 rounded-full bg-black/80 shadow"
           />
         ))}
       </div>

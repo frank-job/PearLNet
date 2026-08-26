@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { formatRelativeTime } from '@/app/lib/time-utils';
 
 /* ============================================================
    NotificationBell Component
@@ -47,8 +48,12 @@ export default function NotificationBell() {
   useEffect(() => {
     fetchUnreadCount();
     fetchNotifications();
-    const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+    const countInterval = setInterval(fetchUnreadCount, 30000);
+    const listInterval = setInterval(fetchNotifications, 60000);
+    return () => {
+      clearInterval(countInterval);
+      clearInterval(listInterval);
+    };
   }, [fetchUnreadCount, fetchNotifications]);
 
   useEffect(() => {
@@ -138,7 +143,8 @@ export default function NotificationBell() {
 
           {notifications.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-sm text-muted">No notifications yet</p>
+              <p className="text-sm text-foreground font-medium mb-1">All caught up 🎉</p>
+              <p className="text-xs text-muted">No new notifications right now</p>
             </div>
           ) : (
             <div className="divide-y divide-surface-strong">
@@ -166,7 +172,7 @@ export default function NotificationBell() {
                     {notification.message}
                   </p>
                   <p className="text-[10px] text-muted mt-1">
-                    {new Date(notification.created_at).toLocaleString()}
+                    {formatRelativeTime(notification.created_at)}
                   </p>
                 </button>
               ))}

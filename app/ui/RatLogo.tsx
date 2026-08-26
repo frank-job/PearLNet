@@ -69,7 +69,7 @@ export default function RatLogo({ size = 'md', className = "" }: RatLogoProps) {
 
 
       </div>
-      <div className="text-5xl font-mono italic tracking-tight text-gray-900">
+      <div className="text-5xl font-mono italic tracking-tight text-foreground">
   {/* Pearl<span className="text-blue-600">Net</span> */}
 </div>
 

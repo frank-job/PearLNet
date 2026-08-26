@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Comment } from '@/app/lib/definitions';
+import { formatRelativeTime } from '@/app/lib/time-utils';
 
 export default function CommentSection({ postId }: { postId: string }) {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -107,7 +108,7 @@ export default function CommentSection({ postId }: { postId: string }) {
 
       <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
         {comments.length === 0 ? (
-          <p className="text-xs text-gray-400">No comments yet. Be the first!</p>
+          <p className="text-xs text-muted">No comments yet. Be the first!</p>
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="flex justify-between items-start">
@@ -120,19 +121,19 @@ export default function CommentSection({ postId }: { postId: string }) {
                     {comment.user_email?.split('@')[0] ?? comment.user_id?.slice(0, 8)}
                   </Link>
                 ) : (
-                  <p className="text-xs font-semibold text-gray-500">
+                  <p className="text-xs font-semibold text-muted">
                     {comment.user_email?.split('@')[0] ?? comment.user_id?.slice(0, 8)}
                   </p>
                 )}
-                <p className="text-sm text-gray-700">{comment.content}</p>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  {new Date(comment.created_at).toLocaleDateString()}
+                <p className="text-sm text-foreground">{comment.content}</p>
+                <p className="text-[10px] text-muted mt-1">
+                  {formatRelativeTime(comment.created_at)}
                 </p>
               </div>
               {userId === comment.user_id && (
                 <button
                   onClick={() => handleDelete(comment.id)}
-                  className="text-[10px] text-red-400 hover:text-red-600"
+                  className="text-[10px] text-red-400 hover:text-red-500"
                 >
                   Delete
                 </button>

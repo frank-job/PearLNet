@@ -7,8 +7,10 @@ import LikesSection from './likes';
 import CommentSection from './comment';
 import ShareDrawer from './ShareDrawer';
 import FollowButton from './FollowButton';
+import PostActions from './PostActions';
 import { usePostView } from '@/app/lib/usePostView';
 import type { Post } from '@/app/lib/definitions';
+import { formatRelativeTime } from '@/app/lib/time-utils';
 
 /* ============================================================
    PostCard
@@ -26,27 +28,32 @@ function PostCard({
   expanded,
   onToggleComments,
   onView,
+  currentUserId,
+  onDelete,
+  onEdit,
 }: {
   post: Post;
   viewCount: number;
   expanded: boolean;
   onToggleComments: () => void;
   onView: () => void;
+  currentUserId?: string;
+  onDelete?: () => void;
+  onEdit?: () => void;
 }) {
-  // Returns a ref to attach to the card wrapper element.
   const viewRef = usePostView(post.id, onView);
 
   return (
     <div
       ref={viewRef}
-      className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border"
+      className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border transition-all duration-300 hover:shadow-md hover:border-blue-500/20"
     >
       {/* Image */}
       <ImageCard imageUrl={post.image_url} images={post.images} alt="Post" />
 
       {/* Content */}
       <div className="p-4">
-{/* ===== User Info Row ===== */}
+        {/* ===== User Info Row ===== */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <a
@@ -63,7 +70,7 @@ function PostCard({
                 {post.user_email ? post.user_email.split('@')[0] : 'Anonymous'}
               </a>
               <p className="text-[10px] text-muted">
-                {new Date(post.created_at).toLocaleDateString()}
+                {formatRelativeTime(post.created_at)}
               </p>
             </div>
           </div>
@@ -90,10 +97,17 @@ function PostCard({
             </button>
           </div>
 
-          {/* Right: Share + Views */}
+          {/* Right: Share + Views + Actions */}
           <div className="flex items-center gap-4">
             <ShareDrawer postId={post.id} postAuthorId={post.user_id ?? ''} />
-<span className="flex items-center gap-1 text-xs text-muted">
+            <PostActions
+              postId={post.id}
+              postAuthorId={post.user_id}
+              currentUserId={currentUserId}
+              onDelete={onDelete}
+              onEdit={onEdit}
+            />
+            <span className="flex items-center gap-1 text-xs text-muted">
               <EyeIcon className="w-4 h-4" />
               {viewCount}
             </span>
@@ -113,11 +127,25 @@ function PostCard({
    - Displays the live, optimistic view count for each post.
    ============================================================ */
 
-export default function PostFeed({ posts }: { posts: Post[] }) {
+export default function PostFeed({ posts, onDeletePost, onEditPost }: { posts: Post[]; onDeletePost?: (postId: string) => void; onEditPost?: (postId: string, caption: string) => void }) {
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-  // Local view counts so the ðŸ‘ number updates live.
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  // Local view counts so the 👁 number updates live.
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
   const initialCountsRef = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data.userId) {
+          setCurrentUserId(data.userId);
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Initialize the local view-count map from the server-provided values.
   useEffect(() => {
@@ -131,14 +159,11 @@ export default function PostFeed({ posts }: { posts: Post[] }) {
     setViewCounts((prev) => ({ ...prev, ...initial }));
   }, [posts]);
 
-const toggleComments = useCallback((postId: string) => {
+  const toggleComments = useCallback((postId: string) => {
     setExpandedPostId((prevId) => (prevId === postId ? null : postId));
   }, []);
 
   // Optimistically bump the local eye-count when a post becomes visible.
-  // Wrapped in useCallback so the `onView` prop identity stays stable across
-  // renders. This prevents `usePostView`'s effect from re-running and avoids
-  // a setState -> re-render -> new-callback feedback loop.
   const bumpView = useCallback((postId: string) => {
     setViewCounts((prev) => ({ ...prev, [postId]: (prev[postId] ?? 0) + 1 }));
   }, []);
@@ -148,7 +173,18 @@ const toggleComments = useCallback((postId: string) => {
     [bumpView],
   );
 
-return (
+  const handleDelete = useCallback((postId: string) => {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+    onDeletePost?.(postId);
+  }, [onDeletePost]);
+
+  const handleEdit = useCallback((postId: string) => {
+    const newCaption = prompt('Edit your post caption:');
+    if (newCaption === null) return;
+    onEditPost?.(postId, newCaption);
+  }, [onEditPost]);
+
+  return (
     <div className="space-y-6">
       {posts.map((post) => (
         <PostCard
@@ -156,11 +192,13 @@ return (
           post={post}
           viewCount={viewCounts[post.id] ?? post.view_count ?? 0}
           expanded={expandedPostId === post.id}
-onToggleComments={() => toggleComments(post.id)}
+          onToggleComments={() => toggleComments(post.id)}
           onView={handleView(post.id)}
+          currentUserId={currentUserId}
+          onDelete={() => handleDelete(post.id)}
+          onEdit={() => handleEdit(post.id)}
         />
       ))}
     </div>
   );
 }
-

@@ -11,7 +11,7 @@ import { useActionState } from "react";
 
 // Shared input styles to reduce duplication
 const inputBase =
-  "peer block w-full rounded-xl border border-gray-200 py-[12px] pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#5F7161] transition-all";
+  "peer block w-full rounded-xl border border-border bg-surface-strong py-[12px] pl-10 pr-4 text-sm text-foreground outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-muted";
 
 // ============================================================
 // SignupForm
@@ -27,17 +27,17 @@ export default function SignupForm() {
 
   return (
     <form action={formAction} className="space-y-3">
-      <div className="flex-1 rounded-3xl bg-white px-6 pb-8 pt-8 shadow-sm border border-gray-100">
+      <div className="flex-1 rounded-3xl bg-surface px-6 pb-8 pt-8 shadow-sm border border-border">
 <h1 className="mb-3 font-serif text-2xl text-blue-600 font-bold">
           Create your account
         </h1>
-        <p className="text-sm text-gray-500 mb-6 italic">
+        <p className="text-sm text-muted mb-6 italic">
           Sign up with your name, email, password and gender.
         </p>
 
         {/* Server-side error banner */}
         {errorMessage?.message && (
-          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div className="mb-4 rounded-xl bg-red-600/10 border border-red-600/20 p-3 text-sm text-red-400">
             {errorMessage.message}
           </div>
         )}
@@ -60,7 +60,7 @@ export default function SignupForm() {
                 placeholder="Enter your username"
                 required
               />
-              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted peer-focus:text-blue-500" />
             </div>
           </div>
 
@@ -81,7 +81,7 @@ export default function SignupForm() {
                 placeholder="Enter your email"
                 required
               />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted peer-focus:text-blue-500" />
             </div>
           </div>
 
@@ -103,7 +103,7 @@ export default function SignupForm() {
                 required
                 minLength={6}
               />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400 peer-focus:text-[#5F7161]" />
+              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted peer-focus:text-blue-500" />
             </div>
           </div>
 
@@ -119,7 +119,7 @@ export default function SignupForm() {
               id="gender"
               name="gender"
               required
-className="block w-full rounded-xl border border-gray-200 text-blue-600 bg-white py-[12px] pl-3 text-sm outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+            className="block w-full rounded-xl border border-border text-foreground bg-surface-strong py-[12px] pl-3 text-sm outline-none focus:ring-2 focus:ring-blue-600 transition-all"
             >
               <option value="">Select gender</option>
               <option value="male">Male</option>
@@ -130,12 +130,12 @@ className="block w-full rounded-xl border border-gray-200 text-blue-600 bg-white
         </div>
 
 {/* Agree to Terms */}
-        <label className="flex items-start gap-2 mt-6 text-sm text-gray-600 cursor-pointer">
+        <label className="flex items-start gap-2 mt-6 text-sm text-muted cursor-pointer">
           <input
             type="checkbox"
             name="terms"
             required
-            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="mt-0.5 h-4 w-4 rounded border-border text-blue-600 focus:ring-blue-500"
           />
           <span>
             I agree to the{" "}
@@ -155,7 +155,7 @@ className="block w-full rounded-xl border border-gray-200 text-blue-600 bg-white
 className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-bold text-white transition-all hover:bg-blue-700 active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Creating account..." : "Sign up"}
-          <ArrowRightIcon className="ml-auto h-5 w-5 text-blue-950" />
+          <ArrowRightIcon className="ml-auto h-5 w-5 text-white" />
         </button>
       </div>
     </form>

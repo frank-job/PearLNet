@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { BellIcon } from '@heroicons/react/24/outline';
 import type { Notification } from '@/app/lib/definitions';
+import { formatRelativeTime } from '@/app/lib/time-utils';
 
 // ============================================================
 // NotificationList
@@ -141,7 +142,7 @@ export default function NotificationList() {
                     {notification.message}
                   </p>
                   <p className="text-[11px] text-muted mt-1">
-                    {new Date(notification.created_at).toLocaleString()}
+                    {formatRelativeTime(notification.created_at)}
                   </p>
                 </div>
 

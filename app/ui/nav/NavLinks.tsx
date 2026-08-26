@@ -6,14 +6,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { Home, PlusSquare, UserCircle, Bell, } from 'lucide-react';
+import { Home, PlusSquare, UserCircle, Bell, BookmarkIcon } from 'lucide-react';
 
 const Links = [
   { name: 'Home', href: '/PearLNet/home', icon: Home },
   { name: 'Create', href: '/PearLNet/create', icon: PlusSquare },
-  // { name: 'News', href: '/PearLNet/news', icon: Newspaper },
   { name: 'Notifications', href: '/PearLNet/Notification', icon: Bell },
   { name: 'Account', href: '/PearLNet/account', icon: UserCircle },
+  { name: 'Saved', href: '/PearLNet/saved', icon: BookmarkIcon },
 ];
 
 export default function NavLinks() {
@@ -32,8 +32,8 @@ export default function NavLinks() {
 className={clsx(
               'flex h-12 grow items-center justify-center gap-2 rounded-xl bg-surface py-2 px-2 text-sm font-medium transition-colors hover:bg-surface-strong md:flex-none md:justify-start md:py-1 md:px-1 ',
               {
-                'bg-blue-50 text-blue-600': isActive,
-                'text-blue-600': !isActive,
+                'bg-blue-600/10 text-blue-400': isActive,
+                'text-foreground': !isActive,
               }
             )}
           >

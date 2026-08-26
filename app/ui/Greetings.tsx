@@ -97,7 +97,7 @@ export default function Greetings({ userName }: { userName: string }) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.5 }}
-        className="text-gray-400 text-[8px] font-black uppercase tracking-[0.3em] mt-4 border-l-4 border-blue-600 pl-3"
+        className="text-muted text-[8px] font-black uppercase tracking-[0.3em] mt-4 border-l-4 border-blue-600 pl-3"
       >
         {new Date().toLocaleDateString('en-US', {
           weekday: 'long',

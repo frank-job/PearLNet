@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
-import type { Post, Comment, ProfileData, Notification, UserListItem } from '@/app/lib/definitions';
+import type { Post, Comment, ProfileData, Notification, UserListItem, StoryUser, Story } from '@/app/lib/definitions';
 
 // ============================================================
 // Types
@@ -266,47 +266,25 @@ const MAX_POST_LIMIT = 100;
 export async function fetchPosts(
   limit?: number,
   offset = 0,
-  random = false,
-  excludeIds: string[] = [],
 ): Promise<ActionResult<Post[]>> {
   const safeLimit = Math.min(Math.max(limit ?? DEFAULT_POST_LIMIT, 1), MAX_POST_LIMIT);
-  const hasExclusions = excludeIds.length > 0;
-
-  const baseSelect = `
-    SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
-    FROM posts
-  `;
-
-  const orderClause = random ? 'ORDER BY random()' : 'ORDER BY created_at DESC';
-
   try {
-    if (hasExclusions) {
-      const placeholders = excludeIds.map((_, i) => `$${i + 1}`).join(', ');
-      const query = `${baseSelect} WHERE id::text <> ALL(ARRAY[${placeholders}]::text[]) ${orderClause} LIMIT $${excludeIds.length + 1} OFFSET $${excludeIds.length + 2}`;
-      const result = await sql.query<Post>(query, [...excludeIds, safeLimit, offset]);
-      return { data: result.rows };
-    }
-
-    const query = `${baseSelect} ${orderClause} LIMIT $1 OFFSET $2`;
-    const result = await sql.query<Post>(query, [safeLimit, offset]);
+    const result = await sql<Post>`
+        SELECT id, image_url, images, caption, created_at, user_id, user_email, view_count
+        FROM posts
+        ORDER BY created_at DESC
+        LIMIT ${safeLimit} OFFSET ${offset}
+      `;
     return { data: result.rows };
   } catch (err) {
     if (isMissingImagesColumn(err)) {
       try {
-        const fallbackSelect = `
+        const result = await sql<Post>`
           SELECT id, image_url, caption, created_at, user_id, user_email, view_count
           FROM posts
+          ORDER BY created_at DESC
+          LIMIT ${safeLimit} OFFSET ${offset}
         `;
-
-        if (hasExclusions) {
-          const placeholders = excludeIds.map((_, i) => `$${i + 1}`).join(', ');
-          const query = `${fallbackSelect} WHERE id::text <> ALL(ARRAY[${placeholders}]::text[]) ${orderClause} LIMIT $${excludeIds.length + 1} OFFSET $${excludeIds.length + 2}`;
-          const result = await sql.query<Post>(query, [...excludeIds, safeLimit, offset]);
-          return { data: result.rows };
-        }
-
-        const query = `${fallbackSelect} ${orderClause} LIMIT $1 OFFSET $2`;
-        const result = await sql.query<Post>(query, [safeLimit, offset]);
         return { data: result.rows };
       } catch (err2) {
         return { error: err2 instanceof Error ? err2.message : 'Failed to fetch posts' };
@@ -951,6 +929,198 @@ export async function fetchSuggestedUsers(
     return { data: result.rows };
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Failed to fetch suggestions' };
+  }
+}
+
+// ============================================================
+// Post Actions (delete / edit)
+// ============================================================
+
+export async function deletePostAction(postId: string): Promise<ActionError | void> {
+  const session = await getSession();
+  if (!session) return { message: 'You must be logged in to delete a post.' };
+
+  try {
+    const result = await sql`
+      DELETE FROM posts WHERE id = ${postId} AND user_id = ${session.userId}
+    `;
+    if ((result.rowCount ?? 0) === 0) {
+      return { message: 'Post not found or you do not have permission to delete it.' };
+    }
+  } catch {
+    return { message: 'Failed to delete post. Please try again.' };
+  }
+}
+
+export async function updatePostAction(postId: string, caption: string): Promise<ActionError | void> {
+  const session = await getSession();
+  if (!session) return { message: 'You must be logged in to edit a post.' };
+
+  const cleanCaption = sanitize(caption.trim());
+  if (!cleanCaption) return { message: 'Caption cannot be empty.' };
+  if (cleanCaption.length > MAX_CAPTION_LENGTH) {
+    return { message: `Caption must be ${MAX_CAPTION_LENGTH} characters or fewer.` };
+  }
+
+  try {
+    const result = await sql`
+      UPDATE posts SET caption = ${cleanCaption} WHERE id = ${postId} AND user_id = ${session.userId}
+    `;
+    if ((result.rowCount ?? 0) === 0) {
+      return { message: 'Post not found or you do not have permission to edit it.' };
+    }
+  } catch {
+    return { message: 'Failed to update post. Please try again.' };
+  }
+}
+
+// ============================================================
+// Saved Posts (Bookmarks)
+// ============================================================
+
+export async function savePostAction(postId: string): Promise<ActionError | void> {
+  const session = await getSession();
+  if (!session) return { message: 'You must be logged in to save posts.' };
+
+  try {
+    await sql`
+      INSERT INTO saved_posts (user_id, post_id)
+      VALUES (${session.userId}, ${postId})
+      ON CONFLICT (user_id, post_id) DO NOTHING
+    `;
+  } catch {
+    return { message: 'Failed to save post. Please try again.' };
+  }
+}
+
+export async function unsavePostAction(postId: string): Promise<ActionError | void> {
+  const session = await getSession();
+  if (!session) return { message: 'You must be logged in to manage saved posts.' };
+
+  try {
+    await sql`
+      DELETE FROM saved_posts WHERE user_id = ${session.userId} AND post_id = ${postId}
+    `;
+  } catch {
+    return { message: 'Failed to unsave post. Please try again.' };
+  }
+}
+
+export async function fetchSavedPosts(userId: string): Promise<ActionResult<Post[]>> {
+  try {
+    const result = await sql<Post>`
+      SELECT p.id, p.image_url, p.images, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+      FROM saved_posts sp
+      JOIN posts p ON p.id = sp.post_id
+      WHERE sp.user_id = ${userId}
+      ORDER BY sp.created_at DESC
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    if (isMissingImagesColumn(err)) {
+      try {
+        const result = await sql<Post>`
+          SELECT p.id, p.image_url, p.caption, p.created_at, p.user_id, p.user_email, p.view_count
+          FROM saved_posts sp
+          JOIN posts p ON p.id = sp.post_id
+          WHERE sp.user_id = ${userId}
+          ORDER BY sp.created_at DESC
+        `;
+        return { data: result.rows };
+      } catch (err2) {
+        return { error: err2 instanceof Error ? err2.message : 'Failed to fetch saved posts' };
+      }
+    }
+    return { error: err instanceof Error ? err.message : 'Failed to fetch saved posts' };
+  }
+}
+
+export async function isPostSaved(userId: string, postId: string): Promise<boolean> {
+  try {
+    const result = await sql`
+      SELECT id FROM saved_posts WHERE user_id = ${userId} AND post_id = ${postId} LIMIT 1
+    `;
+    return (result.rowCount ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+
+// ============================================================
+// Stories
+// ============================================================
+
+export async function createStoryAction(formData: FormData): Promise<ActionError | void> {
+  const session = await getSession();
+  if (!session) return { message: 'You must be logged in to create a story.' };
+
+  const imageBase64 = String(formData.get('imageBase64') ?? '');
+  const caption = sanitize(String(formData.get('caption') ?? '')).trim();
+  const expiresInHours = Number(formData.get('expiresInHours') ?? 24);
+
+  if (!imageBase64) return { message: 'Please select an image for your story.' };
+  if (expiresInHours < 1 || expiresInHours > 168) {
+    return { message: 'Story must expire between 1 and 168 hours.' };
+  }
+
+  const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString();
+
+  try {
+    await sql`
+      INSERT INTO stories (user_id, image_url, caption, expires_at)
+      VALUES (${session.userId}, ${imageBase64}, ${caption || null}, ${expiresAt})
+    `;
+  } catch {
+    return { message: 'Failed to create story. Please try again.' };
+  }
+}
+
+export async function fetchActiveStories(): Promise<ActionResult<StoryUser[]>> {
+  try {
+    const result = await sql`
+      SELECT 
+        u.id AS user_id,
+        u.username,
+        u.email,
+        p.image_url,
+        EXISTS (
+          SELECT 1 FROM stories s 
+          WHERE s.user_id = u.id AND s.expires_at > NOW()
+        ) AS has_story
+      FROM users u
+      LEFT JOIN profiles p ON p.user_id = u.id
+      WHERE EXISTS (
+        SELECT 1 FROM stories s 
+        WHERE s.user_id = u.id AND s.expires_at > NOW()
+      )
+      ORDER BY u.username
+      LIMIT 20
+    `;
+    return { 
+      data: result.rows.map((row: Record<string, unknown>) => ({
+        id: String(row.user_id),
+        username: String(row.username),
+        email: String(row.email),
+        image_url: row.image_url ? String(row.image_url) : null,
+        hasStory: Boolean(row.has_story),
+      }))
+    };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to fetch stories' };
+  }
+}
+
+export async function fetchUserStories(userId: string): Promise<ActionResult<Story[]>> {
+  try {
+    const result = await sql<Story>`
+      SELECT id, image_url, caption, expires_at, created_at
+      FROM stories
+      WHERE user_id = ${userId} AND expires_at > NOW()
+      ORDER BY created_at DESC
+    `;
+    return { data: result.rows };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to fetch stories' };
   }
 }
 

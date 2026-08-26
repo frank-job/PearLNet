@@ -7,7 +7,7 @@ import Link from "next/link";
 
 // Shared input styles to reduce duplication
 const inputBase =
-  "peer block w-full rounded-xl border border-gray-200 py-[12px] pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all";
+  "peer block w-full rounded-xl border border-border bg-surface-strong py-[12px] pl-10 pr-4 text-sm text-foreground outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-muted";
 
 // ============================================================
 // LoginForm
@@ -23,7 +23,7 @@ export default function LoginForm() {
 
   return (
     <form action={formAction} className="space-y-3">
-      <div className="flex-1 rounded-3xl bg-white px-6 pb-8 pt-8 shadow-sm border border-gray-100">
+      <div className="flex-1 rounded-3xl bg-surface px-6 pb-8 pt-8 shadow-sm border border-border">
 <h1 className="mb-3 font-serif text-2xl text-blue-600 font-bold">
           Welcome back
         </h1>
@@ -33,7 +33,7 @@ export default function LoginForm() {
 
         {/* Server-side error banner */}
         {errorMessage?.message && (
-          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div className="mb-4 rounded-xl bg-red-600/10 border border-red-600/20 p-3 text-sm text-red-400">
             {errorMessage.message}
           </div>
         )}
@@ -42,7 +42,7 @@ export default function LoginForm() {
           {/* Email Field */}
           <div>
             <label
-              className="mb-3 mt-5 block text-xs font-medium text-black"
+              className="mb-3 mt-5 block text-xs font-medium text-foreground"
               htmlFor="email"
             >
               Email Address
@@ -57,14 +57,14 @@ export default function LoginForm() {
                 required
                 autoComplete="email"
               />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-black peer-focus:text-black" />
+              <AtSymbolIcon               className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted peer-focus:text-blue-500" />
             </div>
           </div>
 
           {/* Password Field */}
           <div>
             <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+              className="mb-3 mt-5 block text-xs font-medium text-foreground"
               htmlFor="password"
             >
               Password
@@ -80,18 +80,18 @@ export default function LoginForm() {
                 minLength={6}
                 autoComplete="current-password"
               />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-blue-950 peer-focus:text-blue-950" />
+              <KeyIcon               className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted peer-focus:text-blue-500" />
             </div>
           </div>
         </div>
 
 {/* Agree to Terms */}
-        <label className="flex items-start gap-2 mt-6 text-sm text-gray-600 cursor-pointer">
+        <label className="flex items-start gap-2 mt-6 text-sm text-muted cursor-pointer">
           <input
             type="checkbox"
             name="terms"
             required
-            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="mt-0.5 h-4 w-4 rounded border-border text-blue-600 focus:ring-blue-500"
           />
           <span>
             I agree to the{" "}
@@ -114,7 +114,7 @@ className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-
           <ArrowRightIcon className="ml-auto h-5 w-5 text-white" />
         </button>
 
-        <div className="mt-4 text-center text-sm text-gray-500">
+        <div className="mt-4 text-center text-sm text-muted">
           <p>
             Don&apos;t have an account?{" "}
             <Link

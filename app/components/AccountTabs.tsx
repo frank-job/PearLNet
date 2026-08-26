@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import FollowButton from './FollowButton';
 import type { Post, UserListItem } from '@/app/lib/definitions';
+import { formatRelativeTime } from '@/app/lib/time-utils';
 
 /* ============================================================
    AccountTabs
@@ -128,8 +129,8 @@ function PostsGrid({ posts, emptyText }: { posts: Post[]; emptyText: string }) {
             <p className="text-sm text-gray-700 line-clamp-2">
               {post.caption || 'No caption'}
             </p>
-            <p className="text-xs text-gray-400 mt-2">
-              {new Date(post.created_at).toLocaleDateString()}
+            <p className="text-xs text-muted mt-2">
+              {formatRelativeTime(post.created_at)}
             </p>
           </div>
         </div>

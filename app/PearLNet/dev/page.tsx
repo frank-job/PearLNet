@@ -114,63 +114,62 @@ export default function DevPanelPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="text-gray-500">{error || 'Loadingâ€¦'}</p>
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <p className="text-muted">{error || 'Loading…'}</p>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white pb-24">
+    <main className="min-h-screen bg-surface pb-24">
       <div className="max-w-3xl mx-auto px-4 py-6">
         <header className="flex items-center gap-3 mb-6">
           <button
             onClick={() => router.push('/PearLNet/home')}
-            className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="p-2 rounded-xl bg-surface-strong hover:bg-surface-strong/80 transition-colors"
             aria-label="Back"
           >
-            <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
+            <ArrowLeftIcon className="w-5 h-5 text-foreground" />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-black text-foreground flex items-center gap-2">
               <SparklesIcon className="w-6 h-6 text-blue-600" />
               Dev Panel
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted">
               Boost likes, views, and follows â€” normal users see this data.
             </p>
           </div>
         </header>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">{error}</div>
+          <div className="mb-4 p-3 rounded-xl bg-red-600/10 text-red-400 text-sm border border-red-600/20">{error}</div>
         )}
 
         {feedback && (
           <div
-            className={`mb-4 p-3 rounded-xl text-sm font-medium ${
-              feedback.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-            }`}
+          className={`mb-4 p-3 rounded-xl text-sm font-medium ${
+            feedback.ok ? 'bg-emerald-600/10 text-emerald-400 border border-emerald-600/20' : 'bg-red-600/10 text-red-400 border border-red-600/20'
+          }`}
           >
             {feedback.text}
           </div>
         )}
 
-        {/* ===== Likes ===== */}
-        <section className="mb-6 p-4 rounded-2xl border border-gray-200 shadow-sm">
-          <h2 className="font-bold text-gray-900 flex items-center gap-2 mb-3">
+        <section className="mb-6 p-4 rounded-2xl border border-border shadow-sm">
+          <h2 className="font-bold text-foreground flex items-center gap-2 mb-3">
             <HeartIcon className="w-5 h-5 text-red-500" /> Give Likes
           </h2>
           <div className="flex flex-col sm:flex-row gap-2">
             <select
               value={likePostId}
               onChange={(e) => setLikePostId(e.target.value)}
-              className="flex-1 p-2.5 rounded-xl border border-gray-300 text-sm bg-white"
+              className="flex-1 p-2.5 rounded-xl border border-border text-sm bg-surface-strong text-foreground"
             >
-              <option value="">â€” Pick a post â€”</option>
+              <option value="">— Pick a post —</option>
               {data.posts.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.caption || '(no caption)'} Â· {p.likes} â¤ï¸ Â· {p.views} ðŸ‘
+                  {p.caption || '(no caption)'} · {p.likes} ❤️ · {p.views} 👁
                 </option>
               ))}
             </select>
@@ -180,7 +179,7 @@ export default function DevPanelPage() {
               max={500}
               value={likeCount}
               onChange={(e) => setLikeCount(Number(e.target.value))}
-              className="w-24 p-2.5 rounded-xl border border-gray-300 text-sm text-center"
+              className="w-24 p-2.5 rounded-xl border border-border text-sm text-center bg-surface-strong text-foreground"
             />
             <button
               onClick={addLikes}
@@ -193,20 +192,20 @@ export default function DevPanelPage() {
         </section>
 
         {/* ===== Views ===== */}
-        <section className="mb-6 p-4 rounded-2xl border border-gray-200 shadow-sm">
-          <h2 className="font-bold text-gray-900 flex items-center gap-2 mb-3">
+        <section className="mb-6 p-4 rounded-2xl border border-border shadow-sm">
+          <h2 className="font-bold text-foreground flex items-center gap-2 mb-3">
             <EyeIcon className="w-5 h-5 text-blue-500" /> Give Views
           </h2>
           <div className="flex flex-col sm:flex-row gap-2">
             <select
               value={viewPostId}
               onChange={(e) => setViewPostId(e.target.value)}
-              className="flex-1 p-2.5 rounded-xl border border-gray-300 text-sm bg-white"
+              className="flex-1 p-2.5 rounded-xl border border-border text-sm bg-surface-strong text-foreground"
             >
-              <option value="">â€” Pick a post â€”</option>
+              <option value="">— Pick a post —</option>
               {data.posts.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.caption || '(no caption)'} Â· {p.likes} â¤ï¸ Â· {p.views} ðŸ‘
+                  {p.caption || '(no caption)'} · {p.likes} ❤️ · {p.views} 👁
                 </option>
               ))}
             </select>
@@ -216,7 +215,7 @@ export default function DevPanelPage() {
               max={500}
               value={viewCount}
               onChange={(e) => setViewCount(Number(e.target.value))}
-              className="w-24 p-2.5 rounded-xl border border-gray-300 text-sm text-center"
+              className="w-24 p-2.5 rounded-xl border border-border text-sm text-center bg-surface-strong text-foreground"
             />
             <button
               onClick={addViews}
@@ -229,17 +228,17 @@ export default function DevPanelPage() {
         </section>
 
         {/* ===== Follows ===== */}
-        <section className="mb-6 p-4 rounded-2xl border border-gray-200 shadow-sm">
-          <h2 className="font-bold text-gray-900 flex items-center gap-2 mb-3">
+        <section className="mb-6 p-4 rounded-2xl border border-border shadow-sm">
+          <h2 className="font-bold text-foreground flex items-center gap-2 mb-3">
             <UserPlusIcon className="w-5 h-5 text-green-500" /> Give Follows
           </h2>
           <div className="flex flex-col sm:flex-row gap-2">
             <select
               value={followUserId}
               onChange={(e) => setFollowUserId(e.target.value)}
-              className="flex-1 p-2.5 rounded-xl border border-gray-300 text-sm bg-white"
+              className="flex-1 p-2.5 rounded-xl border border-border text-sm bg-surface-strong text-foreground"
             >
-              <option value="">â€” Pick a user â€”</option>
+              <option value="">— Pick a user —</option>
               {data.users.map((u) => (
                 <option key={u.id} value={u.id}>
                   @{u.username}
@@ -252,7 +251,7 @@ export default function DevPanelPage() {
               max={300}
               value={followCount}
               onChange={(e) => setFollowCount(Number(e.target.value))}
-              className="w-24 p-2.5 rounded-xl border border-gray-300 text-sm text-center"
+              className="w-24 p-2.5 rounded-xl border border-border text-sm text-center bg-surface-strong text-foreground"
             />
             <button
               onClick={addFollows}
@@ -265,14 +264,14 @@ export default function DevPanelPage() {
         </section>
 
         {/* ===== Snapshot ===== */}
-        <section className="p-4 rounded-2xl border border-gray-200 shadow-sm">
-          <h2 className="font-bold text-gray-900 mb-3">Current Snapshot</h2>
+        <section className="p-4 rounded-2xl border border-border shadow-sm">
+          <h2 className="font-bold text-foreground mb-3">Current Snapshot</h2>
           <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
             {data.posts.slice(0, 30).map((p) => (
-              <div key={p.id} className="flex items-center justify-between text-sm text-gray-700">
+              <div key={p.id} className="flex items-center justify-between text-sm text-foreground">
                 <span className="truncate pr-2">{p.caption || '(no caption)'}</span>
-                <span className="shrink-0 text-xs text-gray-500">
-                  {p.likes} â¤ï¸ Â· {p.views} ðŸ‘
+                <span className="shrink-0 text-xs text-muted">
+                  {p.likes} ❤️ · {p.views} 👁
                 </span>
               </div>
             ))}

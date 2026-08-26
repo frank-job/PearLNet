@@ -78,7 +78,7 @@ export default async function AccountPage({
          <User className="w-10 h-10 left-0 m-0 px-0 flex  text-blue-600" />
         <div className="flex flex-col sm:flex-row items-center gap-6">
           {/* Avatar */}
-          <div className="h-24 w-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-3xl font-bold uppercase shrink-0">
+          <div className="h-24 w-24 rounded-full bg-blue-600/10 text-blue-500 flex items-center justify-center text-3xl font-bold uppercase shrink-0">
             {profile?.image_url ? (
               <img
                 src={profile.image_url}
@@ -92,18 +92,18 @@ export default async function AccountPage({
         
           {/* Profile Info */}
           <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-foreground">
               {profile?.username ?? displayName}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">{profile?.email ?? ''}</p>
+            <p className="text-sm text-muted mt-1">{profile?.email ?? ''}</p>
             {profile?.bio && (
-              <p className="text-sm text-gray-600 mt-3 leading-relaxed">{profile.bio}</p>
+              <p className="text-sm text-foreground mt-3 leading-relaxed">{profile.bio}</p>
             )}
             {profile?.location && (
-              <p className="text-xs text-gray-400 mt-1">{profile.location}</p>
+              <p className="text-xs text-muted mt-1">{profile.location}</p>
             )}
             {(profile?.birth_year || profile?.date_of_birth) && (
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-muted mt-1">
                 {/* {profile.birth_year ?? ''} */}
                 {profile.birth_year && profile.date_of_birth ? ' â€¢ ' : ''}
                 {profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : ''}
@@ -131,7 +131,7 @@ export default async function AccountPage({
                 <FollowButton authorId={viewUserId} />
                 <Link
                   href="/PearLNet/account"
-                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2 bg-surface-strong text-foreground rounded-xl text-sm font-semibold hover:bg-surface-strong/80 transition-colors"
                 >
                   Your profile
                 </Link>
@@ -148,7 +148,7 @@ export default async function AccountPage({
               key={item.label}
               className=" sm-flex flex-col items-center rounded-md px-1 py-2 text-center"
             >
-              <p className="text-xl font-bold text-gray-900">{item.value}</p>
+               <p className="text-xl font-bold text-foreground">{item.value}</p>
               <p className="text-xs text-blue-600 mt-0.5">{item.label}</p>
             </div>
           ))}

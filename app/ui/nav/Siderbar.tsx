@@ -14,7 +14,7 @@ export default function Sidebar() {
         hidden lg:flex lg:flex-col 
         lg:w-64 lg:h-screen 
         lg:fixed lg:top-0 lg:left-0 
-        bg-white border-r
+        bg-surface border-r border-border
       ">
         <Link
           href="/PearLNet/home"
@@ -33,10 +33,10 @@ export default function Sidebar() {
 
           <button
             onClick={() => console.log("Signing out...")}
-            className="flex h-[48px] items-center justify-center gap-2 
-              rounded-md p-3 text-sm font-medium text-slate-500 
-              hover:bg-red-50 hover:text-red-600 
-               lg:justify-start lg:bg-gray-50  "
+          className="flex h-[48px] items-center justify-center gap-2 
+            rounded-md p-3 text-sm font-medium text-muted 
+            hover:bg-red-600/10 hover:text-red-500 
+             lg:justify-start lg:bg-surface-strong  "
           >
             <PowerIcon className="w-6" />
             <span className="hidden lg:block">Sign Out</span>
@@ -47,7 +47,7 @@ export default function Sidebar() {
       {/* MOBILE BOTTOM NAV */}
       <div className="
         fixed bottom-0 left-0 right-0 
-        bg-white border-t 
+        bg-surface border-t border-border 
         flex justify-around items-center 
         p-2 lg:hidden
       ">
@@ -56,7 +56,7 @@ export default function Sidebar() {
 
         <button
           onClick={() => console.log("Signing out...")}
-          className="flex flex-col items-center text-slate-600 hover:text-red-600"
+          className="flex flex-col items-center text-muted hover:text-red-500"
         >
           <PowerIcon className="w-6" />
         </button>

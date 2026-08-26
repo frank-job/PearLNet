@@ -19,13 +19,13 @@ export default function SignupPage() {
 
         {/* Login Link */}
         <div className="text-center">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted">
             Already have an account?{" "}
             <Link href="/login" className="text-[#E7AB79] font-bold hover:underline">
               Log in here
             </Link>
           </p>
-          <p className="text-blue-700">sign up with Google</p>
+          <p className="text-foreground">sign up with Google</p>
         </div>
       </div>
     </main>

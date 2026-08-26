@@ -168,6 +168,27 @@ await sql.query(`
     `);
 
     await sql.query(`
+      CREATE TABLE saved_posts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, post_id)
+      )
+    `);
+
+    await sql.query(`
+      CREATE TABLE stories (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        image_url TEXT NOT NULL,
+        caption TEXT,
+        expires_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await sql.query(`
       CREATE UNIQUE INDEX idx_post_views_user
         ON post_views(post_id, user_id) WHERE user_id IS NOT NULL
     `);
@@ -217,6 +238,18 @@ await sql.query(`
     `);
     await sql.query(`
       CREATE INDEX IF NOT EXISTS idx_follows_following_id ON follows(following_id)
+    `);
+    await sql.query(`
+      CREATE INDEX IF NOT EXISTS idx_saved_posts_user_id ON saved_posts(user_id)
+    `);
+    await sql.query(`
+      CREATE INDEX IF NOT EXISTS idx_saved_posts_post_id ON saved_posts(post_id)
+    `);
+    await sql.query(`
+      CREATE INDEX IF NOT EXISTS idx_stories_user_id ON stories(user_id)
+    `);
+    await sql.query(`
+      CREATE INDEX IF NOT EXISTS idx_stories_expires_at ON stories(expires_at)
     `);
 
     return NextResponse.json({
