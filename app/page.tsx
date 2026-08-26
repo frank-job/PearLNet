@@ -11,8 +11,8 @@ export default function WelcomePage() {
           <h1 className="mt-4 text-3xl font-extrabold text-blue-600 tracking-widest">
             PearLNet 
           </h1>
-          <p className="mt-2 text-sm text-muted">
-            Your premium social network. Connect, share, and discover.
+          <p className="mt-2 text-sm text-muted font-black">
+            The future start <span className='text-blue-600' >Today</span>
           </p>
         </div>
 

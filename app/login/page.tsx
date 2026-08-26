@@ -1,5 +1,5 @@
 import LoginForm from "@/app/ui/login_form";
-import RatLogo from "@/app/ui/RatLogo";
+// import RatLogo from "@/app/ui/RatLogo";
 
 export default function LoginPage() {
   return (
@@ -7,9 +7,6 @@ export default function LoginPage() {
       <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-6">
       
       
-         <div className="flex items-center justify-center">
-                   <RatLogo size="lg" />
-                </div>
                
         <LoginForm />
       </div>

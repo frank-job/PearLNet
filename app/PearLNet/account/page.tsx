@@ -64,18 +64,18 @@ export default async function AccountPage({
   const displayName = profile?.username ?? 'User';
 
   return (
-    <main className="min-h-screen transition-all duration-300 ml-0 lg:ml-64 pb-24 lg:pb-8 px-4 md:px-8">
+    <main className="min-h-screen transition-all duration-300 ml-4 lg:ml-64 pb-24 lg:pb-8 px-4 md:px-8">
       <header className="flex flex-col sm:flex-col sm-justify-center sm:items-center justify-between gap-4 py-6">
         <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-          PearlNet
+
         </h1>
       </header>
-         <User className="w-5 h-5" />
+        
 
 
       {/* Profile Section */}
       <section className=" rounded-2rem p-6   mb-8">
-        
+         <User className="w-10 h-10 left-0 m-0 px-0 flex  text-blue-600" />
         <div className="flex flex-col sm:flex-row items-center gap-6">
           {/* Avatar */}
           <div className="h-24 w-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-3xl font-bold uppercase shrink-0">
@@ -139,9 +139,10 @@ export default async function AccountPage({
             )}
           </div>
         </div>
+        
 
         {/* Stats Row */}
-     <div className="mt-4 flex flex-wrap justify-center gap-6 text-center  p-6 rounded-xl shadow-sm">
+     <div className="mt-1 flex lg:items-center lg:gap-6 lg:p-6 top-5 justify-center gap-4 text-center  p-4 rounded-xl shadow-sm">
           {statsItems.map((item) => (
             <div
               key={item.label}

@@ -77,9 +77,9 @@ export default function RatRedirectPage() {
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-6">
             Welcome  to <span className="text-blue-600"> PearlNet</span>
           </p>
-          <h1 className="text-6xl md:text-7xl font-light tracking-tighter text-slate-900 leading-tight">
+          <p className="text-3xl md:text-4xl font-light tracking-tighter text-slate-900 leading-tight">
   The future is <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 italic">yours to build.</span>
-</h1>
+</p>
         </motion.div>
       </div>
 
