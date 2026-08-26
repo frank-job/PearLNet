@@ -1,6 +1,6 @@
-# 🐀 RAT — Social Feed App
+PearlNet — Social Feed App
 
-RAT is a full-stack social feed application built with **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS v4**, and **Vercel Postgres**. It's a modern, mobile-first social platform with a post feed, image posts, likes, comments, follows, notifications, profile management, sharing, and a personalized news feed — all wrapped in a clean, rounded, blue-accented UI.
+PearlNet is a full-stack social feed application built with **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS v4**, and **Vercel Postgres**. It's a modern, mobile-first social platform with a post feed, image posts, likes, comments, follows, notifications, profile management, sharing, and a personalized news feed — all wrapped in a clean, rounded, blue-accented UI.
 
 > **R.A.T** — a social media experience where you can share, react, comment, follow, and stay in the loop with trending news — all in one place.
 
