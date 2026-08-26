@@ -85,7 +85,7 @@ function PostCard({
         {/* ===== Action Buttons Row ===== */}
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
           {/* Left: Likes + Comments */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <LikesSection postId={post.id} />
 
             <button
@@ -93,12 +93,16 @@ function PostCard({
               className="flex items-center gap-1 text-muted hover:text-blue-500 transition-colors text-sm"
             >
               <ChatBubbleLeftIcon className="w-5 h-5" />
-              <span>Comments</span>
+              <span className="hidden sm:inline">Comments</span>
             </button>
           </div>
 
-          {/* Right: Share + Views + Actions */}
-          <div className="flex items-center gap-4">
+          {/* Right: Views + Share + Actions */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="flex items-center gap-1 text-xs text-muted shrink-0">
+              <EyeIcon className="w-4 h-4" />
+              {viewCount}
+            </span>
             <ShareDrawer postId={post.id} postAuthorId={post.user_id ?? ''} />
             <PostActions
               postId={post.id}
@@ -106,11 +110,8 @@ function PostCard({
               currentUserId={currentUserId}
               onDelete={onDelete}
               onEdit={onEdit}
+              className="hidden sm:flex"
             />
-            <span className="flex items-center gap-1 text-xs text-muted">
-              <EyeIcon className="w-4 h-4" />
-              {viewCount}
-            </span>
           </div>
         </div>
 

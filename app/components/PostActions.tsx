@@ -10,6 +10,7 @@ export default function PostActions({
   isSaved,
   onDelete,
   onEdit,
+  className,
 }: {
   postId: string;
   postAuthorId?: string;
@@ -17,6 +18,7 @@ export default function PostActions({
   isSaved?: boolean;
   onDelete?: () => void;
   onEdit?: () => void;
+  className?: string;
 }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(isSaved ?? false);
@@ -43,7 +45,7 @@ export default function PostActions({
   const isOwner = currentUserId && postAuthorId && currentUserId === postAuthorId;
 
   return (
-    <div className="flex items-center gap-1">
+    <div className={`flex items-center gap-1 ${className ?? ''}`}>
       {isOwner && (
         <>
           <button
