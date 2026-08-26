@@ -18,21 +18,21 @@ export default async function RatHomePage() {
   return (
     <>
     <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
-      <div className="max-w-2xl mx-auto">
+      <div className="px-4">
            <UpperHeader />
-     
+    
 
-        <div className="grid grid-cols-1 md:grid-cols-2 border-b border-border lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <MainFeed />
-          </div>
-          <aside className="hidden lg:block top-2.5">
-            <SuggestedUsers />
-          </aside>
-        </div>
-      </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 border-b border-border lg:grid-cols-3 gap-6">
+           <div className="lg:col-span-2">
+             <MainFeed />
+           </div>
+           <aside className="hidden lg:block top-2.5">
+             <SuggestedUsers />
+           </aside>
+         </div>
+       </div>
 
-      </main>
+       </main>
       </>
   );
 }

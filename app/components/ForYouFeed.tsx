@@ -125,7 +125,7 @@ export default function ForYouFeed() {
 
   return (
     <div
-      className="max-w-2xl mx-auto"
+      className="w-full lg:max-w-3xl lg:mx-auto"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -151,7 +151,7 @@ export default function ForYouFeed() {
       )}
 
       {/* Post Composer */}
-      <div className="border-b border-border">
+      <div className="border-b md:w-full border-border">
         <CreatePost onPostCreated={handleRefresh} />
       </div>
 
@@ -207,7 +207,7 @@ export default function ForYouFeed() {
             onEditPost={(postId, caption) => setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, caption } : p)))}
           />
           {!exhausted && (
-            <div ref={loadMoreRef} className="flex justify-center py-6">
+            <div ref={loadMoreRef} className="flex justify-center w-full py-6">
               {loadingMore && (
                 <div className="flex items-center gap-2 text-sm text-muted">
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">

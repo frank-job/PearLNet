@@ -37,14 +37,14 @@ export default function MainFeed() {
   };
   return (
     /* 1. ROOT CONTROLLER: Controls the overall page width and background */
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full lg:max-w-3xl lg:mx-auto">
     
       {/* 2. HEADER CONTROLLER: This entire block sticks to the top */}
       <div className="sticky top-0 z-50 w-full bg-surface/95 backdrop-blur-md border-b border-border shadow-sm">
-        <div className="max-w-2xl mx-auto">
+        <div className="px-2">
         
           {/* --- Section 1: Tabs & Search Toggle --- */}
-          <div className="flex items-center px-4">
+          <div className="flex items-center px-2">
             <button
               onClick={() => handleTabChange('forYou')}
               className={`flex-1 py-4 text-sm font-bold transition-all relative ${activeTab === 'forYou' ? 'text-blue-600' : 'text-muted hover:text-foreground'
@@ -103,10 +103,8 @@ export default function MainFeed() {
       </div>
 
       {/* 3. FEED CONTROLLER: Controls the scrolling content area */}
-      <main className="max-w-2xl mx-auto py-4">
-        <div className="px-4">
-          {activeTab === 'following' ? <FollowingFeed /> : <ForYouFeed />}
-        </div>
+      <main className="py-4">
+        {activeTab === 'following' ? <FollowingFeed /> : <ForYouFeed />}
       </main>
     </div>
   )
