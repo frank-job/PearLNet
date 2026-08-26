@@ -44,7 +44,7 @@ export default function AccountTabs({
   return (
     <section>
       {/* Tabs */}
-      <div className="flex border-b border-gray-100 mb-5 overflow-x-auto no-scrollbar">
+      <div className="flex border-b border-gray-100 mb-5 overflow-y-hidden overflow-x-auto no-scrollbar">
         {tabs.map((tab) => (
           <button
             key={tab.key}

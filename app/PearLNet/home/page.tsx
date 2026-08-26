@@ -19,10 +19,10 @@ export default async function RatHomePage() {
     <>
     <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
+           <UpperHeader />
+     
 
-        <UpperHeader />
-
-        <div className="grid grid-cols-1  gap-1.5 border-b border-border lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1  border-b border-border lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <MainFeed />
           </div>

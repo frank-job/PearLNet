@@ -42,15 +42,7 @@ export default function EditProfilePage() {
   return (
     <main className="min-h-screen transition-all duration-300 ml-0 lg:ml-64 pb-24 lg:pb-8 px-4 md:px-8">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6">
-        <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-          PearLNet
-        </h1>
-        <Link
-          href="/PearLNet/account"
-          className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
-        >
-          Back to profile
-        </Link>
+      
       </header>
 
       <div className="max-w-lg mx-auto">
@@ -95,7 +87,7 @@ export default function EditProfilePage() {
                 name="bio"
                 rows={4}
                 defaultValue={profile?.bio ?? ''}
-                placeholder="Tell us about yourself..."
+                placeholder="Tell Peaple about yourself..."
                 className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
               />
             </div>
@@ -119,7 +111,7 @@ export default function EditProfilePage() {
             </div>
 
             {/* Birth Year */}
-            <div>
+            {/* <div>
               <label
                 htmlFor="birth_year"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -136,10 +128,10 @@ export default function EditProfilePage() {
                 max={new Date().getFullYear()}
                 className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
-            </div>
+            </div> */}
 
             {/* Date of Birth */}
-            <div>
+            {/* <div>
               <label
                 htmlFor="date_of_birth"
                 className="mb-2 block text-sm font-medium text-gray-700"
@@ -153,16 +145,56 @@ export default function EditProfilePage() {
                 defaultValue={profile?.date_of_birth ?? ''}
                 className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
-            </div>
+            </div> */}
+
+            <div>
+  <label
+    htmlFor="date_of_birth"
+    className="mb-2 block text-sm font-semibold text-gray-700"
+  >
+    Date of Birth
+  </label>
+  <input
+    type="date"
+    id="date_of_birth"
+    name="date_of_birth"
+    // Sets the latest possible date to today
+    max={new Date().toISOString().split("T")[0]} 
+    defaultValue={profile?.date_of_birth ?? ''}
+    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm 
+               outline-none focus:ring-2 focus:ring-blue-500 transition-all
+               appearance-none cursor-pointer"
+  />
+  <p className="mt-1 text-[10px] text-gray-400">Click the icon to browse or type YYYY-MM-DD</p>
+</div>
 
             <button
               type="submit"
               disabled={isPending}
               className="w-full mt-2 bg-blue-600 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Saving...' : 'Save Changes'}
+              {isPending ? 'Saving...' : 'Save Changes' } 
+
+            
             </button>
+
+
           </form>
+
+           <div className="text-center space-y-6">
+  <h1 className="text-2xl md:text-3xl font-light tracking-[0.5em] text-blue-900 uppercase">
+    PearLNet
+  </h1>
+  
+  <div className="h-px w-20 bg-blue-900/20 mx-auto"></div>
+
+  <Link
+    href="/PearLNet/account"
+    className="inline-block px-8 py-3 border border-blue-900 text-[10px] font-bold uppercase tracking-widest text-blue-900 hover:bg-blue-900 hover:text-white transition-all duration-500"
+  >
+    Continue to Profile
+  </Link>
+</div>
         </div>
       </div>
 
