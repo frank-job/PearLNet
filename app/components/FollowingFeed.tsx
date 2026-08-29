@@ -41,8 +41,8 @@ export default function FollowingFeed() {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto">
-{loading ? (
+    <div>
+      {loading ? (
         <div className="space-y-6 py-6">
           <PostSkeleton />
           <PostSkeleton />
@@ -50,7 +50,6 @@ export default function FollowingFeed() {
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          {/* Placeholder Avatar Grid */}
           <div className="flex -space-x-3 mb-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div

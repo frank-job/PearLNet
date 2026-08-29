@@ -76,7 +76,7 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
         {copied ? (
           <>
             <CheckIcon className="w-4 h-4" />
-            <span>Copied!</span>
+            <span className="hidden sm:inline">Copied!</span>
           </>
         ) : (
           <>
@@ -85,7 +85,7 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
                 isOpen ? 'rotate-45 scale-110' : ''
               }`}
             />
-            <span>Share</span>
+            <span className="hidden sm:inline">Share</span>
           </>
         )}
       </button>

@@ -1,23 +1,15 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ForYouFeed from './ForYouFeed';
 import FollowingFeed from './FollowingFeed';
 import SearchBox from './SearchBox';
+import SuggestedUsers from './SuggestedUsers';
 
 type FeedTab = 'forYou' | 'following';
 
-// ============================================================
-// MainFeed Component
-// - Twitter-style feed with "For You" and "Following" tabs
-// - Renders the dedicated ForYouFeed / FollowingFeed components
-// - Category chips (News, Movies, Sports, Music...) near the tabs
-//   as placeholders for future content APIs
-// ============================================================
-
 const CATEGORIES = [
   'News',
-  'Movies',
   'Sports',
   'Music',
   'Gaming',
@@ -30,20 +22,62 @@ export default function MainFeed() {
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const [activeCategory, setActiveCategory] = useState<string>('News');
   const [searchOpen, setSearchOpen] = useState(false);
+  const feedRef = useRef<HTMLDivElement>(null);
 
   const handleTabChange = (tab: FeedTab) => {
     if (tab === activeTab) return;
     setActiveTab(tab);
   };
+
+  useEffect(() => {
+    const el = feedRef.current;
+    if (!el) return;
+
+    let isPaused = false;
+    let animationId: number;
+    let scrollPos = el.scrollTop;
+
+    const step = () => {
+      if (!isPaused && el.scrollHeight - el.scrollTop - el.clientHeight > 1) {
+        scrollPos += 0.5;
+        el.scrollTop = scrollPos;
+      }
+      animationId = requestAnimationFrame(step);
+    };
+
+    animationId = requestAnimationFrame(step);
+
+    const handleScroll = () => {
+      scrollPos = el.scrollTop;
+    };
+
+    const handleMouseEnter = () => { isPaused = true; };
+    const handleMouseLeave = () => { isPaused = false; };
+    const handleTouchStart = () => { isPaused = true; };
+    const handleTouchEnd = () => {
+      setTimeout(() => { isPaused = false; }, 2000);
+    };
+
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    el.addEventListener('mouseenter', handleMouseEnter);
+    el.addEventListener('mouseleave', handleMouseLeave);
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
+    el.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      el.removeEventListener('scroll', handleScroll);
+      el.removeEventListener('mouseenter', handleMouseEnter);
+      el.removeEventListener('mouseleave', handleMouseLeave);
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
   return (
-    /* 1. ROOT CONTROLLER: Controls the overall page width and background */
-    <div className="min-h-screen bg-background w-full lg:max-w-3xl lg:mx-auto">
-    
-      {/* 2. HEADER CONTROLLER: This entire block sticks to the top */}
+    <div className="min-h-screen bg-background w-full lg:w-100 lg:h-5 lg:mx-auto">
       <div className="sticky top-0 z-50 w-full bg-surface/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="px-2">
-        
-          {/* --- Section 1: Tabs & Search Toggle --- */}
           <div className="flex items-center px-2">
             <button
               onClick={() => handleTabChange('forYou')}
@@ -77,14 +111,12 @@ export default function MainFeed() {
             </button>
           </div>
 
-          {/* --- Section 2: Expandable Search Box --- */}
           {searchOpen && (
             <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-2">
               <SearchBox />
             </div>
           )}
 
-          {/* --- Section 3: Category Chips --- */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar py-3 px-4 border-t border-border/50">
             {CATEGORIES.map((cat) => (
               <button
@@ -102,10 +134,14 @@ export default function MainFeed() {
         </div>
       </div>
 
-      {/* 3. FEED CONTROLLER: Controls the scrolling content area */}
-      <main className="py-4">
-        {activeTab === 'following' ? <FollowingFeed /> : <ForYouFeed />}
-      </main>
+      <div className="py-4">
+        <div className="mb-6">
+          <SuggestedUsers />
+        </div>
+        <div ref={feedRef} className="space-y-6">
+          {activeTab === 'following' ? <FollowingFeed /> : <ForYouFeed />}
+        </div>
+      </div>
     </div>
-  )
-};
+  );
+}
