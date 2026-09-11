@@ -40,10 +40,12 @@ export function usePostView(postId: string, onView?: () => void) {
     let observer: IntersectionObserver | null = null;
 
     const sendView = () => {
-      // Fire-and-forget async request; failures are non-critical.
-      fetch(`/api/posts/${postId}/view`, { method: 'POST' }).catch(() => {});
-      // Let the caller optimistically bump the local eye-count.
-      onViewRef.current?.();
+      fetch(`/api/posts/${postId}/view`, { method: 'POST' })
+        .then((response) => response.json().then((body) => ({ response, body })))
+        .then(({ response, body }) => {
+          if (response.ok && body.counted) onViewRef.current?.();
+        })
+        .catch(() => {});
     };
 
     if (typeof IntersectionObserver === 'undefined') {

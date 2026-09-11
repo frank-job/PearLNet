@@ -1,32 +1,41 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import PostFeed from './PostFeed';
 import PostSkeleton from './PostSkeleton';
 import type { Post } from '@/app/lib/definitions';
 
+const PAGE_SIZE = 5;
+
 // ============================================================
 // FollowingFeed Component
 // - Dedicated "Following" feed logic
-// - Fetches ALL posts from users you follow (no limit)
+// - Loads all posts from users you follow as the user scrolls
 // - Only shows posts from followed users
 // ============================================================
 
 export default function FollowingFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [exhausted, setExhausted] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-// Load a single, bounded page of following posts. The server applies a
-// default LIMIT (see action.ts), so we never request the entire table at
-// once. This removes the previous duplicate fetches on mount.
+  const fetchPosts = useCallback(async (offset: number) => {
+    const res = await fetch(`/api/posts?type=following&limit=${PAGE_SIZE}&offset=${offset}`);
+    const json = await res.json();
+    if (json.data) return json.data as Post[];
+    if (json.error) console.error(json.error);
+    return [];
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
-    fetch('/api/posts?type=following&limit=20')
-      .then((res) => res.json())
-      .then((json) => {
+    fetchPosts(0)
+      .then((data) => {
         if (cancelled) return;
-        if (json.data) setPosts(json.data);
-        else if (json.error) console.error(json.error);
+        setPosts(data);
+        setExhausted(data.length === 0);
       })
       .catch(() => {
         if (!cancelled) console.error('Failed to fetch following posts');
@@ -38,10 +47,35 @@ export default function FollowingFeed() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchPosts]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMore || exhausted) return;
+    setLoadingMore(true);
+    const more = await fetchPosts(posts.length);
+    if (more.length === 0) {
+      setExhausted(true);
+    } else {
+      setPosts((prev) => [...prev, ...more]);
+    }
+    setLoadingMore(false);
+  }, [exhausted, fetchPosts, loadingMore, posts.length]);
+
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || exhausted) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore) void handleLoadMore();
+      },
+      { rootMargin: '800px 0px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [exhausted, handleLoadMore, loadingMore]);
 
   return (
-    <div>
+    <div className="w-full lg:max-w-3xl lg:mx-auto">
       {loading ? (
         <div className="space-y-6 py-6">
           <PostSkeleton />
@@ -69,7 +103,14 @@ export default function FollowingFeed() {
           </p>
         </div>
       ) : (
-        <PostFeed posts={posts} />
+        <>
+          <PostFeed posts={posts} />
+          {!exhausted && (
+            <div ref={loadMoreRef} className="flex justify-center w-full py-6">
+              {loadingMore && <span className="text-sm text-muted">Loading more posts...</span>}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -356,6 +356,7 @@ export async function createPostAction(formData: FormData): Promise<ActionError 
   // Collect ALL image fields (single "imageBase64" for backward compat,
   // plus repeated "imageBase64_0", "imageBase64_1", ... for multi-image posts).
   const images: string[] = [];
+  const files = formData.getAll('images').filter((value): value is File => value instanceof File);
   const single = String(formData.get('imageBase64') ?? '').trim();
   if (single) images.push(single);
 
@@ -369,7 +370,7 @@ export async function createPostAction(formData: FormData): Promise<ActionError 
 
 const caption = sanitize(String(formData.get('caption') ?? '')).trim();
 
-  if (images.length === 0 && !caption) {
+  if (files.length === 0 && images.length === 0 && !caption) {
     return { message: 'Please add a photo or a caption.' };
   }
   if (caption.length > MAX_CAPTION_LENGTH) {
@@ -378,7 +379,18 @@ const caption = sanitize(String(formData.get('caption') ?? '')).trim();
 
 const uploadedUrls: string[] = [];
   try {
-    // Upload images to Vercel Blob, storing ONLY the resulting URLs in Neon.
+    // Upload original files directly; base64 remains supported for older clients.
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) continue;
+      const ext = (file.type.split('/')[1] || 'bin').replace(/[^a-z0-9]/gi, '');
+      const pathname = `posts/${session.userId}/${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}.${ext}`;
+      const { url } = await put(pathname, file, { access: 'public' });
+      uploadedUrls.push(url);
+    }
+
+    // Upload legacy base64 images to Vercel Blob, storing only their URLs.
     for (const dataUrl of images) {
       const blob = base64DataUrlToBlob(dataUrl);
       if (!blob) continue;
@@ -392,10 +404,18 @@ const uploadedUrls: string[] = [];
 
     const firstImage = uploadedUrls[0] ?? null;
     const imagesJson = uploadedUrls.length > 0 ? JSON.stringify(uploadedUrls) : null;
-    await sql`
-      INSERT INTO posts (image_url, images, caption, user_id, user_email)
-      VALUES (${firstImage}, ${imagesJson}, ${caption}, ${session.userId}, ${session.email})
-    `;
+    try {
+      await sql`
+        INSERT INTO posts (image_url, images, caption, user_id, user_email)
+        VALUES (${firstImage}, ${imagesJson}, ${caption}, ${session.userId}, ${session.email})
+      `;
+    } catch (err) {
+      if (!isMissingImagesColumn(err)) throw err;
+      await sql`
+        INSERT INTO posts (image_url, caption, user_id, user_email)
+        VALUES (${firstImage}, ${caption}, ${session.userId}, ${session.email})
+      `;
+    }
   } catch (err) {
     return { message: err instanceof Error ? err.message : 'Failed to create post' };
   }

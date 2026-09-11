@@ -65,7 +65,7 @@ export default function ImageCard({
             alt={`${alt} ${idx + 1}`}
             loading="lazy"
             decoding="async"
-            className="w-full aspect-square object-cover flex-shrink-0 snap-start"
+            className=" aspect-square object-cover flex-shrink-0 snap-start"
           />
         ))}
       </div>

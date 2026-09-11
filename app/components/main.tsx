@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ForYouFeed from './ForYouFeed';
 import FollowingFeed from './FollowingFeed';
 import SearchBox from './SearchBox';
+import FollowingAccounts from './FollowingAccounts';
 import SuggestedUsers from './SuggestedUsers';
 
 type FeedTab = 'forYou' | 'following';
@@ -75,8 +76,9 @@ export default function MainFeed() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background w-full lg:w-100 lg:h-5 lg:mx-auto">
+    <div className=" justify-center lg:h-40 rounded-2xl shadow-olive-100   bg-background  lg:max-w-2xl">
       <div className="sticky top-0 z-50 w-full bg-surface/95 backdrop-blur-md border-b border-border shadow-sm">
+
         <div className="px-2">
           <div className="flex items-center px-2">
             <button
@@ -134,10 +136,13 @@ export default function MainFeed() {
         </div>
       </div>
 
-      <div className="py-4">
-        <div className="mb-6">
-          <SuggestedUsers />
-        </div>
+      <div className="py-4 sm:px-2 lg:px-4">
+        {activeTab === 'following' && (
+          <>
+            <SuggestedUsers />
+            <FollowingAccounts />
+          </>
+        )}
         <div ref={feedRef} className="space-y-6">
           {activeTab === 'following' ? <FollowingFeed /> : <ForYouFeed />}
         </div>

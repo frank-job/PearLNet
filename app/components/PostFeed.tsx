@@ -46,7 +46,7 @@ function PostCard({
   return (
     <div
       ref={viewRef}
-      className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border transition-all duration-300 hover:shadow-md hover:border-blue-500/20"
+      className="bg-surface  lg:w-100 lg:bg-center border-b-cyan-900 sm:w-full transition-all duration-300  "
     >
       {/* Image */}
       <ImageCard imageUrl={post.image_url} images={post.images} alt="Post" />

@@ -62,6 +62,17 @@ export async function POST(
     return NextResponse.json({ success: true, counted });
   } catch (err) {
     console.error('Failed to track view:', err);
+    const message = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+    if (message.includes('post_views') && message.includes('does not exist')) {
+      try {
+        await sql`
+          UPDATE posts SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${postId}
+        `;
+        return NextResponse.json({ success: true, counted: true });
+      } catch {
+        // Return the original failure below when the fallback cannot run.
+      }
+    }
     return NextResponse.json({ error: 'Failed to track view' }, { status: 500 });
   }
 }

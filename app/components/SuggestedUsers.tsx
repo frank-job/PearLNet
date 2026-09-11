@@ -99,7 +99,6 @@ export default function SuggestedUsers() {
                   )}
                   <div className="text-center min-w-0">
                     <p className="text-xs font-semibold text-foreground truncate">{user.username}</p>
-                    <p className="text-[10px] text-muted truncate">{user.email}</p>
                   </div>
                 </Link>
                 <button

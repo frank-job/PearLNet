@@ -8,8 +8,8 @@ import LivePostPreview from './LivePostPreview';
    CreatePost Component
    - Twitter-style post composer
    - Supports a caption AND/OR images together in one post.
-   - Images are sent as base64 (imageBase64_0, _1, ...) and
-     uploaded to Vercel Blob on the server.
+   - Images are sent as multipart files and uploaded to Vercel Blob
+     on the server.
    ============================================================ */
 
 export default function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
@@ -55,15 +55,6 @@ const newFiles = [...files, ...selected];
     clearFeedback();
   };
 
-  const toBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-    });
-  };
-
 const handleUpload = async () => {
     clearFeedback();
 
@@ -76,10 +67,8 @@ const handleUpload = async () => {
     try {
       const formData = new FormData();
 
-// Convert every selected image to base64
-      for (let i = 0; i < files.length; i++) {
-        const imageBase64 = await toBase64(files[i]);
-        formData.append(`imageBase64_${i}`, imageBase64);
+      for (const file of files) {
+        formData.append('images', file, file.name);
       }
       formData.append('caption', description.trim());
 
