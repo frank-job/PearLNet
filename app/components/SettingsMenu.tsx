@@ -66,17 +66,20 @@ const handleLogout = async () => {
   return (
     <div ref={menuRef} className="relative">
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+        className="flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-xl border border-white/60 bg-white/70 p-3 text-blue-600 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md dark:border-gray-700/60 dark:bg-gray-800/70 dark:text-blue-400 dark:hover:bg-gray-800"
         title="Settings"
         aria-label="Settings"
+        aria-expanded={open}
+        aria-haspopup="menu"
       >
         <EllipsisHorizontalIcon className="w-6 h-6" />
       </button>
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-52 bg-surface rounded-2xl shadow-xl border border-border z-50 py-1 overflow-hidden"
+          className="fixed bottom-20 right-2 z-[60] w-64 overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 p-2 shadow-2xl backdrop-blur-md transition-all duration-300 dark:border-gray-700 dark:bg-gray-900/95 lg:absolute lg:bottom-auto lg:right-0 lg:top-full lg:mt-3 lg:w-56 lg:shadow-xl"
           role="menu"
           aria-label="Settings menu"
         >
@@ -88,9 +91,9 @@ const handleLogout = async () => {
             ref={firstItemRef}
             role="menuitem"
             tabIndex={0}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-strong transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-800 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-sm dark:text-gray-200 dark:hover:bg-gray-800"
           >
-            <UserCircleIcon className="w-5 h-5 text-blue-600" />
+            <UserCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Account
           </button>
 
@@ -101,9 +104,9 @@ const handleLogout = async () => {
             }}
             role="menuitem"
             tabIndex={0}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-strong transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-800 transition-all duration-300 hover:-translate-y-0.5 hover:bg-green-50 hover:shadow-sm dark:text-gray-200 dark:hover:bg-green-950/40"
           >
-            <Cog6ToothIcon className="w-5 h-5 text-blue-600" />
+            <Cog6ToothIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
             Create Post
           </button>
 
@@ -112,15 +115,15 @@ const handleLogout = async () => {
             onClick={() => setOpen(false)}
             role="menuitem"
             tabIndex={0}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-strong transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-800 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-50 hover:shadow-sm dark:text-gray-200 dark:hover:bg-amber-950/40"
           >
-            <NewspaperIcon className="w-5 h-5 text-blue-600" />
+            <NewspaperIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             News
           </Link>
 
           {/* Dev panel intentionally hidden in production UI */}
-          <div className="flex items-center justify-between px-4 py-2.5">
-            <span className="text-sm font-medium text-foreground">Theme</span>
+          <div className="my-1 flex items-center justify-between rounded-xl px-3 py-3 text-gray-800 dark:text-gray-200">
+            <span className="text-sm font-medium">Theme</span>
             <ThemeToggle />
           </div>
             
@@ -130,9 +133,9 @@ const handleLogout = async () => {
             onClick={handleLogout}
             role="menuitem"
             tabIndex={0}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-red-600 transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-50 hover:shadow-sm dark:text-red-400 dark:hover:bg-red-950/40"
           >
-            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            <ArrowRightOnRectangleIcon className="h-5 w-5" />
             Logout
           </button>
         </div>
