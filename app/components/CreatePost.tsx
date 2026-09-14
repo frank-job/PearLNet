@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, FaceSmileIcon, ChartBarIcon, HashtagIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import DynamicPlaceholder from './DynamicPlaceholder';
 import LivePostPreview from './LivePostPreview';
 
@@ -99,7 +99,7 @@ const handleUpload = async () => {
   };
 
   return (
-    <div id="composer" className="bg-surface p-4 border-b border-border">
+    <div id="composer" className="rounded-[1.5rem] border border-border bg-surface p-4 shadow-sm">
       <div className="flex align-middle top-1 gap-3">
         {/* User Avatar Placeholder */}
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">
@@ -108,7 +108,7 @@ const handleUpload = async () => {
 
         <div className="flex-1">
 {/* Textarea */}
-          <div className="relative rounded-2xl border-2 border-border bg-surface-strong focus-within:border-blue-500 focus-within:bg-surface focus-within:ring-4 focus-within:ring-blue-100 transition-all duration-200 px-4 py-2">
+          <div className="relative rounded-2xl border border-border bg-surface-strong px-4 py-2 transition-all duration-200 focus-within:border-[#f0694f] focus-within:bg-surface focus-within:ring-4 focus-within:ring-[#f0694f]/10">
             <DynamicPlaceholder isEmpty={description.trim().length === 0} />
             <textarea
               value={description}
@@ -162,7 +162,7 @@ const handleUpload = async () => {
 
           {/* Actions */}
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -173,13 +173,14 @@ const handleUpload = async () => {
               />
 <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-blue-500 hover:bg-blue-600/10 rounded-full transition-colors"
+                className="rounded-xl p-2 text-[#f0694f] transition-colors hover:bg-[#f0694f]/10"
                 title="Add images"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                </svg>
+                <PhotoIcon className="h-5 w-5" />
               </button>
+              <button type="button" aria-label="Add a poll" title="Add a poll" className="rounded-xl p-2 text-[#7a8d82] transition-colors hover:bg-[#d7f36b]/30 hover:text-foreground"><ChartBarIcon className="h-5 w-5" /></button>
+              <button type="button" aria-label="Add tags" title="Add tags" className="rounded-xl p-2 text-[#7a8d82] transition-colors hover:bg-[#d7f36b]/30 hover:text-foreground"><HashtagIcon className="h-5 w-5" /></button>
+              <button type="button" aria-label="Add emoji" title="Add emoji" onClick={() => setDescription((value) => `${value}${value ? ' ' : ''}✨`)} className="rounded-xl p-2 text-[#7a8d82] transition-colors hover:bg-[#d7f36b]/30 hover:text-foreground"><FaceSmileIcon className="h-5 w-5" /></button>
               {previews.length > 0 && (
                 <span className="text-[10px] font-semibold text-muted">
                   {previews.length} image{previews.length > 1 ? 's' : ''}
@@ -190,7 +191,7 @@ const handleUpload = async () => {
             <button
               onClick={handleUpload}
               disabled={uploading || (!description.trim() && files.length === 0)}
-              className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-full transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+              className="rounded-full bg-[#17221d] px-5 py-2 text-sm font-bold text-[#f4f1e8] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#f0694f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
             >
               {uploading ? 'Posting...' : 'Post'}
             </button>

@@ -1,6 +1,7 @@
 // import NavBar from '../../ui/nav/NavBarr';
 import MainFeed from '@/app/components/main';
 import  UpperHeader from '@/app/components/upper';
+import TrendingSidebar from '@/app/components/TrendingSidebar';
 
 // ============================================================
 // Rat Home Page
@@ -16,13 +17,14 @@ export default async function RatHomePage() {
   
   return (
     <>
-    <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
-        <div className="px-0 lg:px-4">
-           <div className='w-full' >
-                  <UpperHeader />
-           </div>
+    <main className="min-h-screen overflow-y-auto bg-[#f6f7f3] px-4 pb-24 pt-20 transition-all duration-300 sm:px-6 lg:px-8 lg:pb-10">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <UpperHeader />
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_320px] xl:items-start">
+          <MainFeed />
+          <TrendingSidebar />
         </div>
-    <MainFeed />
+      </div>
        </main>
       </>
   );

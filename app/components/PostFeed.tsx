@@ -36,7 +36,7 @@ function PostCard({
   viewCount: number;
   expanded: boolean;
   onToggleComments: () => void;
-  onView: () => void;
+  onView: (totalViews: number) => void;
   currentUserId?: string;
   onDelete?: () => void;
   onEdit?: () => void;
@@ -164,14 +164,14 @@ export default function PostFeed({ posts, onDeletePost, onEditPost }: { posts: P
     setExpandedPostId((prevId) => (prevId === postId ? null : postId));
   }, []);
 
-  // Optimistically bump the local eye-count when a post becomes visible.
-  const bumpView = useCallback((postId: string) => {
-    setViewCounts((prev) => ({ ...prev, [postId]: (prev[postId] ?? 0) + 1 }));
+  // Adopt the authoritative cached/database total returned by the API.
+  const setViewCount = useCallback((postId: string, totalViews: number) => {
+    setViewCounts((prev) => ({ ...prev, [postId]: totalViews }));
   }, []);
 
   const handleView = useCallback(
-    (postId: string) => () => bumpView(postId),
-    [bumpView],
+    (postId: string) => (totalViews: number) => setViewCount(postId, totalViews),
+    [setViewCount],
   );
 
   const handleDelete = useCallback((postId: string) => {

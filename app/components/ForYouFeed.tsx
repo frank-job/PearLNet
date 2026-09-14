@@ -2,14 +2,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import PostFeed from './PostFeed';
-import CreatePost from './CreatePost';
 import PostSkeleton from './PostSkeleton';
 import StoriesBar from './StoriesBar';
 import type { Post } from '@/app/lib/definitions';
 
 const PAGE_SIZE = 10;
 
-export default function ForYouFeed() {
+export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: number }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -59,6 +58,10 @@ export default function ForYouFeed() {
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
   };
+
+  useEffect(() => {
+    if (refreshSignal > 0) setRefreshKey((key) => key + 1);
+  }, [refreshSignal]);
 
   const handleLoadMore = useCallback(async () => {
     if (loadingMore || exhausted) return;
@@ -149,11 +152,6 @@ export default function ForYouFeed() {
           )}
         </div>
       )}
-
-      {/* Post Composer */}
-      <div className="border-b md:w-full border-border">
-        <CreatePost onPostCreated={handleRefresh} />
-      </div>
 
       {/* Feed Section */}
       {loading ? (

@@ -15,7 +15,7 @@ import { useEffect, useRef } from 'react';
      user do not inflate the global view count.
    ============================================================ */
 
-export function usePostView(postId: string, onView?: () => void) {
+export function usePostView(postId: string, onView?: (totalViews: number) => void) {
   const ref = useRef<HTMLDivElement | null>(null);
   const countedRef = useRef(false);
 
@@ -43,7 +43,9 @@ export function usePostView(postId: string, onView?: () => void) {
       fetch(`/api/posts/${postId}/view`, { method: 'POST' })
         .then((response) => response.json().then((body) => ({ response, body })))
         .then(({ response, body }) => {
-          if (response.ok && body.counted) onViewRef.current?.();
+          if (response.ok && typeof body.totalViews === 'number') {
+            onViewRef.current?.(body.totalViews);
+          }
         })
         .catch(() => {});
     };

@@ -7,7 +7,7 @@ import Link from "next/link";
 
 // Shared input styles to reduce duplication
 const inputBase =
-  "peer block w-full rounded-xl border border-border bg-surface-strong py-[12px] pl-10 pr-4 text-sm text-foreground outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-muted";
+  "peer block w-full rounded-2xl border border-[#17221d]/15 bg-[#fffdf7] py-[13px] pl-10 pr-4 text-sm text-[#17221d] outline-none transition-all placeholder:text-[#718077] focus:border-[#f0694f] focus:ring-2 focus:ring-[#f0694f]/20";
 
 // ============================================================
 // LoginForm
@@ -23,12 +23,12 @@ export default function LoginForm() {
 
   return (
     <form action={formAction} className="space-y-3">
-      <div className="flex-1 rounded-3xl bg-surface px-6 pb-8 pt-8 shadow-sm border border-border">
-<h1 className="mb-3 font-serif text-2xl text-blue-600 font-bold">
+      <div className="flex-1 rounded-[2rem] border border-[#17221d]/10 bg-[#fffdf7] px-6 pb-8 pt-8 shadow-[10px_12px_0_#d7f36b] sm:px-8">
+    <h1 className="mb-3 text-3xl font-black tracking-[-0.06em] text-[#17221d]">
           Welcome back
         </h1>
-        <p className="text-sm text-blue-500 mb-6 italic">
-          Log in to your account.
+        <p className="mb-6 text-sm leading-6 text-[#718077]">
+          Your people and moments are right where you left them.
         </p>
 
         {/* Server-side error banner */}
@@ -42,7 +42,7 @@ export default function LoginForm() {
           {/* Email Field */}
           <div>
             <label
-              className="mb-3 mt-5 block text-xs font-medium text-foreground"
+              className="mb-3 mt-5 block text-xs font-black uppercase tracking-[0.12em] text-[#526057]"
               htmlFor="email"
             >
               Email Address
@@ -64,7 +64,7 @@ export default function LoginForm() {
           {/* Password Field */}
           <div>
             <label
-              className="mb-3 mt-5 block text-xs font-medium text-foreground"
+              className="mb-3 mt-5 block text-xs font-black uppercase tracking-[0.12em] text-[#526057]"
               htmlFor="password"
             >
               Password
@@ -95,11 +95,11 @@ export default function LoginForm() {
           />
           <span>
             I agree to the{" "}
-            <a href="/terms" className="text-blue-600 font-semibold hover:underline">
+              <a href="/terms" className="font-semibold text-[#f0694f] hover:underline">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="/privacy" className="text-blue-600 font-semibold hover:underline">
+              <a href="/privacy" className="font-semibold text-[#f0694f] hover:underline">
               Privacy Policy
             </a>
           </span>
@@ -108,7 +108,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isPending}
-className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-bold text-white transition-all hover:bg-blue-700 active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+className="mt-8 flex h-13 w-full items-center justify-center rounded-full bg-[#17221d] px-4 text-sm font-bold text-[#f4f1e8] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#f0694f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Signing in..." : "Log in"}
           <ArrowRightIcon className="ml-auto h-5 w-5 text-white" />
@@ -119,7 +119,7 @@ className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="font-semibold text-blue-600 hover:underline"
+              className="font-semibold text-[#f0694f] hover:underline"
             >
               Sign up
             </Link>

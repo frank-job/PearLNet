@@ -17,27 +17,20 @@ export default async function UpperHeader() {
     displayName = 'friend';
   }
 return (
-  <header className="relative w-full px-6 pt-12 pb-8 round-md overflow-hidden bg-surface/80 backdrop-filter backdrop-blur-md border-b border-border">
-    {/* MODERN BACKGROUND: Mesh Gradient Blobs */}
-    <div className="absolute top-0 left-0 w-full h-full -z-10 select-none pointer-events-none">
-      {/* Blue Blur */}
-      <div className="absolute -top-10 -left-10 w-72 h-72 bg-blue-500/20 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse"></div>
-      {/* Cyan/Green Blur */}
-      <div className="absolute top-0 right-20 w-64 h-64 bg-cyan-400/10 rounded-full mix-blend-multiply filter blur-[100px]"></div>
-      {/* Subtle Bottom Glow */}
-      <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full h-32 bg-gradient-to-t from-blue-500/10 to-transparent"></div>
+  <header className="relative mx-auto w-full max-w-7xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#101b1b] px-5 py-4 shadow-2xl shadow-[#101b1b]/10 sm:px-8">
+    <div className="pointer-events-none absolute inset-0 opacity-80">
+      <div className="absolute -left-16 -top-28 h-72 w-72 rounded-full bg-[#d7f36b]/20 blur-[90px]" />
+      <div className="absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-[#f0694f]/20 blur-[100px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.08),transparent_35%,rgba(255,255,255,0.02))]" />
     </div>
-
-    {/* CONTENT CONTAINER */}
-    <div className="max-w-5xl mx-auto relative z-10">
-      
-     
-
-      {/* Main Greeting - Correctly nested */}
-      <div className="transition-all duration-500 ease-in-out">
+    <div className="relative z-10 flex min-h-[170px] items-end justify-between gap-5">
+      <div className="[&_*]:!text-[#f4f1e8]">
         <Greetings userName={displayName} />
       </div>
-
+      <div className="hidden rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-right backdrop-blur-xl sm:block">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#a8b5ad]">Your space</p>
+        <p className="mt-1 text-sm font-bold text-[#f4f1e8]">Make today worth sharing.</p>
+      </div>
     </div>
   </header>
 )
