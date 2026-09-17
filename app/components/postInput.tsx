@@ -31,7 +31,7 @@ export default function PostInput({
 
   return (
     <div className="w-full">
-      <div className="relative rounded-2xl border-2 border-gray-200 bg-gray-50 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 transition-all duration-200 px-4 py-2">
+      <div className="relative rounded-2xl border-2 border-gray-200 bg-gray-50  focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 transition-all duration-200 px-4 py-2">
         <textarea
           placeholder={dynamicPlaceholder}
           value={description}

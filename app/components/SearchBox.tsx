@@ -69,8 +69,8 @@ export default function SearchBox() {
   const hasResults = users.length > 0 || posts.length > 0;
 
   return (
-    <div ref={boxRef} className="relative w-full max-w-sm">
-      <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+    <div ref={boxRef} className="relative items-center w-full max-w-sm">
+      <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2  transition-all">
         <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
 <input
           id="feed-search-input"
@@ -90,7 +90,7 @@ export default function SearchBox() {
         <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-96 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto" />
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 " />
             </div>
           ) : !hasResults ? (
             <div className="p-4 text-center text-sm text-gray-400">
@@ -118,7 +118,7 @@ export default function SearchBox() {
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold uppercase">
+                        <div className="w-8 h-8 bg-blue-100  rounded-full flex items-center justify-center text-sm font-bold uppercase">
                           {user.username[0]}
                         </div>
                       )}

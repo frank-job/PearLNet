@@ -1,5 +1,5 @@
 'use client';
-
+// shadow-[10px_12px_0_#f0694f] 
 import {
   AtSymbolIcon,
   KeyIcon,
@@ -27,7 +27,7 @@ export default function SignupForm() {
 
   return (
     <form action={formAction} className="space-y-3">
-      <div className="flex-1 rounded-[2rem] border border-[#17221d]/10 bg-[#fffdf7] px-6 pb-8 pt-8 shadow-[10px_12px_0_#f0694f] sm:px-8">
+      <div className="flex-1 rounded-[2rem] border border-[#17221d]/10 shadow-[0_8px_32px_0_rgba(0,102,255,0.25)] bg-white px-6 pb-8 pt-8 sm:px-8">
     <h1 className="mb-3 text-3xl font-black tracking-[-0.06em] text-[#17221d]">
           Create your account
         </h1>

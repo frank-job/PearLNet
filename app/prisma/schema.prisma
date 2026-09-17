@@ -1,0 +1,24 @@
+// prisma/schema.prisma
+
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  phoneHash   String?  @unique // Hashed E.164 phone (e.g., +256...)
+  emailHash   String?  @unique // Hashed lowercase email
+  createdAt   DateTime @default(now())
+
+  contacts    UserContact[]
+}
+
+model UserContact {
+  id          String   @id @default(uuid())
+  userId      String
+  contactHash String   // Stores hashed phone OR hashed email from device
+  type        String   // "PHONE" or "EMAIL"
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contactHash])
+  @@index([contactHash])
+}

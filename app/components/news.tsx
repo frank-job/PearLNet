@@ -229,7 +229,7 @@ function InterestInput({
         value={interestInput}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Add your interest (e.g. movies, cars, space...)"
-        className="flex-1 px-3 py-2 rounded-xl border border-border text-xs font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex-1 px-3 py-2 rounded-xl border border-border text-xs font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 "
       />
       <button
         type="submit"

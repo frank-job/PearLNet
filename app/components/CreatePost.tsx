@@ -108,7 +108,7 @@ const handleUpload = async () => {
 
         <div className="flex-1">
 {/* Textarea */}
-          <div className="relative rounded-2xl border border-border bg-surface-strong px-4 py-2 transition-all duration-200 focus-within:border-[#f0694f] focus-within:bg-surface focus-within:ring-4 focus-within:ring-[#f0694f]/10">
+          <div className="relative rounded-2xl border border-border bg-surface-strong px-4 py-2 transition-all duration-200 ">
             <DynamicPlaceholder isEmpty={description.trim().length === 0} />
             <textarea
               value={description}

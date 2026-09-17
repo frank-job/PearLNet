@@ -51,7 +51,7 @@ export default function PostActions({
           <button
             type="button"
             onClick={onEdit}
-            className="p-1.5 rounded-full text-muted hover:text-blue-500 hover:bg-surface-strong transition-colors"
+            className="p-1.5 rounded-full text-muted hover:bg-surface-strong transition-colors"
             title="Edit"
           >
             <PencilIcon className="w-4 h-4" />
@@ -59,7 +59,7 @@ export default function PostActions({
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 rounded-full text-muted hover:text-red-500 hover:bg-surface-strong transition-colors"
+            className="p-1.5 rounded-full text-muted   transition-colors"
             title="Delete"
           >
             <TrashIcon className="w-4 h-4" />
@@ -71,7 +71,7 @@ export default function PostActions({
         onClick={handleToggleSave}
         disabled={saving}
         className={`p-1.5 rounded-full transition-colors ${
-          saved ? 'text-blue-500' : 'text-muted hover:text-blue-500 hover:bg-surface-strong'
+          saved ? 'text-blue-500' : 'text-muted hover:bg-surface-strong'
         } disabled:opacity-50`}
         title={saved ? 'Unsave' : 'Save'}
       >

@@ -123,7 +123,7 @@ export default function Navigation() {
       </header>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 flex border-t border-border bg-surface p-2 lg:hidden"
+        className="fixed bottom-2 left-3 text-sm right-3 z-100 flex items-center justify-around p-2 bg-white/90  rounded-[28px] border border-white/60 dark:border-zinc-800/80 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.12),0_2px_8px_-2px_rgba(0,0,0,0.06)] ring-1 ring-black/5 dark:ring-white/10 p-2 lg:hidden"
         aria-label="Main navigation"
       >
         {primaryLinks.map((link) => (

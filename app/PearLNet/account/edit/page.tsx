@@ -70,7 +70,7 @@ export default function EditProfilePage() {
                 name="username"
                 defaultValue={profile?.username ?? ''}
                 required
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2  transition-all"
               />
             </div>
 
@@ -88,7 +88,7 @@ export default function EditProfilePage() {
                 rows={4}
                 defaultValue={profile?.bio ?? ''}
                 placeholder="Tell Peaple about yourself..."
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2  transition-all resize-none"
               />
             </div>
 
@@ -106,7 +106,7 @@ export default function EditProfilePage() {
                 name="location"
                 defaultValue={profile?.location ?? ''}
                 placeholder="City, Country"
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 transition-all"
               />
             </div>
 
@@ -171,7 +171,7 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full mt-2 bg-blue-600 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-2 bg-blue-600 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? 'Saving...' : 'Save Changes' } 
 

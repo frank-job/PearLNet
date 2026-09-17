@@ -154,12 +154,12 @@ export default function CommentSection({ postId }: { postId: string }) {
                 setError(null);
               }}
               placeholder="Add a comment..."
-              className="flex-1 text-sm bg-surface-strong rounded-xl px-3 py-2 border-2 border-border outline-none transition-all duration-200 focus:border-blue-500 focus:bg-surface focus:ring-4 focus:ring-blue-100"
+              className="flex-1 text-sm bg-surface-strong rounded-xl px-3 py-2 border-2 border-border outline-none transition-all duration-200 "
             />
             <button
               type="submit"
               disabled={loading || !newComment.trim()}
-              className="text-sm font-bold text-blue-600 disabled:text-muted hover:text-blue-800 transition-colors"
+              className="text-sm font-bold text-blue-600 disabled:text-muted"
             >
               {loading ? '...' : 'Post'}
             </button>

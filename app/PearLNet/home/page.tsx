@@ -17,12 +17,12 @@ export default async function RatHomePage() {
   
   return (
     <>
-    <main className="min-h-screen overflow-y-auto bg-[#f6f7f3] px-4 pb-24 pt-20 transition-all duration-300 sm:px-6 lg:px-8 lg:pb-10">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <main className=" overflow-y-auto   sm:w-full transition-all duration-300 sm:px-6 lg:px-8 lg:pb-10">
+      <div className="space-y-6">
         <UpperHeader />
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_320px] xl:items-start">
           <MainFeed />
-          <TrendingSidebar />
+          {/* <TrendingSidebar /> */}
         </div>
       </div>
        </main>
