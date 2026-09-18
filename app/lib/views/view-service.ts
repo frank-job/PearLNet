@@ -28,7 +28,7 @@ export async function registerPostView(
   postId: string,
   identity: ViewIdentity,
 ): Promise<{ counted: boolean; totalViews: number }> {
-  const guestId = 'ipAddress' in identity ? hashIpAddress(identity.ipAddress) : null;
+  const guestId = 'ipAddress' in identity && identity.ipAddress ? hashIpAddress(identity.ipAddress) : null;
   const userId = 'userId' in identity ? identity.userId : null;
 
   // The unique partial indexes make this insert safe even when two requests
