@@ -20,13 +20,11 @@ export default function MainFeed() {
         <>
        <div
   className="
-    sticky top-0 z-50
-  bg-white/10  lg:shadow-lg backdrop-blur-xl lg:border-b lg: border-white/20 lg:w-full shadow-black/10rounded-b-2xl
-
+   
    
   "
 >
-  <div className="">
+  <div className="top-20">
     <div className="flex items-center px-2">
       <FeedTabs
         activeTab={activeTab}
@@ -50,7 +48,7 @@ export default function MainFeed() {
 
  
 </div>
-<div>
+<div className="py-4 px-4">
    <SuggestedUsers/>
 </div>
 

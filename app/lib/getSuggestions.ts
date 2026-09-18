@@ -1,5 +1,5 @@
 // lib/getSuggestions.ts
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 
 export async function getPeopleYouMayKnow(userId: string) {
   // Find users who uploaded the current user's contact number (Reverse Lookup)

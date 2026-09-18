@@ -18,7 +18,7 @@ export default function SuggestedUsers() {
   const fetchSuggestions = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/suggestions?limit=10');
+      const res = await fetch('/api/suggestions?limit=50');
       const data = await res.json();
       setUsers(data.data ?? []);
     } catch {
@@ -66,10 +66,10 @@ export default function SuggestedUsers() {
 
       <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
         {loading ? (
-          [0, 1, 2, 3, 4].map((i) => (
+          Array.from({ length: 100 }, (_, i) => i).map((i) => (
             <div
               key={i}
-              className="flex-shrink-0 w-32 rounded-2xl border border-border bg-surface p-3 space-y-2 animate-pulse"
+              className="flex-shrink-0 w-32 rounded-3xl border border-border bg-surface p-3 space-y-2 animate-pulse"
             >
               <div className="w-10 h-10 bg-surface-strong rounded-full mx-auto" />
               <div className="h-2.5 bg-surface-strong rounded w-3/4 mx-auto" />

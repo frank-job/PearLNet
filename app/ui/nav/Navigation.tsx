@@ -116,14 +116,14 @@ export default function Navigation() {
           href="/PearLNet/settings"
           aria-label="Open settings"
           title="Open settings"
-          className="rounded-xl p-2 text-foreground hover:bg-surface-strong"
+          className="rounded-xl p-2  hover:bg-surface-strong"
         >
           <Menu className="h-6 w-6" aria-hidden="true" />
         </Link>
       </header>
 
       <nav
-        className="fixed bottom-2 left-3 text-sm right-3 z-100 flex items-center justify-around p-2 bg-white/90  rounded-[28px] border border-white/60 dark:border-zinc-800/80 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.12),0_2px_8px_-2px_rgba(0,0,0,0.06)] ring-1 ring-black/5 dark:ring-white/10 p-2 lg:hidden"
+        className="fixed bottom-2 left-3 text-sm right-3 z-99 flex items-center justify-around border-b-gray-100 bg-white/100  rounded-[28px]  dark:border-zinc-800/80 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.12),0_2px_8px_-2px_rgba(0,0,0,0.06)] ring-1 ring-black/5 dark:ring-white/10 p-2 lg:hidden"
         aria-label="Main navigation"
       >
         {primaryLinks.map((link) => (

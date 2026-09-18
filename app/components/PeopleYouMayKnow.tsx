@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { hashPhoneNumber } from "@/utils/crypto";
+import { hashPhone } from "@/app/utils/db/crypto";
 
 interface UserSuggestion {
   id: string;

@@ -1,4 +1,6 @@
 allowBuilds:
-  bufferutil: true
-  sharp: true
-  unrs-resolver: true
+  bufferutil: false
+  esbuild: false
+  msgpackr-extract: false
+  unrs-resolver: false
+  workerd: false

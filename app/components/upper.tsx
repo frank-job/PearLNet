@@ -17,7 +17,8 @@ export default async function UpperHeader() {
     displayName = 'friend';
   }
 return (
-  <header className="relative mx-auto w-full max-w-7xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#101b1b] px-5 py-4 shadow-2xl shadow-[#101b1b]/10 sm:px-8">
+  <>
+  <header className="relative mx-auto w-full max-w-7xl overflow-hidden lg:top-3  sm:lg-20y rounded-[2rem] lg:border lg:border-white/10 bg-[#101b1b] px-5 py-4 lg:shadow-2xl lg:shadow-[#101b1b]/10 sm:px-8">
     <div className="pointer-events-none absolute inset-0 opacity-80">
       <div className="absolute -left-16 -top-28 h-72 w-72 rounded-full bg-[#d7f36b]/20 blur-[90px]" />
       <div className="absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-[#f0694f]/20 blur-[100px]" />
@@ -33,5 +34,6 @@ return (
       </div>
     </div>
   </header>
+  </>
 )
 };
