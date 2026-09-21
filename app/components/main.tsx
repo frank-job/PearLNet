@@ -70,11 +70,11 @@ export default function MainFeed() {
         </div>
       )}
 
-      <div className="px-0 py-4">
+      <div className="px-0 py-0">
         <SuggestedUsers />
       </div>
 
-      <div className="px-0">
+<div className="px-0">
         {activeTab === 'following' ? (
           <>
             <FollowingAccounts />
@@ -83,7 +83,10 @@ export default function MainFeed() {
         ) : (
           <>
             <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} />
-            <ForYouFeed refreshSignal={postRefreshSignal} />
+          <div className="py-2.5 w-full">
+                  <ForYouFeed refreshSignal={postRefreshSignal} />
+              </div>
+          
           </>
         )}
       </div>

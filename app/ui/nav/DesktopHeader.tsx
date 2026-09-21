@@ -64,8 +64,8 @@ export default function DesktopHeader() {
             onClick={() => setActiveCategory(category)}
             className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
               activeCategory === category
-                ? 'border-primary bg-primary text-white'
-                : 'border-border bg-surface text-muted hover:border-primary hover:text-primary hover:bg-surface-strong'
+                ? 'border-primary bg-blue-600 text-black'
+                : 'border-border bg-surface text-blue-800 hover:border-primary hover:text-primary hover:bg-surface-strong'
             }`}
           >
             {category.toUpperCase()}

@@ -9,7 +9,7 @@
 
 export default function PostSkeleton() {
   return (
-    <div className="bg-surface rounded-2xl overflow-hidden shadow-sm border border-border animate-pulse">
+    <div className="bg-surface sm:w-full rounded-2xl overflow-hidden shadow-sm border border-border animate-pulse">
       {/* Image placeholder */}
       <div className="w-full aspect-[4/3] bg-surface-strong" />
 

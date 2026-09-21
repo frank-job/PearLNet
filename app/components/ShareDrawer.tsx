@@ -66,7 +66,7 @@ export default function ShareDrawer({ postId, postAuthorId }: { postId: string; 
         onClick={() => setIsOpen(!isOpen)}
         className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-90 shadow-sm ${
           copied
-            ? 'bg-emerald-500 text-white shadow-emerald-200 border border-emerald-500'
+            ? 'bg-emerald-500 text-black shadow-emerald-200 border border-emerald-500'
             : isOpen
             ? 'bg-emerald-50 text-emerald-600 shadow-emerald-100 border border-emerald-100'
             : 'bg-surface-strong text-muted hover:bg-surface hover:text-emerald-600 hover:shadow-emerald-100 border border-transparent hover:border-emerald-100'
