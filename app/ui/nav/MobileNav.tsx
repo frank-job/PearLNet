@@ -32,7 +32,7 @@ export default function MobileNav() {
               onClick={() => setActiveTab(tab)}
               className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                 activeTab === tab
-                  ? 'text-white bg-primary shadow-sm'
+                  ? 'text-blue-600 bg-white shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
@@ -57,8 +57,8 @@ export default function MobileNav() {
             onClick={() => setActiveCategory(category)}
             className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
               activeCategory === category
-                ? 'border-primary bg-primary text-white'
-                : 'border-border bg-surface text-slate-500 dark:text-slate-400 hover:border-primary/50 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                ? ' bg-white text-blue border-2 border-blue-500'
+                : ' text-blue-700 border border-blue-600 '
             }`}
           >
             {category.toUpperCase()}
