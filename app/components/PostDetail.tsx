@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeftIcon, HeartIcon, MessageCircleIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, HeartIcon, ChatBubbleLeftIcon, ShareIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Post } from '@/app/lib/definitions';
@@ -156,7 +156,7 @@ export default function PostDetail({ postId: propPostId }: { postId: string }) {
               </button>
 
               <button className="flex items-center gap-2 text-sm font-medium text-muted hover:text-primary transition-colors">
-                <MessageCircleIcon className="h-5 w-5" />
+                <ChatBubbleLeftIcon className="h-5 w-5" />
                 <span>{commentCount}</span>
               </button>
 
