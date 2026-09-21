@@ -11,7 +11,7 @@ import TrendingSidebar from '@/app/components/TrendingSidebar';
 
 export default async function RatHomePage() {
   return (
-    <main className="overflow-y-auto w-full max-w-full px-4 lg:px-6 lg:pb-10 overflow-x-hidden">
+    <main className="">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
         <MainFeed />
         <TrendingSidebar />
