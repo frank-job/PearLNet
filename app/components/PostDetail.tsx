@@ -98,7 +98,7 @@ export default function PostDetail({ postId: propPostId }: { postId: string }) {
           <Link href="/PearLNet/home" className="p-2 rounded-full hover:bg-surface-strong transition-colors">
             <ArrowLeftIcon className="h-6 w-6" />
           </Link>
-          <h1 className="text-lg font-black">Post</h1>
+          <h1 className="text-lg text-blue-700 font-black">Post</h1>
         </div>
       </header>
 

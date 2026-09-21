@@ -191,7 +191,7 @@ const handleUpload = async () => {
             <button
               onClick={handleUpload}
               disabled={uploading || (!description.trim() && files.length === 0)}
-              className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
+              className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
             >
               {uploading ? 'Posting...' : 'Post'}
             </button>
