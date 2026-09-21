@@ -12,10 +12,6 @@ export async function GET(
   { params }: { params: Promise<{ postId: string }> },
 ) {
   const { postId } = await params;
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
 
   const result = await fetchPosts(1, 0);
   if (!result || 'error' in result) {

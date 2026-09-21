@@ -1,73 +1,70 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import {
-  Bell,
-  BookmarkIcon,
-  Home,
-  Menu,
-  Newspaper,
-  PlusSquare,
-  UserCircle,
-} from 'lucide-react';
+import { Menu } from 'lucide-react';
 import SettingsPanel from './SettingsPanel';
 
-const navigationLinks = [
-  { name: 'Home', href: '/PearLNet/home', icon: Home },
-  { name: 'Create', href: '/PearLNet/create', icon: PlusSquare },
-  { name: 'Notifications', href: '/PearLNet/Notification', icon: Bell },
-  { name: 'Account', href: '/PearLNet/account', icon: UserCircle },
-  { name: 'Saved', href: '/PearLNet/saved', icon: BookmarkIcon },
-  { name: 'News', href: '/PearLNet/news', icon: Newspaper },
-];
-
-const primaryLinks = navigationLinks.slice(0, 5);
-
-function NavigationLink({
-  link,
-  compact = false,
-}: {
-  link: (typeof navigationLinks)[number];
-  compact?: boolean;
-}) {
-  // Use usePathname via inline check since this is a client component
-  // The compact version is used for mobile bottom nav where we don't track active state
-  return (
-    <Link
-      href={link.href}
-      className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${compact ? 'min-w-0 flex-1 flex-col gap-1 px-2 py-2 text-xs' : 'text-foreground hover:bg-surface-strong'}`}
-    >
-      <link.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-      <span>{link.name}</span>
-    </Link>
-  );
-}
+export type FeedTab = 'forYou' | 'following';
 
 export default function MobileNav() {
+  const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
+  const [activeCategory, setActiveCategory] = useState<string>('News');
+
   return (
-    <>
-      <header className="fixed inset-x-0 top-3 left-3 right-3 z-99 rounded-[10px] shadow-olive-300 flex h-16 items-center justify-between border-b border-border bg-surface px-2 lg:hidden">
-        <Link href="/" className="text-lg font-bold text-blue-600">
+    <header className="sticky top-0 z-50 w-full bg-background border-b border-border lg:hidden">
+      <div className="flex h-14 items-center justify-between px-4 border-b border-border">
+        <Link href="/PearLNet/home" className="text-xl font-bold text-primary">
           PearLNet
         </Link>
         <Link
           href="/PearLNet/settings"
           aria-label="Open settings"
           title="Open settings"
-          className="rounded-xl bg-blue-200 shadow-olive-700 p-2 hover:bg-surface-strong"
+          className="rounded-xl bg-surface-strong p-2 hover:bg-surface-elevated transition-colors"
         >
-          <Menu className="h-6 w-6" aria-hidden="true" />
+          <Menu className="h-6 w-6 text-foreground" aria-hidden="true" />
         </Link>
-      </header>
+      </div>
 
-      <nav
-        className="fixed bottom-2 left-3 right-3 z-99 flex items-center justify-around rounded-[28px] bg-white/100 shadow-nav-strong ring-nav-ring p-2 lg:hidden dark:shadow-nav-strong-dark dark:ring-nav-ring-dark"
-        aria-label="Main navigation"
-      >
-        {primaryLinks.map((link) => (
-          <NavigationLink key={link.href} link={link} compact />
+      <div className="flex items-center px-4 py-2 border-b border-border">
+        <div className="flex flex-1 gap-1 bg-surface-strong rounded-xl p-1">
+          {(['forYou', 'following'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                activeTab === tab
+                  ? 'text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              {tab === 'forYou' ? 'For You' : 'Following'}
+            </button>
+          ))}
+        </div>
+        <button className="ml-3 rounded-full p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex px-4 py-2 pb-3 overflow-x-auto no-scrollbar gap-2 border-b border-border">
+        {['News', 'Sports', 'Music', 'Gaming', 'Food', 'Travel', 'Tech'].map((category) => (
+          <button
+            key={category}
+            onClick={() => setActiveCategory(category)}
+            className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+              activeCategory === category
+                ? 'border-primary bg-primary text-white'
+                : 'border-border bg-surface text-slate-500 dark:text-slate-400 hover:border-primary/50 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+            }`}
+          >
+            {category.toUpperCase()}
+          </button>
         ))}
-      </nav>
-    </>
+      </div>
+    </header>
   );
 }

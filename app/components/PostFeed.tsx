@@ -46,7 +46,7 @@ function PostCard({
   return (
     <div
       ref={viewRef}
-      className="bg-surface  lg:w-100 lg:bg-center border-b-cyan-900 sm:w-full transition-all duration-300  "
+      className="bg-surface border border-border rounded-2xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md"
     >
       {/* Image */}
       <ImageCard imageUrl={post.image_url} images={post.images} alt="Post" />
@@ -58,14 +58,14 @@ function PostCard({
           <div className="flex items-center gap-2">
             <a
               href={post.user_id ? `/PearLNet/account?id=${post.user_id}` : undefined}
-              className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold uppercase"
+              className="w-8 h-8 bg-primary-soft text-primary rounded-full flex items-center justify-center text-sm font-bold uppercase"
             >
               {post.user_email ? post.user_email[0] : '?'}
             </a>
             <div>
               <a
                 href={post.user_id ? `/PearLNet/account?id=${post.user_id}` : undefined}
-                className="text-sm font-semibold text-foreground hover:text-blue-600 transition-colors"
+                className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
               >
                 {post.user_email ? post.user_email.split('@')[0] : 'Anonymous'}
               </a>
@@ -90,7 +90,7 @@ function PostCard({
 
             <button
               onClick={onToggleComments}
-              className="flex items-center gap-1 text-muted hover:text-blue-500 transition-colors text-sm"
+              className="flex items-center gap-1 text-muted hover:text-primary transition-colors text-sm"
             >
               <ChatBubbleLeftIcon className="w-5 h-5" />
               <span className="hidden sm:inline">Comments</span>

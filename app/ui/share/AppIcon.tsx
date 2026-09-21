@@ -25,7 +25,7 @@ export default function AppIcon({ app, onShare }: { app: ShareApp; onShare?: () 
           loading="lazy"
         />
       </button>
-      <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+      <span className="text-[10px] font-black text-muted uppercase tracking-tighter">
         {app.name}
       </span>
     </motion.div>

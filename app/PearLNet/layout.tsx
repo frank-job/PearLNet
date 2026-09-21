@@ -19,9 +19,9 @@ export default async function Layout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <Navigation />
-      <div className="min-h-screen lg:pl-64">{children}</div>
+      <main className="flex-1 lg:pl-64 pt-14 lg:pt-0 min-w-0">{children}</main>
     </div>
   );
 }

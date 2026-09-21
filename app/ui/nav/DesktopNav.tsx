@@ -24,7 +24,7 @@ function NavigationLink({ link }: { link: (typeof navigationLinks)[number] }) {
   return (
     <Link
       href={link.href}
-      className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors text-foreground hover:bg-surface-strong"
+      className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors text-muted hover:text-foreground hover:bg-surface-strong"
     >
       <link.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
       <span>{link.name}</span>
@@ -34,8 +34,8 @@ function NavigationLink({ link }: { link: (typeof navigationLinks)[number] }) {
 
 export default function DesktopNav() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-surface p-5 lg:flex lg:flex-col shadow-nav dark:shadow-nav-dark">
-      <Link href="/" className="mb-8 px-3 text-xl font-bold text-blue-600">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-surface p-5 lg:flex lg:flex-col shadow-nav">
+      <Link href="/PearLNet/home" className="mb-8 px-3 text-xl font-bold text-primary">
         PearLNet
       </Link>
       <nav className="flex flex-col gap-2" aria-label="Main navigation">

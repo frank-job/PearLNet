@@ -60,13 +60,13 @@ export default function SuggestedUsers() {
     <div className="w-full">
       <div className="flex items-center gap-2 mb-3">
         <h2 className="text-sm font-black text-foreground uppercase tracking-widest">
-          Who to <span className="text-purple-600">Follow</span>
+          Who to <span className="text-primary">Follow</span>
         </h2>
       </div>
 
       <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
         {loading ? (
-          Array.from({ length: 100 }, (_, i) => i).map((i) => (
+          Array.from({ length: 5 }, (_, i) => i).map((i) => (
             <div
               key={i}
               className="flex-shrink-0 w-32 rounded-3xl border border-border bg-surface p-3 space-y-2 animate-pulse"
@@ -93,7 +93,7 @@ export default function SuggestedUsers() {
                       className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold uppercase flex-shrink-0">
+                    <div className="w-10 h-10 bg-primary-soft text-primary rounded-full flex items-center justify-center text-sm font-bold uppercase flex-shrink-0">
                       {user.username[0]}
                     </div>
                   )}
@@ -107,7 +107,7 @@ export default function SuggestedUsers() {
                   className={`w-full mt-1 px-2 py-1.5 rounded-full text-[10px] font-bold transition-colors ${
                     isFollowing
                       ? 'bg-surface-strong text-muted hover:bg-surface'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                      : 'bg-primary text-white hover:bg-primary/90'
                   }`}
                 >
                   {isFollowing ? 'Following' : 'Follow'}

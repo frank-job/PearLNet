@@ -70,8 +70,8 @@ export default function SearchBox() {
 
   return (
     <div ref={boxRef} className="relative items-center w-full max-w-sm">
-      <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2  transition-all">
-        <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 bg-surface-strong rounded-full px-4 py-2 transition-all border border-border">
+        <MagnifyingGlassIcon className="w-4 h-4 text-muted" />
 <input
           id="feed-search-input"
           type="text"
@@ -82,25 +82,25 @@ export default function SearchBox() {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Search users & posts..."
-          className="w-full bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none"
+          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted outline-none"
         />
       </div>
 
       {open && query.trim() !== '' && (
-        <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full mt-2 w-full bg-surface rounded-2xl shadow-xl border border-border z-50 max-h-96 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 " />
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mx-auto" />
             </div>
           ) : !hasResults ? (
-            <div className="p-4 text-center text-sm text-gray-400">
+            <div className="p-4 text-center text-sm text-muted">
               No results for &ldquo;{query}&rdquo;
             </div>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-border">
               {users.length > 0 && (
                 <div className="p-2">
-                  <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-400">
+                  <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-muted">
                     Users
                   </p>
                   {users.map((user) => (
@@ -108,7 +108,7 @@ export default function SearchBox() {
                       key={user.user_id}
                       href={`/PearLNet/account?id=${user.user_id}`}
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-surface-strong transition-colors"
                     >
                       {user.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -118,13 +118,13 @@ export default function SearchBox() {
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-blue-100  rounded-full flex items-center justify-center text-sm font-bold uppercase">
+                        <div className="w-8 h-8 bg-primary-soft text-primary rounded-full flex items-center justify-center text-sm font-bold uppercase">
                           {user.username[0]}
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-semibold text-gray-800">{user.username}</p>
-                        <p className="text-[10px] text-gray-400">{user.email}</p>
+                        <p className="text-sm font-semibold text-foreground">{user.username}</p>
+                        <p className="text-[10px] text-muted">{user.email}</p>
                       </div>
                     </Link>
                   ))}
@@ -133,7 +133,7 @@ export default function SearchBox() {
 
               {posts.length > 0 && (
                 <div className="p-2">
-                  <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-400">
+                  <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-muted">
                     Posts
                   </p>
                   {posts.map((post) => (
@@ -141,7 +141,7 @@ export default function SearchBox() {
                       key={post.id}
                       href="/PearLNet/home"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-surface-strong transition-colors"
                     >
                       {post.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -151,11 +151,11 @@ export default function SearchBox() {
                           className="w-10 h-10 rounded-lg object-cover"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs font-bold">
+                        <div className="w-10 h-10 bg-surface-strong rounded-lg flex items-center justify-center text-muted text-xs font-bold">
                           {post.user_email?.split('@')[0]?.[0] ?? '?'}
                         </div>
                       )}
-                      <p className="text-sm text-gray-700 line-clamp-2">{post.caption}</p>
+                      <p className="text-sm text-foreground line-clamp-2">{post.caption}</p>
                     </Link>
                   ))}
                 </div>

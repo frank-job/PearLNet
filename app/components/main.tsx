@@ -8,6 +8,7 @@ import SuggestedUsers from './SuggestedUsers';
 import FeedTabs, { type FeedTab } from './FeedTabs';
 import FeedCategories from './FeedCategories';
 import FeedComposer from './FeedComposer';
+import { MagnifyingGlassIcon, Bars3Icon } from '@heroicons/react/24/outline';
 
 
 export default function MainFeed() {
@@ -17,74 +18,76 @@ export default function MainFeed() {
   const [postRefreshSignal, setPostRefreshSignal] = useState(0);
 
   return (
-        <>
-       <div
-  className="
-   
-   
-  "
->
-  <div className="top-20">
-    <div className="flex items-center px-2">
-      <FeedTabs
-        activeTab={activeTab}
-        searchOpen={searchOpen}
-        onTabChange={setActiveTab}
-        onSearchToggle={() => setSearchOpen((open) => !open)}
-      />
-    </div>
-
-    {searchOpen && (
-      <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-2">
-        <SearchBox />
-      </div>
-    )}
-
-    <FeedCategories
-      activeCategory={activeCategory}
-      onCategoryChange={setActiveCategory}
-    />
-  </div>
-
- 
-</div>
-<div className="py-4 px-4">
-   <SuggestedUsers/>
-</div>
-
-
-        <div>
-          <div className="py-4 sm:px-2 lg:px-4">
-     {activeTab === 'following' ? <><FollowingAccounts /><FollowingFeed /></> : <><FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} /><ForYouFeed refreshSignal={postRefreshSignal} /></>}
-     </div>
+    <div className="w-full lg:max-w-2xl lg:mx-auto px-4 min-w-0">
+      {/* Desktop Header - Tab Bar + Categories (inside feed column) */}
+      <header className="sticky top-0 z-40 hidden lg:flex lg:flex-col bg-background/80 backdrop-blur-md border-b border-border mb-4">
+        {/* Row 1: Tabs + Search */}
+        <div className="flex items-center px-0 py-2 border-b border-border">
+          <div className="flex flex-1 gap-1 bg-surface-strong rounded-xl p-1">
+            {(['forYou', 'following'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                  activeTab === tab
+                    ? 'text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                {tab === 'forYou' ? 'For You' : 'Following'}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setSearchOpen((open) => !open)}
+            className="ml-3 rounded-full p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <MagnifyingGlassIcon className="h-5 w-5" />
+          </button>
         </div>
-        </>
 
+        {/* Row 2: Category pills */}
+        <div className="flex px-0 py-2 pb-3 overflow-x-auto no-scrollbar gap-2 border-b border-border">
+          {['News', 'Sports', 'Music', 'Gaming', 'Food', 'Travel', 'Tech'].map((category) => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                activeCategory === category
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border bg-surface text-slate-500 dark:text-slate-400 hover:border-primary/50 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              {category.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </header>
 
+      {/* Mobile Search */}
+      {searchOpen && (
+        <div className="lg:hidden px-0 pb-4 animate-in fade-in slide-in-from-top-2">
+          <SearchBox />
+        </div>
+      )}
 
+      <div className="px-0 py-4">
+        <SuggestedUsers />
+      </div>
 
-    // <div className="mx-auto w-full max-w-3xl top-0 sticky z-10 rounded-[1.5rem] bg-neutral-700">
-    //   <div className="sticky top-16 z-40 w-full rounded-t-[1.5rem] border border-border bg-surface/90 shadow-sm backdrop-blur-xl lg:top-0">
-
-      
-    //     <div className="px-2 ">
-    //       <div className="flex items-center px-2 sm:-w-full">
-    //         <FeedTabs activeTab={activeTab} searchOpen={searchOpen} onTabChange={setActiveTab} onSearchToggle={() => setSearchOpen((open) => !open)} />
-    //       </div>
-
-    //       {searchOpen && (
-    //         <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-2">
-    //           <SearchBox />
-    //         </div>
-    //       )}
-
-    //       <FeedCategories activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
-    //     </div>
-    //   </div>
-
-    //   <div className="py-4 sm:px-2 lg:px-4">
-    //     {activeTab === 'following' ? <><SuggestedUsers /><FollowingAccounts /><FollowingFeed /></> : <><FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} /><ForYouFeed refreshSignal={postRefreshSignal} /></>}
-    //   </div>
-    // </div>
+      <div className="px-0">
+        {activeTab === 'following' ? (
+          <>
+            <FollowingAccounts />
+            <FollowingFeed />
+          </>
+        ) : (
+          <>
+            <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} />
+            <ForYouFeed refreshSignal={postRefreshSignal} />
+          </>
+        )}
+      </div>
+    </div>
   );
 }

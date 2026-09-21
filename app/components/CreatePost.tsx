@@ -102,7 +102,7 @@ const handleUpload = async () => {
     <div id="composer" className="rounded-[1.5rem] border border-border bg-surface p-4 shadow-sm">
       <div className="flex align-middle top-1 gap-3">
         {/* User Avatar Placeholder */}
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
           U
         </div>
 
@@ -161,8 +161,8 @@ const handleUpload = async () => {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-3 border-t border-border">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -173,14 +173,14 @@ const handleUpload = async () => {
               />
 <button
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-xl p-2 text-[#f0694f] transition-colors hover:bg-[#f0694f]/10"
+                className="rounded-xl p-2 text-primary transition-colors hover:bg-primary/10"
                 title="Add images"
               >
                 <PhotoIcon className="h-5 w-5" />
               </button>
-              <button type="button" aria-label="Add a poll" title="Add a poll" className="rounded-xl p-2 text-[#7a8d82] transition-colors hover:bg-[#d7f36b]/30 hover:text-foreground"><ChartBarIcon className="h-5 w-5" /></button>
-              <button type="button" aria-label="Add tags" title="Add tags" className="rounded-xl p-2 text-[#7a8d82] transition-colors hover:bg-[#d7f36b]/30 hover:text-foreground"><HashtagIcon className="h-5 w-5" /></button>
-              <button type="button" aria-label="Add emoji" title="Add emoji" onClick={() => setDescription((value) => `${value}${value ? ' ' : ''}✨`)} className="rounded-xl p-2 text-[#7a8d82] transition-colors hover:bg-[#d7f36b]/30 hover:text-foreground"><FaceSmileIcon className="h-5 w-5" /></button>
+              <button type="button" aria-label="Add a poll" title="Add a poll" className="rounded-xl p-2 text-muted transition-colors hover:bg-primary/10 hover:text-foreground"><ChartBarIcon className="h-5 w-5" /></button>
+              <button type="button" aria-label="Add tags" title="Add tags" className="rounded-xl p-2 text-muted transition-colors hover:bg-primary/10 hover:text-foreground"><HashtagIcon className="h-5 w-5" /></button>
+              <button type="button" aria-label="Add emoji" title="Add emoji" onClick={() => setDescription((value) => `${value}${value ? ' ' : ''}✨`)} className="rounded-xl p-2 text-muted transition-colors hover:bg-primary/10 hover:text-foreground"><FaceSmileIcon className="h-5 w-5" /></button>
               {previews.length > 0 && (
                 <span className="text-[10px] font-semibold text-muted">
                   {previews.length} image{previews.length > 1 ? 's' : ''}
@@ -191,7 +191,7 @@ const handleUpload = async () => {
             <button
               onClick={handleUpload}
               disabled={uploading || (!description.trim() && files.length === 0)}
-              className="rounded-full bg-[#17221d] px-5 py-2 text-sm font-bold text-[#f4f1e8] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#f0694f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
+              className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
             >
               {uploading ? 'Posting...' : 'Post'}
             </button>
