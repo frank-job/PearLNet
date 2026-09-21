@@ -34,7 +34,7 @@ function NavigationLink({ link }: { link: (typeof navigationLinks)[number] }) {
 
 export default function DesktopNav() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-surface p-5 lg:flex lg:flex-col">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-surface p-5 lg:flex lg:flex-col shadow-nav dark:shadow-nav-dark">
       <Link href="/" className="mb-8 px-3 text-xl font-bold text-blue-600">
         PearLNet
       </Link>

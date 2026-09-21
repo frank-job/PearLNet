@@ -7,7 +7,7 @@ import Link from "next/link";
 
 // Shared input styles to reduce duplication
 const inputBase =
-  "peer block w-full rounded-2xl border border-[#17221d]/15 bg-[#fffdf7] py-[13px] pl-10 pr-4 text-sm text-[#17221d] outline-none transition-all placeholder:text-[#718077] focus:border-[#f0694f] focus:ring-2 focus:ring-[#f0694f]/20";
+  "peer block w-full rounded-2xl border border-blue-200 py-[13px] pl-10 pr-4 text-sm  outline-none transition-all placeholder:text-blue-200";
 
 // ============================================================
 // LoginForm
@@ -15,6 +15,7 @@ const inputBase =
 // - Uses React useActionState to handle server action feedback
 // - Displays validation errors returned from the server
 // ============================================================
+//  shadow-[20px_32px_0_#fffdf7]
 
 export default function LoginForm() {
   // useActionState gives us [error, formAction, pending] tuple
@@ -23,7 +24,7 @@ export default function LoginForm() {
 
   return (
     <form action={formAction} className="space-y-3">
-      <div className="flex-1 rounded-[2rem] border border-[#17221d]/10 bg-[#fffdf7] px-6 pb-8 pt-8 shadow-[10px_12px_0_#d7f36b] sm:px-8">
+      <div className="flex-1 rounded-[2rem] border-4 border-blue-500 bg-[#fffdf7] px-6 pb-8 pt-8 sm:px-8">
     <h1 className="mb-3 text-3xl font-black tracking-[-0.06em] text-[#17221d]">
           Welcome back
         </h1>
@@ -64,7 +65,7 @@ export default function LoginForm() {
           {/* Password Field */}
           <div>
             <label
-              className="mb-3 mt-5 block text-xs font-black uppercase tracking-[0.12em] text-[#526057]"
+              className="mb-3 mt-5 block text-xs font-black uppercase tracking-[0.12em] text-white"
               htmlFor="password"
             >
               Password
@@ -95,11 +96,11 @@ export default function LoginForm() {
           />
           <span>
             I agree to the{" "}
-              <a href="/terms" className="font-semibold text-[#f0694f] hover:underline">
+              <a href="/terms" className="font-semibold text-blue-500 hover:underline">
               Terms of Service
             </a>{" "}
             and{" "}
-              <a href="/privacy" className="font-semibold text-[#f0694f] hover:underline">
+              <a href="/privacy" className="font-semibold text-blue-500 hover:underline">
               Privacy Policy
             </a>
           </span>
@@ -108,7 +109,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isPending}
-className="mt-8 flex h-13 w-full items-center justify-center rounded-full bg-[#17221d] px-4 text-sm font-bold text-[#f4f1e8] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#f0694f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+className="mt-8 flex h-13 w-full items-center justify-center rounded-full bg-blue-700 px-4 text-sm font-bold text-[#f4f1e8] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-blue-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Signing in..." : "Log in"}
           <ArrowRightIcon className="ml-auto h-5 w-5 text-white" />
@@ -119,7 +120,7 @@ className="mt-8 flex h-13 w-full items-center justify-center rounded-full bg-[#1
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="font-semibold text-[#f0694f] hover:underline"
+              className="font-semibold text-blue-700 hover:underline"
             >
               Sign up
             </Link>

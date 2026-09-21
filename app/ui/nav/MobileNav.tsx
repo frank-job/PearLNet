@@ -61,7 +61,7 @@ export default function MobileNav() {
       </header>
 
       <nav
-        className="fixed bottom-2 left-3 right-3 z-99 flex items-center justify-around rounded-[28px] bg-white/100 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.12),0_2px_8px_-2px_rgba(0,0,0,0.06)] ring-1 ring-black/5 dark:ring-white/10 p-2 lg:hidden"
+        className="fixed bottom-2 left-3 right-3 z-99 flex items-center justify-around rounded-[28px] bg-white/100 shadow-nav-strong ring-nav-ring p-2 lg:hidden dark:shadow-nav-strong-dark dark:ring-nav-ring-dark"
         aria-label="Main navigation"
       >
         {primaryLinks.map((link) => (

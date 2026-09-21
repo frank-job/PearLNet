@@ -11,7 +11,7 @@ import { useActionState } from "react";
 
 // Shared input styles to reduce duplication
 const inputBase =
-  "peer block w-full rounded-2xl border border-[#17221d]/15 bg-[#fffdf7] py-[13px] pl-10 pr-4 text-sm text-[#17221d] outline-none transition-all placeholder:text-[#718077] focus:border-[#f0694f] focus:ring-2 focus:ring-[#f0694f]/20";
+  "peer block w-full rounded-2xl border  bg-white py-[13px] pl-10 pr-4 text-sm ";
 
 // ============================================================
 // SignupForm
@@ -28,16 +28,16 @@ export default function SignupForm() {
   return (
     <form action={formAction} className="space-y-3">
       <div className="flex-1 rounded-[2rem] border border-[#17221d]/10 shadow-[0_8px_32px_0_rgba(0,102,255,0.25)] bg-white px-6 pb-8 pt-8 sm:px-8">
-    <h1 className="mb-3 text-3xl font-black tracking-[-0.06em] text-[#17221d]">
+    <h1 className="mb-3 text-3xl font-black tracking-[-0.06em] text-blue-600">
           Create your account
         </h1>
-        <p className="mb-6 text-sm leading-6 text-[#718077]">
+        <p className="mb-6 text-sm leading-6 text-black">
           Make your corner of the internet feel more like you.
         </p>
 
         {/* Server-side error banner */}
         {errorMessage?.message && (
-          <div className="mb-4 rounded-xl bg-red-600/10 border border-red-600/20 p-3 text-sm text-red-400">
+          <div className="mb-4 rounded-xl bg-red-600/10 border ">
             {errorMessage.message}
           </div>
         )}
@@ -46,12 +46,12 @@ export default function SignupForm() {
           {/* Username Field */}
           <div>
             <label
-              className="mb-3 mt-5 block text-xs font-black uppercase tracking-[0.12em] text-[#526057]"
+              className="mb-3 mt-5 block text-xs font-black uppercase tracking-[0.12em] text-blue-500 bg-white"
               htmlFor="username"
             >
               Username
             </label>
-            <div className="relative text-stone-950">
+            <div className="relative text-black text-2xl">
               <input
                 className={inputBase}
                 id="username"
@@ -60,14 +60,14 @@ export default function SignupForm() {
                 placeholder="Enter your username"
                 required
               />
-              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted peer-focus:text-blue-500" />
+              <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2  " />
             </div>
           </div>
 
           {/* Email Field */}
           <div>
             <label
-              className="mb-3 block text-xs font-black uppercase tracking-[0.12em] text-[#526057]"
+              className="mb-3 block text-xs font-black uppercase tracking-[0.12em] text-blue-700"
               htmlFor="email"
             >
               Email Address
@@ -88,12 +88,12 @@ export default function SignupForm() {
           {/* Password Field */}
           <div>
             <label
-              className="mb-3 block text-xs font-black uppercase tracking-[0.12em] text-[#526057]"
+              className="mb-3 block text-xs font-black uppercase tracking-[0.12em] text-blue-700"
               htmlFor="password"
             >
               Password
             </label>
-            <div className="relative text-black">
+            <div className="relative text-black bg-white/100">
               <input
                 className={inputBase}
                 id="password"
@@ -103,14 +103,14 @@ export default function SignupForm() {
                 required
                 minLength={6}
               />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted peer-focus:text-blue-500" />
+              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted 2" />
             </div>
           </div>
 
           {/* Gender Field */}
           <div>
             <label
-              className="mb-3 block text-xs font-black uppercase tracking-[0.12em] text-[#526057]"
+              className="mb-3 block text-xs font-black uppercase tracking-[0.12em]  text-blue-600"
               htmlFor="gender"
             >
               Gender
@@ -119,7 +119,7 @@ export default function SignupForm() {
               id="gender"
               name="gender"
               required
-            className="block w-full rounded-2xl border border-[#17221d]/15 bg-[#fffdf7] py-[13px] pl-3 text-sm text-[#17221d] outline-none transition-all focus:border-[#f0694f] focus:ring-2 focus:ring-[#f0694f]/20"
+            className="block w-full rounded-2xl border border-blue-900 py-[13px] pl-3 text-sm     "
             >
               <option value="">Select gender</option>
               <option value="male">Male</option>
@@ -130,20 +130,20 @@ export default function SignupForm() {
         </div>
 
 {/* Agree to Terms */}
-        <label className="flex items-start gap-2 mt-6 text-sm text-muted cursor-pointer">
+        <label className="flex items-start gap-2 mt-6 text-sm  cursor-pointer">
           <input
             type="checkbox"
             name="terms"
             required
-            className="mt-0.5 h-4 w-4 rounded border-border text-blue-600 focus:ring-blue-500"
+            className="mt-0.5 h-4 w-4 rounded border-border text-black"
           />
           <span>
             I agree to the{" "}
-              <a href="/terms" className="font-semibold text-[#f0694f] hover:underline">
+              <a href="/terms" className="font-semibold text-blue-400 hover:underline">
               Terms of Service
             </a>{" "}
             and{" "}
-              <a href="/privacy" className="font-semibold text-[#f0694f] hover:underline">
+              <a href="/privacy" className="font-semibold text-blue-400 hover:underline">
               Privacy Policy
             </a>
           </span>
@@ -152,10 +152,10 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={isPending}
-className="mt-8 flex h-13 w-full items-center justify-center rounded-full bg-[#17221d] px-4 text-sm font-bold text-[#f4f1e8] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#f0694f] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+className="mt-8 flex h-13 w-full items-center justify-center rounded-full bg-blue-700 px-4 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-blue-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Creating account..." : "Sign up"}
-          <ArrowRightIcon className="ml-auto h-5 w-5 text-white" />
+          <ArrowRightIcon className="ml-auto h-5 w-6 text-white" />
         </button>
       </div>
     </form>

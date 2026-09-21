@@ -19,7 +19,7 @@ export default async function RatHomePage() {
     <>
     <main className=" overflow-y-auto   sm:w-full transition-all duration-300 sm:px-6 lg:px-8 lg:pb-10">
       <div className="space-y-6">
-        <UpperHeader />
+        {/* <UpperHeader /> */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_320px] xl:items-start">
           <MainFeed />
           {/* <TrendingSidebar /> */}

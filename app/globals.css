@@ -29,6 +29,13 @@ html.dark {
   --color-foreground: var(--foreground);
   --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* Shadows for nav components */
+  --shadow-nav: 0 2px 8px -2px rgba(0, 0, 0, 0.06);
+  --shadow-nav-strong: 0 10px 30px -5px rgba(0, 0, 0, 0.12);
+  --shadow-nav-dark: 0 2px 8px -2px rgba(255, 255, 255, 0.05);
+  --shadow-nav-strong-dark: 0 10px 30px -5px rgba(255, 255, 255, 0.08);
+  --shadow-nav-ring: 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-nav-ring-dark: 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -109,7 +116,26 @@ body {
   animation: like-burst 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes rise-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+.shadow-nav {
+  box-shadow: var(--shadow-nav);
+}
+
+.shadow-nav-strong {
+  box-shadow: var(--shadow-nav-strong);
+}
+
+.shadow-nav-dark {
+  box-shadow: var(--shadow-nav-dark);
+}
+
+.shadow-nav-strong-dark {
+  box-shadow: var(--shadow-nav-strong-dark);
+}
+
+.ring-nav-ring {
+  box-shadow: var(--shadow-nav-ring);
+}
+
+.ring-nav-ring-dark {
+  box-shadow: var(--shadow-nav-ring-dark);
 }
