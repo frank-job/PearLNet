@@ -7,10 +7,10 @@ import { useFeed } from '@/app/lib/FeedContext';
 
 const navItems = [
   { label: 'Home', href: '/PearLNet/home', icon: Home },
-  { label: 'Inbox', href: '/PearLNet/messages', icon: MessageSquare },
+  { label: 'Inbox', href: '/PearLNet/Notification', icon: MessageSquare },
   { label: null, href: '/PearLNet/create', icon: Plus, center: true },
-  { label: 'Updates', href: '/PearLNet/Notification', icon: Bell },
-  { label: 'Feeds', href: '/PearLNet/feed', icon: Layers },
+  { label: 'Updates', href: '/PearLNet/feed', icon: Bell },
+  { label: 'Feeds', href: '/PearLNet/account', icon: Layers },
 ];
 
 export default function MobileNav() {

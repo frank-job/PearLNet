@@ -40,8 +40,8 @@ export default function DesktopHeader() {
               onClick={() => setActiveTab(tab)}
               className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                 activeTab === tab
-                  ? 'text-white bg-primary shadow-sm'
-                  : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                  ? 'text-black  '
+                  : 'text-blue-600  hover:text-foreground hover:bg-surface-elevated'
               }`}
             >
               {tab === 'forYou' ? 'For You' : 'Following'}
