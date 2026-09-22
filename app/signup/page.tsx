@@ -1,7 +1,10 @@
 import SignupForm from "@/app/ui/signup_form";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const cookieStore = await cookies();
+  const csrfToken = cookieStore.get('rat_csrf')?.value ?? '';
   return (
     <>
     <main className="min-h-screen bg-white text-[#17221d] lg:grid lg:grid-cols-[1.1fr_0.9fr]">
@@ -10,7 +13,7 @@ export default function SignupPage() {
         <div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-6">
           <Link href="/Features" className="flex items-center gap-3 text-lg font-black tracking-[-0.06em] lg:hidden">
           <span className="grid h-9 w-9 place-items-center rounded-full bg-[#d7f36b] text-xs">PL</span>PearLNet
-          </Link><SignupForm />
+          </Link><SignupForm csrfToken={csrfToken} />
           </div>
           </section>
       <section

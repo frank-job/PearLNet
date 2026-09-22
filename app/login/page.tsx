@@ -1,7 +1,10 @@
 import LoginForm from "@/app/ui/login_form";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const cookieStore = await cookies();
+  const csrfToken = cookieStore.get('rat_csrf')?.value ?? '';
   return (
     <main className="min-h-screen bg-[#f4f1e8] text-[#17221d] lg:grid lg:grid-cols-[0.9fr_1.1fr]">
       <section className="relative hidden overflow-hidden bg-blue-600 px-10 py-10 text-[#f4f1e8] lg:flex lg:flex-col lg:justify-between">
@@ -10,7 +13,7 @@ export default function LoginPage() {
         <div className="absolute -bottom-24 -right-20 h-72 w-72 rounded-full border-[42px] border-white" />
         <div className="absolute right-20 top-32 h-24 w-24 rounded-full bg-white" />
       </section>
-      <section className="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8"><div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-6"><Link href="/Features" className="flex items-center gap-3 text-lg font-black tracking-[-0.06em] lg:hidden"><span className="grid h-9 w-9 place-items-center rounded-full bg-blue-600 text-xs">PL</span>PearLNet</Link><LoginForm /></div></section>
+      <section className="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8"><div className="relative mx-auto flex w-full max-w-[430px] flex-col gap-6"><Link href="/Features" className="flex items-center gap-3 text-lg font-black tracking-[-0.06em] lg:hidden"><span className="grid h-9 w-9 place-items-center rounded-full bg-blue-600 text-xs">PL</span>PearLNet</Link><LoginForm csrfToken={csrfToken} /></div></section>
     </main>
   );
 }

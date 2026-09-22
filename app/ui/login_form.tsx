@@ -17,13 +17,14 @@ const inputBase =
 // ============================================================
 //  shadow-[20px_32px_0_#fffdf7]
 
-export default function LoginForm() {
+export default function LoginForm({ csrfToken }: { csrfToken: string }) {
   // useActionState gives us [error, formAction, pending] tuple
   // login is the server action defined in app/lib/action.ts
   const [errorMessage, formAction, isPending] = useActionState(login, undefined);
 
   return (
     <form action={formAction} className="space-y-3">
+      <input type="hidden" name="_csrf" value={csrfToken} />
       <div className="flex-1 rounded-[2rem] border-4 border-blue-500 bg-[#fffdf7] px-6 pb-8 pt-8 sm:px-8">
     <h1 className="mb-3 text-3xl font-black tracking-[-0.06em] text-[#17221d]">
           Welcome back

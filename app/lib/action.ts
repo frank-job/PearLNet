@@ -4,7 +4,7 @@ import { sql } from '@vercel/postgres';
 import { put } from '@vercel/blob';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import crypto from 'crypto';
 import type { Post, Comment, ProfileData, Notification, UserListItem, StoryUser, Story } from '@/app/lib/definitions';
 
@@ -19,6 +19,122 @@ export type ActionError = {
 type ActionResult<T> = { data: T } | { error: string };
 
 // ============================================================
+// CSRF Protection
+// ============================================================
+
+const CSRF_COOKIE = 'rat_csrf';
+const CSRF_HEADER = 'x-csrf-token';
+const CSRF_TTL_SECONDS = 60 * 60; // 1 hour
+
+function generateCsrfToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+export async function getCsrfToken(): Promise<string> {
+  const cookieStore = await cookies();
+  let token = cookieStore.get(CSRF_COOKIE)?.value;
+  if (!token) {
+    token = generateCsrfToken();
+    // Note: We can't set cookies in a regular server component context.
+    // The token will be set via a Server Action or middleware.
+    // For now, return the generated token.
+  }
+  return token;
+}
+
+// Server Action to set CSRF cookie (can be called from components)
+export async function ensureCsrfToken(): Promise<string> {
+  'use server';
+  const cookieStore = await cookies();
+  let token = cookieStore.get(CSRF_COOKIE)?.value;
+  if (!token) {
+    token = generateCsrfToken();
+    cookieStore.set(CSRF_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: CSRF_TTL_SECONDS,
+    });
+  }
+  return token;
+}
+
+async function verifyCsrfToken(formData: FormData): Promise<boolean> {
+  // In development, be lenient to avoid blocking first-time visits
+  if (process.env.NODE_ENV !== 'production') {
+    return true;
+  }
+
+  const cookieStore = await cookies();
+  const cookieToken = cookieStore.get(CSRF_COOKIE)?.value;
+  const headerToken = (await headers()).get(CSRF_HEADER);
+  const formToken = String(formData.get('_csrf') ?? '');
+
+  const provided = headerToken ?? formToken;
+  
+  // Debug logging
+  console.log('[CSRF Debug] cookieToken:', cookieToken ? 'present' : 'missing');
+  console.log('[CSRF Debug] provided:', provided ? 'present' : 'missing');
+  console.log('[CSRF Debug] formToken:', formToken ? 'present' : 'missing');
+  console.log('[CSRF Debug] headerToken:', headerToken ? 'present' : 'missing');
+
+  if (!cookieToken || !provided) {
+    console.log('[CSRF Debug] FAIL: missing token');
+    return false;
+  }
+
+  try {
+    const result = crypto.timingSafeEqual(
+      Buffer.from(cookieToken),
+      Buffer.from(provided)
+    );
+    console.log('[CSRF Debug] timingSafeEqual result:', result);
+    return result;
+  } catch (e) {
+    console.log('[CSRF Debug] ERROR:', e);
+    return false;
+  }
+}
+
+// ============================================================
+// Rate Limiting (simple in-memory, per IP)
+// ============================================================
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = process.env.NODE_ENV === 'production' ? 10 : 100; // Higher limit in dev
+
+async function checkRateLimit(key: string): Promise<boolean> {
+  // Disable rate limiting in development
+  if (process.env.NODE_ENV !== 'production') {
+    return true;
+  }
+  
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+async function getClientIp(): Promise<string> {
+  const h = await headers();
+  const forwarded = h.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return h.get('x-real-ip') ?? 'unknown';
+}
+
+// ============================================================
 // Session helpers (simple cookie-based session)
 // ============================================================
 
@@ -27,14 +143,18 @@ const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 1 week
 
 function signPayload(payload: string): string {
   const secret = process.env.SESSION_SECRET;
-  if (!secret) return payload; // dev fallback: unsigned
+  if (!secret) {
+    throw new Error('SESSION_SECRET environment variable is required');
+  }
   const sig = crypto.createHmac('sha256', secret).update(payload).digest('hex');
   return `${payload}.${sig}`;
 }
 
 function verifySignedPayload(signed: string): string | null {
   const secret = process.env.SESSION_SECRET;
-  if (!secret) return signed; // dev fallback
+  if (!secret) {
+    throw new Error('SESSION_SECRET environment variable is required');
+  }
   const idx = signed.lastIndexOf('.');
   if (idx === -1) return null;
   const payload = signed.slice(0, idx);
@@ -139,6 +259,17 @@ export async function signUp(
   state: { message: string } | undefined,
   formData: FormData,
 ): Promise<ActionError | undefined> {
+  // Rate limiting
+  const ip = await getClientIp();
+  if (!(await checkRateLimit(`signup:${ip}`))) {
+    return { message: 'Too many signup attempts. Please try again later.' };
+  }
+
+  // CSRF protection
+  if (!(await verifyCsrfToken(formData))) {
+    return { message: 'Invalid request. Please refresh the page and try again.' };
+  }
+
   const username = sanitize(String(formData.get('username') ?? '')).trim();
   const email = sanitize(String(formData.get('email') ?? '')).trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
@@ -205,7 +336,18 @@ export async function login(
   state: { message: string } | undefined,
   formData: FormData,
 ): Promise<ActionError | undefined> {
-const email = sanitize(String(formData.get('email') ?? '')).trim().toLowerCase();
+  // Rate limiting
+  const ip = await getClientIp();
+  if (!(await checkRateLimit(`login:${ip}`))) {
+    return { message: 'Too many login attempts. Please try again later.' };
+  }
+
+  // CSRF protection
+  if (!(await verifyCsrfToken(formData))) {
+    return { message: 'Invalid request. Please refresh the page and try again.' };
+  }
+
+  const email = sanitize(String(formData.get('email') ?? '')).trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
   const agreedToTerms = formData.get('terms') === 'on';
 
@@ -678,7 +820,7 @@ export async function fetchUserLikes(userId: string): Promise<ActionResult<Post[
 export async function fetchFollowers(userId: string): Promise<ActionResult<UserListItem[]>> {
   try {
     const result = await sql<UserListItem>`
-      SELECT u.id, u.username, u.email, p.image_url, p.bio
+      SELECT u.id, u.username, p.image_url, p.bio
       FROM follows f
       INNER JOIN users u ON u.id = f.follower_id
       LEFT JOIN profiles p ON p.user_id = u.id
@@ -694,7 +836,7 @@ export async function fetchFollowers(userId: string): Promise<ActionResult<UserL
 export async function fetchFollowing(userId: string): Promise<ActionResult<UserListItem[]>> {
   try {
     const result = await sql<UserListItem>`
-      SELECT u.id, u.username, u.email, p.image_url, p.bio
+      SELECT u.id, u.username, p.image_url, p.bio
       FROM follows f
       INNER JOIN users u ON u.id = f.following_id
       LEFT JOIN profiles p ON p.user_id = u.id
@@ -861,7 +1003,6 @@ export async function getSessionDisplayName(): Promise<string> {
 export type SearchUserResult = {
   user_id: string;
   username: string;
-  email: string;
   image_url: string | null;
 };
 
@@ -875,11 +1016,10 @@ export async function searchUsers(query: string, limit = 8): Promise<ActionResul
       return { data: [] };
     }
     const result = await sql<SearchUserResult>`
-      SELECT u.id AS user_id, u.username, u.email, p.image_url
+      SELECT u.id AS user_id, u.username, p.image_url
       FROM users u
       LEFT JOIN profiles p ON p.user_id = u.id
       WHERE u.username ILIKE ${`%${cleanQuery}%`}
-         OR u.email ILIKE ${`%${cleanQuery}%`}
       ORDER BY u.username
       LIMIT ${limit}
     `;
@@ -936,7 +1076,7 @@ export async function fetchSuggestedUsers(
 ): Promise<ActionResult<SearchUserResult[]>> {
   try {
     const result = await sql<SearchUserResult>`
-      SELECT u.id AS user_id, u.username, u.email, p.image_url
+      SELECT u.id AS user_id, u.username, p.image_url
       FROM users u
       LEFT JOIN profiles p ON p.user_id = u.id
       WHERE u.id <> ${userId}
@@ -1083,12 +1223,32 @@ export async function createStoryAction(formData: FormData): Promise<ActionError
     return { message: 'Story must expire between 1 and 168 hours.' };
   }
 
+  // Convert base64 to blob and upload to Vercel Blob (don't store base64 in DB)
+  const blob = base64DataUrlToBlob(imageBase64);
+  if (!blob) return { message: 'Invalid image data.' };
+
+  // Size limit: 5MB max for stories
+  if (blob.size > 5 * 1024 * 1024) {
+    return { message: 'Story image must be under 5MB.' };
+  }
+
+  const ext = (blob.type.split('/')[1] || 'bin').replace(/[^a-z0-9]/gi, '');
+  const pathname = `stories/${session.userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  
+  let imageUrl: string;
+  try {
+    const { url } = await put(pathname, blob, { access: 'public' });
+    imageUrl = url;
+  } catch {
+    return { message: 'Failed to upload story image. Please try again.' };
+  }
+
   const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString();
 
   try {
     await sql`
       INSERT INTO stories (user_id, image_url, caption, expires_at)
-      VALUES (${session.userId}, ${imageBase64}, ${caption || null}, ${expiresAt})
+      VALUES (${session.userId}, ${imageUrl}, ${caption || null}, ${expiresAt})
     `;
   } catch {
     return { message: 'Failed to create story. Please try again.' };
@@ -1101,7 +1261,6 @@ export async function fetchActiveStories(): Promise<ActionResult<StoryUser[]>> {
       SELECT 
         u.id AS user_id,
         u.username,
-        u.email,
         p.image_url,
         EXISTS (
           SELECT 1 FROM stories s 
@@ -1120,7 +1279,6 @@ export async function fetchActiveStories(): Promise<ActionResult<StoryUser[]>> {
       data: result.rows.map((row: Record<string, unknown>) => ({
         id: String(row.user_id),
         username: String(row.username),
-        email: String(row.email),
         image_url: row.image_url ? String(row.image_url) : null,
         hasStory: Boolean(row.has_story),
       }))

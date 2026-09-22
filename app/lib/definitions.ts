@@ -102,9 +102,14 @@ export type ProfileData = {
 export type UserListItem = {
   id: string;
   username: string;
-  email: string;
   image_url: string | null;
   bio: string | null;
+};
+
+export type SearchUserResult = {
+  user_id: string;
+  username: string;
+  image_url: string | null;
 };
 
 // ===== Share Types =====
@@ -140,7 +145,6 @@ export type Story = {
 export type StoryUser = {
   id: string;
   username: string;
-  email: string;
   image_url: string | null;
   hasStory: boolean;
 };

@@ -20,13 +20,14 @@ const inputBase =
 // - Displays validation errors returned from the server
 // ============================================================
 
-export default function SignupForm() {
+export default function SignupForm({ csrfToken }: { csrfToken: string }) {
   // useActionState gives us [error, formAction, pending] tuple
   // signUp is the server action defined in app/lib/action.ts
   const [errorMessage, formAction, isPending] = useActionState(signUp, undefined);
 
   return (
     <form action={formAction} className="space-y-3">
+      <input type="hidden" name="_csrf" value={csrfToken} />
       <div className="flex-1 rounded-[2rem] border border-[#17221d]/10 shadow-[0_8px_32px_0_rgba(0,102,255,0.25)] bg-white px-6 pb-8 pt-8 sm:px-8">
     <h1 className="mb-3 text-3xl font-black tracking-[-0.06em] text-blue-600">
           Create your account
