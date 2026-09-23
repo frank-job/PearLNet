@@ -22,14 +22,14 @@ export default function MainFeed() {
       <header className="sticky top-0 z-40 hidden lg:flex lg:flex-col bg-background/80 backdrop-blur-md border-b border-border mb-4">
         {/* Row 1: Tabs + Search */}
         <div className="flex items-center px-0 py-2 border-b border-border">
-          <div className="flex flex-1 gap-1 bg-surface-strong rounded-xl p-1">
+          <div className="flex flex-1 gap-1  rounded-xl p-1">
             {(['forYou', 'following'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                   activeTab === tab
-                    ? 'text-white bg-primary shadow-sm'
+                    ? 'text-blue-800'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -39,11 +39,18 @@ export default function MainFeed() {
           </div>
           <button
             onClick={toggleSearch}
+            aria-label={searchOpen ? 'Close search' : 'Open search'}
             className="ml-3 rounded-full p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
           >
             <MagnifyingGlassIcon className="h-5 w-5" />
           </button>
         </div>
+
+        {searchOpen && (
+          <div className="border-b border-border pb-3 pt-1">
+            <SearchBox />
+          </div>
+        )}
 
         {/* Row 2: Category pills */}
         <div className="flex px-0 py-2 pb-3 overflow-x-auto no-scrollbar gap-2 border-b border-border">
@@ -53,7 +60,7 @@ export default function MainFeed() {
               onClick={() => setActiveCategory(category)}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                 activeCategory === category
-                  ? 'border-primary bg-primary text-white'
+                  ? 'border-primary bg-blue-500 text-white'
                   : 'border-border bg-surface text-slate-500 dark:text-slate-400 hover:border-primary/50 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
@@ -63,13 +70,10 @@ export default function MainFeed() {
         </div>
       </header>
 
-      {/* Mobile Search */}
-      {searchOpen && (
-        <div className="lg:hidden px-0 pb-4 animate-in fade-in slide-in-from-top-2">
-          <SearchBox />
-        </div>
-      )}
-
+      <div className='py-2'>
+          <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} />
+      </div>
+     
       <div className="px-0 py-0">
         <SuggestedUsers />
       </div>
@@ -82,8 +86,8 @@ export default function MainFeed() {
           </>
         ) : (
           <>
-            <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} />
-          <div className="py-2.5 w-full">
+            {/* <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} /> */}
+          <div className="sm:w-full">
                   <ForYouFeed refreshSignal={postRefreshSignal} />
               </div>
           

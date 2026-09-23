@@ -1,126 +1,7 @@
 ﻿'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChatBubbleLeftIcon, EyeIcon } from '@heroicons/react/24/outline';
-import ImageCard from './imageC';
-import Description from './description';
-import LikesSection from './likes';
-import CommentSection from './comment';
-import ShareDrawer from './ShareDrawer';
-import FollowButton from './FollowButton';
-import PostActions from './PostActions';
-import { usePostView } from '@/app/lib/usePostView';
+import PostCard from './PostCard';
 import type { Post } from '@/app/lib/definitions';
-import { formatRelativeTime } from '@/app/lib/time-utils';
-
-/* ============================================================
-   PostCard
-   - A single post card.
-   - Wires the card element to `usePostView` so a view is
-     registered (via an async fetch to the increment-view
-     endpoint) only when the card actually enters the viewport.
-   - Accepts an `onView` callback so the parent can optimistically
-     bump the local eye-count.
-   ============================================================ */
-
-function PostCard({
-  post,
-  viewCount,
-  expanded,
-  onToggleComments,
-  onView,
-  currentUserId,
-  onDelete,
-  onEdit,
-}: {
-  post: Post;
-  viewCount: number;
-  expanded: boolean;
-  onToggleComments: () => void;
-  onView: (totalViews: number) => void;
-  currentUserId?: string;
-  onDelete?: () => void;
-  onEdit?: () => void;
-}) {
-  const viewRef = usePostView(post.id, onView);
-
-  return (
-    <div
-      ref={viewRef}
-      className="bg-surface border border-border rounded-2xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md"
-    >
-      {/* Image */}
-      <ImageCard imageUrl={post.image_url} images={post.images} alt="Post" />
-
-      {/* Content */}
-      <div className="p-4">
-        {/* ===== User Info Row ===== */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <a
-              href={post.user_id ? `/PearLNet/account?id=${post.user_id}` : undefined}
-              className="w-8 h-8 bg-primary-soft text-primary rounded-full flex items-center justify-center text-sm font-bold uppercase"
-            >
-              {post.user_email ? post.user_email[0] : '?'}
-            </a>
-            <div>
-              <a
-                href={post.user_id ? `/PearLNet/account?id=${post.user_id}` : undefined}
-                className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
-              >
-                {post.user_email ? post.user_email.split('@')[0] : 'Anonymous'}
-              </a>
-              <p className="text-[10px] text-muted">
-                {formatRelativeTime(post.created_at)}
-              </p>
-            </div>
-          </div>
-
-          {/* Follow button - only shows for other users' posts */}
-          {post.user_id && <FollowButton authorId={post.user_id} />}
-        </div>
-
-        {/* Description */}
-        <Description caption={post.caption} />
-
-        {/* ===== Action Buttons Row ===== */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-          {/* Left: Likes + Comments */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <LikesSection postId={post.id} />
-
-            <button
-              onClick={onToggleComments}
-              className="flex items-center gap-1 text-muted hover:text-primary transition-colors text-sm"
-            >
-              <ChatBubbleLeftIcon className="w-5 h-5" />
-              <span className="hidden sm:inline">Comments</span>
-            </button>
-          </div>
-
-          {/* Right: Views + Share + Actions */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <span className="flex items-center gap-1 text-xs text-muted shrink-0">
-              <EyeIcon className="w-4 h-4" />
-              {viewCount}
-            </span>
-            <ShareDrawer postId={post.id} postAuthorId={post.user_id ?? ''} />
-            <PostActions
-              postId={post.id}
-              postAuthorId={post.user_id}
-              currentUserId={currentUserId}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              className="hidden sm:flex"
-            />
-          </div>
-        </div>
-
-        {/* Expandable Comment Section */}
-        {expanded && <CommentSection postId={post.id} />}
-      </div>
-    </div>
-  );
-}
 
 /* ============================================================
    PostFeed Component
@@ -186,7 +67,7 @@ export default function PostFeed({ posts, onDeletePost, onEditPost }: { posts: P
   }, [onEditPost]);
 
   return (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 max-w-150 mx-auto space-y-3 sm:space-y-6">
       {posts.map((post) => (
         <PostCard
           key={post.id}

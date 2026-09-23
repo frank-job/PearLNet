@@ -35,7 +35,7 @@ export default function ImageCard({
         src={list[0]}
         alt={alt}
         loading='lazy'
-        className="w-full aspect-square object-cover"
+        className="block w-full h-auto max-h-[70vh] object-contain bg-surface-strong"
       />
     );
   }
@@ -65,7 +65,7 @@ export default function ImageCard({
             alt={`${alt} ${idx + 1}`}
             loading="lazy"
             decoding="async"
-            className=" aspect-square object-cover flex-shrink-0 snap-start"
+            className="block w-full h-auto max-h-[70vh] object-contain flex-shrink-0 snap-start bg-surface-strong"
           />
         ))}
       </div>

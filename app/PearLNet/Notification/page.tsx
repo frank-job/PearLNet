@@ -15,7 +15,7 @@ export default async function NotificationPage() {
   }
 
   return (
-    <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto">
+    <main className="-mt-14 min-h-screen transition-all duration-300 ml-0 lg:mt-0 pb-0 overflow-y-auto">
       <NotificationList />
     </main>
   );
