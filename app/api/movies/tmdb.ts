@@ -193,3 +193,45 @@ function mapVideo(raw: any): TrailerVideo {
     official: raw.official ?? false,
   };
 }
+
+/**
+ * Search movies by title using TMDB's /search/movie endpoint.
+ * Returns an array of Movie objects, or null on failure.
+ */
+export async function searchMovies(query: string, page = 1): Promise<Movie[] | null> {
+  const q = query.trim();
+  if (!q) return null;
+
+  const url = new URL(`${BASE_URL}/search/movie`);
+  url.searchParams.set('query', q);
+  url.searchParams.set('language', 'en-US');
+  url.searchParams.set('page', String(page));
+  url.searchParams.set('api_key', TMDB_API_KEY);
+
+  try {
+    const response = await fetch(url.toString(), {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (!data || !Array.isArray(data.results)) return null;
+
+    return data.results.map((item: any): Movie => ({
+      id: item.id,
+      title: item.title ?? item.name ?? 'Untitled',
+      overview: item.overview ?? '',
+      poster_path: item.poster_path ?? null,
+      backdrop_path: item.backdrop_path ?? null,
+      release_date: item.release_date ?? item.first_air_date ?? '',
+      vote_average: item.vote_average ?? 0,
+      genre_ids: item.genre_ids ?? [],
+      media_type: 'movie',
+    }));
+  } catch (error) {
+    console.error('TMDB search error:', error);
+    return null;
+  }
+}

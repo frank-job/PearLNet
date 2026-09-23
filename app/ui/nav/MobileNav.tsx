@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, MessageSquare, Plus, Bell, Layers } from 'lucide-react';
+import { Home, MessageSquare, Plus, Bell, Layers, Film } from 'lucide-react';
 import { useFeed } from '@/app/lib/FeedContext';
 import SearchBox from '@/app/components/SearchBox';
 import { FEED_CATEGORIES, getCategoryPageUrl } from '@/app/lib/category-api-map';
@@ -13,6 +13,7 @@ const navItems = [
   { label: null, href: '/PearLNet/create', icon: Plus, center: true },
   { label: 'Updates', href: '/PearLNet/feed', icon: Bell },
   { label: 'Feeds', href: '/PearLNet/account', icon: Layers },
+  { label: 'Movies', href: '/PearLNet/movies', icon: Film },
 ];
 
 export default function MobileNav() {
@@ -28,6 +29,8 @@ export default function MobileNav() {
   } = useFeed();
 
   const hideOnMobile = pathname === '/PearLNet/create' || pathname === '/PearLNet/Notification';
+  // News and Movies pages have their own headers; hide the feed tab bar + categories there
+  const isStandaloneFeedPage = pathname === '/PearLNet/news' || pathname === '/PearLNet/movies' || pathname?.startsWith('/PearLNet/news') || pathname?.startsWith('/PearLNet/movies');
 
   if (hideOnMobile) {
     return null;
@@ -89,7 +92,8 @@ export default function MobileNav() {
       </nav>
 
       {/* Top header with search and categories - sticky at top */}
-      <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border">
+      {!isStandaloneFeedPage && (
+        <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border">
         <div className="flex h-12 items-center justify-between px-4 border-b border-border">
           <Link href="/PearLNet/home" className="text-xl font-bold text-primary">
             PearLNet
@@ -164,6 +168,7 @@ export default function MobileNav() {
           ))}
         </div>
       </header>
+      )}
     </div>
   );
 }

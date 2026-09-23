@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   Bell,
   BookmarkIcon,
+  Film,
   Home,
   Newspaper,
   PlusSquare,
@@ -18,6 +19,7 @@ const navigationLinks = [
   { name: 'Account', href: '/PearLNet/account', icon: UserCircle },
   { name: 'Saved', href: '/PearLNet/saved', icon: BookmarkIcon },
   { name: 'News', href: '/PearLNet/news', icon: Newspaper },
+  { name: 'Movies', href: '/PearLNet/movies', icon: Film },
 ];
 
 function NavigationLink({ link }: { link: (typeof navigationLinks)[number] }) {
