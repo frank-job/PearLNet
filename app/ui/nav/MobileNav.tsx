@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Home, MessageSquare, Plus, Bell, Layers } from 'lucide-react';
 import { useFeed } from '@/app/lib/FeedContext';
 import SearchBox from '@/app/components/SearchBox';
+import { FEED_CATEGORIES, getCategoryApiUrl } from '@/app/lib/category-api-map';
 
 const navItems = [
   { label: 'Home', href: '/PearLNet/home', icon: Home },
@@ -16,6 +17,7 @@ const navItems = [
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const {
     activeTab,
     setActiveTab,
@@ -110,7 +112,10 @@ export default function MobileNav() {
             {(['forYou', 'following'] as const).map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setActiveCategory('News');
+                }}
                 className={`relative flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all ${
                   activeTab === tab
                     ? 'text-blue bg-transparent '
@@ -140,11 +145,14 @@ export default function MobileNav() {
         )}
 
         <div className="flex px-4 py-1.5 pb-2 overflow-x-auto no-scrollbar gap-1.5 border-b border-border">
-          {['News', 'Sports', 'Music', 'Gaming', 'Food', 'Travel', 'Tech'].map((category) => (
+          {FEED_CATEGORIES.map((category) => (
             <button
               key={category}
               type="button"
-              onClick={() => setActiveCategory(category)}
+              onClick={() => {
+                setActiveCategory(category);
+                router.push(`/PearLNet/news?${getCategoryApiUrl(category).split('?')[1]}`);
+              }}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                 activeCategory === category
                   ? 'border-primary bg-primary text-blue-600'

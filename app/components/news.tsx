@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowTopRightOnSquareIcon, NewspaperIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { NEWS_CATEGORIES, type NewsArticle, type NewsCategory } from '@/app/api/news/newsapi';
+import { NEWS_CATEGORIES, isNewsCategory, type NewsArticle, type NewsCategory } from '@/app/api/news/newsapi';
 
 const PAGE_SIZE = 20;
 const DEFAULT_CATEGORY: NewsCategory = 'general';
@@ -11,8 +11,12 @@ const DEFAULT_CATEGORY: NewsCategory = 'general';
 export default function NewsFeed() {
   const searchParams = useSearchParams();
   const urlQuery = searchParams.get('q') ?? null;
+  const urlCategory = searchParams.get('category');
+  const initialCategory: NewsCategory = urlCategory && isNewsCategory(urlCategory)
+    ? urlCategory
+    : DEFAULT_CATEGORY;
 
-  const [category, setCategory] = useState<NewsCategory>(DEFAULT_CATEGORY);
+  const [category, setCategory] = useState<NewsCategory>(initialCategory);
   const [customQuery, setCustomQuery] = useState<string | null>(urlQuery);
   const [interests, setInterests] = useState<string[]>([]);
   const [interestInput, setInterestInput] = useState('');
@@ -23,6 +27,13 @@ export default function NewsFeed() {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (urlCategory && isNewsCategory(urlCategory)) {
+      setCategory(urlCategory);
+      setCustomQuery(null);
+    }
+  }, [urlCategory]);
 
   const buildQueryString = (pageToLoad: number) => {
     const query = customQuery ?? interests.join(' OR ');

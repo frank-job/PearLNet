@@ -99,10 +99,10 @@ const handleUpload = async () => {
   };
 
   return (
-    <div id="composer" className="rounded-[1.5rem] border border-border bg-surface p-4 shadow-sm">
+    <div id="composer" className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
       <div className="flex align-middle top-1 gap-3">
         {/* User Avatar Placeholder */}
-        <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary font-bold text-sm shrink-0">
           U
         </div>
 
@@ -116,7 +116,7 @@ const handleUpload = async () => {
                 setDescription(e.target.value);
                 clearFeedback();
               }}
-              className="w-full resize-none outline-none text-base text-foreground placeholder-transparent min-h-[60px] bg-transparent relative z-10"
+              className="w-full resize-none outline-none text-base text-foreground placeholder-transparent min-h-15 bg-transparent relative z-10"
               rows={2}
             />
           </div>
@@ -127,7 +127,7 @@ const handleUpload = async () => {
               {previews.map((preview, index) => (
                 <div
                   key={index}
-                  className="relative flex-shrink-0 w-32 h-32 rounded-2xl overflow-hidden border border-border snap-start"
+                  className="relative shrink-0 w-32 h-32 rounded-2xl overflow-hidden border border-border snap-start"
                 >
                   <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
                   <button

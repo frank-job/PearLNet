@@ -10,10 +10,13 @@ import FeedCategories from './FeedCategories';
 import FeedComposer from './FeedComposer';
 import { MagnifyingGlassIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useFeed } from '@/app/lib/FeedContext';
+import { useRouter } from 'next/navigation';
+import { FEED_CATEGORIES, getCategoryApiUrl } from '@/app/lib/category-api-map';
 
 
 export default function MainFeed() {
   const { activeTab, setActiveTab, activeCategory, setActiveCategory, searchOpen, toggleSearch } = useFeed();
+  const router = useRouter();
   const [postRefreshSignal, setPostRefreshSignal] = useState(0);
 
   return (
@@ -26,7 +29,10 @@ export default function MainFeed() {
             {(['forYou', 'following'] as const).map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setActiveCategory('News');
+                }}
                 className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                   activeTab === tab
                     ? 'text-blue-800'
@@ -54,10 +60,13 @@ export default function MainFeed() {
 
         {/* Row 2: Category pills */}
         <div className="flex px-0 py-2 pb-3 overflow-x-auto no-scrollbar gap-2 border-b border-border">
-          {['News', 'Sports', 'Music', 'Gaming', 'Food', 'Travel', 'Tech'].map((category) => (
+          {FEED_CATEGORIES.map((category) => (
             <button
               key={category}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => {
+                setActiveCategory(category);
+                router.push(`/PearLNet/news?${getCategoryApiUrl(category).split('?')[1]}`);
+              }}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                 activeCategory === category
                   ? 'border-primary bg-blue-500 text-white'
