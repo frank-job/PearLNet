@@ -16,7 +16,14 @@ const navItems = [
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const { activeTab, setActiveTab, searchOpen, toggleSearch } = useFeed();
+  const {
+    activeTab,
+    setActiveTab,
+    activeCategory,
+    setActiveCategory,
+    searchOpen,
+    toggleSearch,
+  } = useFeed();
 
   const hideOnMobile = pathname === '/PearLNet/create' || pathname === '/PearLNet/Notification';
 
@@ -27,7 +34,7 @@ export default function MobileNav() {
   return (
     <div
       className={`lg:hidden ${
-        searchOpen ? 'h-54.5' : 'h-41.5'
+        searchOpen ? 'h-45' : 'h-35'
       }`}
     >
       {/* Floating bottom navbar */}
@@ -81,7 +88,7 @@ export default function MobileNav() {
 
       {/* Top header with search and categories - sticky at top */}
       <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="flex h-14 items-center justify-between px-4 border-b border-border">
+        <div className="flex h-12 items-center justify-between px-4 border-b border-border">
           <Link href="/PearLNet/home" className="text-xl font-bold text-primary">
             PearLNet
           </Link>
@@ -98,13 +105,13 @@ export default function MobileNav() {
           </Link>
         </div>
 
-        <div className="flex items-center w-full px-4 py-2">
+        <div className="flex items-center w-full px-4 py-1">
           <div className="flex flex-1 gap-1 r p-1">
             {(['forYou', 'following'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                className={`relative flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all ${
                   activeTab === tab
                     ? 'text-blue bg-transparent '
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
@@ -127,17 +134,19 @@ export default function MobileNav() {
         </div>
 
         {searchOpen && (
-          <div className="px-4 pb-3">
+          <div className="px-4 pb-2">
             <SearchBox />
           </div>
         )}
 
-        <div className="flex px-4 py-2 pb-3 overflow-x-auto no-scrollbar gap-2 border-b border-border">
+        <div className="flex px-4 py-1.5 pb-2 overflow-x-auto no-scrollbar gap-1.5 border-b border-border">
           {['News', 'Sports', 'Music', 'Gaming', 'Food', 'Travel', 'Tech'].map((category) => (
             <button
               key={category}
+              type="button"
+              onClick={() => setActiveCategory(category)}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
-                category === 'News'
+                activeCategory === category
                   ? 'border-primary bg-primary text-blue-600'
                   : 'border-border bg-surface text-slate-500 dark:text-slate-400 hover:border-primary/50 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
