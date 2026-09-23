@@ -1,4 +1,4 @@
-﻿import { redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import LogoutButton from '@/app/components/LogoutButton';
 import AccountTabs from '@/app/components/AccountTabs';
@@ -65,12 +65,11 @@ export default async function AccountPage({
 
   return (
     <main className="min-h-screen transition-all duration-300 ml-4 lg:ml-64 pb-24 lg:pb-8 px-4 md:px-8">
-      <header className="flex flex-col sm:flex-col sm-justify-center sm:items-center justify-between gap-4 py-6">
+      <header className="flex flex-col sm:flex-col sm:justify-center sm:items-center justify-between gap-4 py-6">
         <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
 
         </h1>
       </header>
-        
 
 
       {/* Profile Section */}
@@ -85,11 +84,11 @@ export default async function AccountPage({
                 alt={profile.username}
                 className="h-full w-full rounded-full object-cover"
               />
-) : (
+            ) : (
               <span>{profile?.username?.[0] ?? displayName[0]?.toUpperCase() ?? '?'}</span>
             )}
           </div>
-        
+
           {/* Profile Info */}
           <div className="flex-1 text-center sm:text-left">
             <h2 className="text-2xl font-bold text-foreground">
@@ -105,11 +104,11 @@ export default async function AccountPage({
             {(profile?.birth_year || profile?.date_of_birth) && (
               <p className="text-xs text-muted mt-1">
                 {/* {profile.birth_year ?? ''} */}
-                {profile.birth_year && profile.date_of_birth ? ' â€¢ ' : ''}
+                {profile.birth_year && profile.date_of_birth ? ' - ' : ''}
                 {profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : ''}
               </p>
             )}
-{profileError && (
+            {profileError && (
               <p className="text-xs text-red-500 mt-2">Failed to load profile</p>
             )}
           </div>
@@ -139,10 +138,10 @@ export default async function AccountPage({
             )}
           </div>
         </div>
-        
+
 
         {/* Stats Row */}
-     <div className="mt-1 flex lg:items-center lg:gap-6 lg:p-6 top-5 justify-center gap-4 text-center  p-4 rounded-xl shadow-sm">
+        <div className="mt-1 flex lg:items-center lg:gap-6 lg:p-6 top-5 justify-center gap-4 text-center  p-4 rounded-xl shadow-sm">
           {statsItems.map((item) => (
             <div
               key={item.label}
@@ -157,7 +156,6 @@ export default async function AccountPage({
 
       {/* Interactive Tabs: Posts / Liked / Followers / Following */}
 
-      
       <AccountTabs
         posts={posts}
         liked={liked}
@@ -169,4 +167,3 @@ export default async function AccountPage({
     </main>
   );
 }
-

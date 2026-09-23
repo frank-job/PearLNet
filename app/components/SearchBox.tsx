@@ -86,7 +86,7 @@ export default function SearchBox() {
         />
       </div>
 
-      {open && query.trim() !== '' && (
+{open && query.trim() !== '' && (
         <div className="absolute top-full mt-2 w-full bg-surface rounded-2xl shadow-xl border border-border z-50 max-h-96 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center">
@@ -128,38 +128,48 @@ export default function SearchBox() {
                       </div>
                     </Link>
                   ))}
+                  {posts.length > 0 && (
+                    <div className="p-2">
+                      <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-muted">
+                        Posts
+                      </p>
+                      {posts.map((post) => (
+                        <Link
+                          key={post.id}
+                          href="/PearLNet/home"
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-surface-strong transition-colors"
+                        >
+                          {post.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={post.image_url}
+                              alt=""
+                              className="w-10 h-10 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-surface-strong rounded-lg flex items-center justify-center text-muted text-xs font-bold">
+                              {post.user_email?.split('@')[0]?.[0] ?? '?'}
+                            </div>
+                          )}
+                          <p className="text-sm text-foreground line-clamp-2">{post.caption}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {posts.length > 0 && (
-                <div className="p-2">
-                  <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-muted">
-                    Posts
-                  </p>
-                  {posts.map((post) => (
-                    <Link
-                      key={post.id}
-                      href="/PearLNet/home"
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-surface-strong transition-colors"
-                    >
-                      {post.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={post.image_url}
-                          alt=""
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-surface-strong rounded-lg flex items-center justify-center text-muted text-xs font-bold">
-                          {post.user_email?.split('@')[0]?.[0] ?? '?'}
-                        </div>
-                      )}
-                      <p className="text-sm text-foreground line-clamp-2">{post.caption}</p>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              {/* View all results footer */}
+              <div className="p-2">
+                <Link
+                  href={`/PearLNet/search?q=${encodeURIComponent(query)}`}
+                  onClick={() => setOpen(false)}
+                  className="block text-center text-sm font-semibold text-primary hover:bg-primary-soft rounded-xl py-2 transition-colors"
+                >
+                  View all results &rarr;
+                </Link>
+              </div>
             </div>
           )}
         </div>
