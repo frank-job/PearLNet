@@ -49,7 +49,7 @@ export default function MobileNav() {
                 <Link
                   key={item.label ?? item.href}
                   href={item.href}
-                  className="flex items-center justify-center bg-primary text-white p-3 rounded-full hover:scale-105 transition-transform dark:bg-primary dark:text-white"
+                  className="flex items-center justify-center bg-primary text-white p-2 py-4 px-5 gap-4 rounded-full hover:scale-105 transition-transform dark:bg-primary dark:text-white"
                   aria-label={item.label ?? item.href}
                 >
                   <Icon className="h-5 w-5" />
@@ -61,7 +61,7 @@ export default function MobileNav() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex flex-col items-center gap-1 group"
+                className="flex flex-col items-center gap-2 group"
                 aria-current={isActive ? 'page' : undefined}
               >
                 <Icon
