@@ -25,7 +25,11 @@ export default function MobileNav() {
   }
 
   return (
-    <div className="lg:hidden">
+    <div
+      className={`lg:hidden ${
+        searchOpen ? 'h-54.5' : 'h-41.5'
+      }`}
+    >
       {/* Floating bottom navbar */}
       <nav className="fixed bottom-4 left-4 right-4 z-50">
         <div className="flex items-center justify-center gap-4 md:gap-6 rounded-full px-6 py-3 shadow-xl backdrop-blur-md border border-white/40 bg-white/30 dark:bg-black/30 dark:border-white/10">
@@ -76,7 +80,7 @@ export default function MobileNav() {
       </nav>
 
       {/* Top header with search and categories - sticky at top */}
-      <header className="sticky top-0 z-50 w-full  bg-background/80 backdrop-blur-md border-b border-border lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border">
         <div className="flex h-14 items-center justify-between px-4 border-b border-border">
           <Link href="/PearLNet/home" className="text-xl font-bold text-primary">
             PearLNet
@@ -94,7 +98,7 @@ export default function MobileNav() {
           </Link>
         </div>
 
-        <div className="flex items-center sticky top-0 z-50 w-full px-4 py-2 ">
+        <div className="flex items-center w-full px-4 py-2">
           <div className="flex flex-1 gap-1 r p-1">
             {(['forYou', 'following'] as const).map((tab) => (
               <button
