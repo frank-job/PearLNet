@@ -63,7 +63,7 @@ export default function MovieBanner({ movie }: MovieBannerProps) {
   };
 
   const trailerUrl = trailer
-    ? `https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0&modestbranding=1`
+    ? `https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0&modestbranding=1&playsinline=1&mute=1&disablekb=0`
     : null;
 
   return (
@@ -143,32 +143,32 @@ export default function MovieBanner({ movie }: MovieBannerProps) {
 {/* Trailer overlay — full-screen YouTube-style player */}
       {showTrailer && trailerUrl && (
         <div
-          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-0"
           onClick={() => {
             setShowTrailer(false);
             setTrailer(null);
           }}
         >
+          <button
+            type="button"
+            onClick={() => {
+              setShowTrailer(false);
+              setTrailer(null);
+            }}
+            className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 text-black flex items-center justify-center font-bold hover:bg-white"
+            aria-label="Close trailer"
+          >
+            &times;
+          </button>
           <div
-            className="relative w-full max-w-6xl max-h-[90vh]"
+            className="relative w-full h-full max-w-7xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={() => {
-                setShowTrailer(false);
-                setTrailer(null);
-              }}
-              className="absolute -top-3 -right-3 z-10 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center font-bold hover:bg-gray-200"
-              aria-label="Close trailer"
-            >
-              &times;
-            </button>
             <iframe
               src={trailerUrl}
               title={`Trailer for ${movie.title}`}
-              className="w-full h-full max-h-[85vh] aspect-video rounded-xl"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; webkit-playsinline; playsinline"
               allowFullScreen={true}
             />
           </div>

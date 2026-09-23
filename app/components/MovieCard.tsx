@@ -55,8 +55,8 @@ export default function MovieCard({ movie }: MovieCardProps) {
     }
   };
 
-  const trailerUrl = trailer
-    ? `https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0&modestbranding=1`
+const trailerUrl = trailer
+    ? `https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0&modestbranding=1&playsinline=1&mute=1&disablekb=0`
     : null;
 
   return (
@@ -77,19 +77,19 @@ export default function MovieCard({ movie }: MovieCardProps) {
           </div>
         )}
 
-        {/* Play overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+{/* Play overlay — always visible on mobile, hover-only on desktop */}
+        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
           <button
             type="button"
             onClick={handlePlayClick}
             disabled={loadingTrailer}
-            className="flex items-center justify-center w-14 h-14 rounded-full bg-white/90 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 disabled:opacity-50"
+            className="flex items-center justify-center w-16 h-16 rounded-full bg-white/95 text-primary opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 hover:scale-110 disabled:opacity-50"
             aria-label={`Play trailer for ${movie.title}`}
           >
             {loadingTrailer ? (
-              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Play className="h-6 w-6 ml-1" fill="currentColor" />
+              <Play className="h-7 w-7 ml-1" fill="currentColor" />
             )}
           </button>
         </div>
@@ -117,33 +117,33 @@ export default function MovieCard({ movie }: MovieCardProps) {
 {/* Trailer modal — full-screen YouTube-style player */}
       {showTrailer && trailerUrl && (
         <div
-          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-0"
           onClick={() => {
             setShowTrailer(false);
             setTrailer(null);
           }}
         >
+          <button
+            type="button"
+            onClick={() => {
+              setShowTrailer(false);
+              setTrailer(null);
+            }}
+            className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 text-black flex items-center justify-center font-bold hover:bg-white"
+            aria-label="Close trailer"
+          >
+            &times;
+          </button>
           <div
-            className="relative w-full max-w-6xl max-h-[90vh]"
+            className="relative w-full h-full max-w-7xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={() => {
-                setShowTrailer(false);
-                setTrailer(null);
-              }}
-              className="absolute -top-3 -right-3 z-10 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center font-bold hover:bg-gray-200"
-              aria-label="Close trailer"
-            >
-              &times;
-            </button>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <iframe
               src={trailerUrl}
               title={`Trailer for ${movie.title}`}
-              className="w-full h-full max-h-[85vh] aspect-video rounded-xl"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; webkit-playsinline; playsinline"
               allowFullScreen={true}
             />
           </div>
