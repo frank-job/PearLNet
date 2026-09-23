@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Home, MessageSquare, Plus, Bell, Layers } from 'lucide-react';
 import { useFeed } from '@/app/lib/FeedContext';
 import SearchBox from '@/app/components/SearchBox';
-import { FEED_CATEGORIES, getCategoryApiUrl } from '@/app/lib/category-api-map';
+import { FEED_CATEGORIES, getCategoryPageUrl } from '@/app/lib/category-api-map';
 
 const navItems = [
   { label: 'Home', href: '/PearLNet/home', icon: Home },
@@ -151,7 +151,7 @@ export default function MobileNav() {
               type="button"
               onClick={() => {
                 setActiveCategory(category);
-                router.push(`/PearLNet/news?${getCategoryApiUrl(category).split('?')[1]}`);
+                router.push(getCategoryPageUrl(category));
               }}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                 activeCategory === category

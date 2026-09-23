@@ -11,7 +11,7 @@ import FeedComposer from './FeedComposer';
 import { MagnifyingGlassIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useFeed } from '@/app/lib/FeedContext';
 import { useRouter } from 'next/navigation';
-import { FEED_CATEGORIES, getCategoryApiUrl } from '@/app/lib/category-api-map';
+import { FEED_CATEGORIES, getCategoryPageUrl } from '@/app/lib/category-api-map';
 
 
 export default function MainFeed() {
@@ -65,7 +65,7 @@ export default function MainFeed() {
               key={category}
               onClick={() => {
                 setActiveCategory(category);
-                router.push(`/PearLNet/news?${getCategoryApiUrl(category).split('?')[1]}`);
+                router.push(getCategoryPageUrl(category));
               }}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                 activeCategory === category
