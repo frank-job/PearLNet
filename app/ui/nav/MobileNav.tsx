@@ -24,20 +24,20 @@ import { FEED_CATEGORIES, getCategoryPageUrl } from '@/app/lib/category-api-map'
 
 const bottomNavItems = [
   { label: 'Home', href: '/PearLNet/home', icon: Home },
-  { label: 'Chat', href: '/PearLNet/chat', icon: MessageSquare },
+  { label: 'Inbox', href: '/PearLNet/chat', icon: MessageSquare },
   { label: null, href: '/PearLNet/create', icon: Plus, center: true },
-  { label: 'Menu', href: '#', icon: Menu, isMenu: true },
+  { label: 'Account', href: '/PearLNet/account', icon: UserCircle },
 ];
 
 const drawerItems = [
+  { label: 'Home', href: '/PearLNet/home', icon: Home },
+  { label: 'Inbox', href: '/PearLNet/chat', icon: MessageSquare },
   { label: 'Events', href: '/PearLNet/events', icon: Calendar },
   { label: 'Marketplace', href: '/PearLNet/marketplace', icon: Store },
   { label: 'Notifications', href: '/PearLNet/Notification', icon: Bell },
-  
   { label: 'Saved', href: '/PearLNet/saved', icon: BookmarkIcon },
   { label: 'News', href: '/PearLNet/news', icon: Newspaper },
   { label: 'Movies', href: '/PearLNet/movies', icon: Film },
-  { label: 'Account', href: '/PearLNet/account', icon: UserCircle },
 ];
 
 export default function MobileNav() {
@@ -139,8 +139,8 @@ export default function MobileNav() {
       </aside>
 
       {/* Floating bottom navbar - only 4 items */}
-      <nav className="fixed bottom-4 left-4 right-4 z-50 lg:hidden">
-        <div className="flex items-center justify-center gap-2 md:gap-4 rounded-full px-4 py-2.5 shadow-xl backdrop-blur-md border border-white/40 bg-white/30 dark:bg-black/30 dark:border-white/10">
+      <nav className="fixed bottom-4 py-3 gap-5 left-4 right-4 z-50 lg:hidden">
+        <div className="flex items-center justify-center gap-5n md:gap-4 rounded-full px-4 py-2.5 shadow-xl backdrop-blur-md border border-white/40 bg-white/30 dark:bg-black/30 dark:border-white/10">
           {bottomNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
@@ -150,28 +150,11 @@ export default function MobileNav() {
                 <Link
                   key={item.label ?? item.href}
                   href={item.href}
-                  className="flex items-center justify-center bg-primary text-white p-2 py-3 px-4 gap-4 rounded-full hover:scale-105 transition-transform dark:bg-primary dark:text-white"
+                  className="flex items-center justify-center bg-primary text-white p-4 py-4 px-4 gap-4 rounded-full hover:scale-105 transition-transform dark:bg-primary dark:text-white"
                   aria-label={item.label ?? item.href}
                 >
                   <Icon className="h-6 w-6" />
                 </Link>
-              );
-            }
-
-            if (item.isMenu) {
-              return (
-                <button
-                  key="menu"
-                  onClick={() => setDrawerOpen(true)}
-                  className={`flex flex-col items-center gap-1.5 group ${
-                    isActive ? 'text-primary' : 'text-muted group-hover:text-foreground'
-                  }`}
-                  aria-label="Open menu"
-                  aria-expanded={drawerOpen}
-                >
-                  <Icon className="h-6 w-6 transition-colors" />
-                  <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
-                </button>
               );
             }
 

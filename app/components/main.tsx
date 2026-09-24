@@ -20,7 +20,7 @@ export default function MainFeed() {
   const [postRefreshSignal, setPostRefreshSignal] = useState(0);
 
   return (
-    <div className="  lg:mx-auto px-4 min-w-0">
+    <div className="w-full  lg:mx-auto px-4 min-w-0">
       {/* Desktop Header - Tab Bar + Categories (inside feed column) */}
       <header className="sticky top-0 z-40 hidden lg:flex lg:flex-col bg-background/80 backdrop-blur-md border-b border-border mb-4">
         {/* Row 1: Tabs + Search */}
