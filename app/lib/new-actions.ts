@@ -13,7 +13,9 @@ async function getCurrentUserId(): Promise<string | null> {
     const cookieStore = await cookies();
     const raw = cookieStore.get(SESSION_COOKIE)?.value;
     if (!raw) return null;
-    const session = JSON.parse(Buffer.from(raw.split('.')[1], 'base64').toString());
+    // Session cookie format: payload.signature (payload is base64 encoded JSON at index 0)
+    const payload = raw.split('.')[0];
+    const session = JSON.parse(Buffer.from(payload, 'base64').toString());
     return session?.userId ?? null;
   } catch {
     return null;
@@ -123,6 +125,61 @@ export async function fetchListings(limit = 50): Promise<any[]> {
     return result.rows;
   } catch {
     return [];
+  }
+}
+
+export async function fetchUserListings(userId: string): Promise<any[]> {
+  try {
+    const result = await sql`
+      SELECT l.*, p.username AS seller_username, p.image_url AS seller_image_url
+      FROM listings l
+      LEFT JOIN profiles p ON p.user_id = l.seller_id
+      WHERE l.seller_id = ${userId}
+      ORDER BY l.created_at DESC
+    `;
+    return result.rows;
+  } catch {
+    return [];
+  }
+}
+
+export async function updateListingAction(
+  listingId: string,
+  title: string,
+  description: string | null,
+  category: string,
+  price: number,
+  currency: string,
+  condition: string,
+  location: string | null,
+): Promise<{ error?: string }> {
+  const userId = await getCurrentUserId();
+  if (!userId) return { error: 'Not authenticated' };
+
+  try {
+    await sql`
+      UPDATE listings
+      SET title = ${title}, description = ${description ?? null}, category = ${category},
+          price = ${price}, currency = ${currency}, condition = ${condition}, location = ${location ?? null}
+      WHERE id = ${listingId} AND seller_id = ${userId}
+    `;
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to update listing' };
+  }
+}
+
+export async function deleteListingAction(listingId: string): Promise<{ error?: string }> {
+  const userId = await getCurrentUserId();
+  if (!userId) return { error: 'Not authenticated' };
+
+  try {
+    await sql`
+      DELETE FROM listings WHERE id = ${listingId} AND seller_id = ${userId}
+    `;
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete listing' };
   }
 }
 

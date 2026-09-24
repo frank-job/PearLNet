@@ -1,16 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import type { Listing } from '@/app/lib/definitions';
 
 export default function MarketplaceFeed() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const loadListings = async () => {
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const res = await fetch('/api/session');
+      const data = await res.json();
+      if (data.userId) setCurrentUserId(data.userId);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const loadListings = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -24,10 +36,36 @@ export default function MarketplaceFeed() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    fetchCurrentUser();
     loadListings();
+  }, [fetchCurrentUser, loadListings]);
+
+  const handleDelete = useCallback(async (listingId: string) => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
+    
+    setDeletingId(listingId);
+    try {
+      const res = await fetch(`/api/marketplace/${listingId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete listing');
+      }
+
+      setListings(prev => prev.filter(l => l.id !== listingId));
+    } catch (err) {
+      console.error('Failed to delete listing:', err);
+      alert('Failed to delete listing');
+    } finally {
+      setDeletingId(null);
+    }
   }, []);
 
   const formatPrice = (price: number, currency: string) => {
@@ -116,9 +154,34 @@ return (
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-lg text-foreground truncate pr-2">{listing.title}</h3>
-                <span className="text-lg font-bold text-primary whitespace-nowrap">
-                  {formatPrice(listing.price, listing.currency)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-primary whitespace-nowrap">
+                    {formatPrice(listing.price, listing.currency)}
+                  </span>
+                  {currentUserId && currentUserId === listing.seller_id && (
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/PearLNet/marketplace/${listing.id}/edit`}
+                        className="p-2 text-muted hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
+                        aria-label="Edit listing"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(listing.id)}
+                        disabled={deletingId === listing.id}
+                        className="p-2 text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        aria-label="Delete listing"
+                      >
+                        {deletingId === listing.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               {listing.description && (
                 <p className="text-sm text-muted mt-1 line-clamp-2">{listing.description}</p>
