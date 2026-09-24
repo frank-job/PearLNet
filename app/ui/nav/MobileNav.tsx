@@ -108,26 +108,26 @@ export default function MobileNav() {
                   key={item.href}
                   href={item.href}
                   onClick={() => handleDrawerItemClick(item.href)}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-4 rounded-xl px-4 py-4 text-base font-medium transition-colors ${
                     isActive
                       ? 'bg-primary text-white'
                       : 'text-muted hover:text-foreground hover:bg-surface-strong'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
                   <span>{item.label}</span>
                 </Link>
               );
             })}
 
-            {/* Settings at bottom */}
+{/* Settings at bottom */}
             <div className="pt-4 border-t border-border">
               <Link
                 href="/PearLNet/settings"
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted hover:text-foreground hover:bg-surface-strong transition-colors"
+                className="flex items-center gap-4 rounded-xl px-4 py-4 text-base font-medium text-muted hover:text-foreground hover:bg-surface-strong transition-colors"
               >
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-6 w-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -139,8 +139,8 @@ export default function MobileNav() {
       </aside>
 
       {/* Floating bottom navbar - only 4 items */}
-      <nav className="fixed bottom-4 py-3 gap-5 left-4 right-4 z-50 lg:hidden">
-        <div className="flex items-center justify-center gap-5n md:gap-4 rounded-full px-4 py-2.5 shadow-xl backdrop-blur-md border border-white/40 bg-white/30 dark:bg-black/30 dark:border-white/10">
+      <nav className="fixed bottom-4 left-4 right-4 z-50 lg:hidden">
+        <div className="flex items-center justify-center gap-4 md:gap-6 rounded-full px-6 py-3 shadow-xl backdrop-blur-md border border-white/40 bg-white/30 dark:bg-black/30 dark:border-white/10">
           {bottomNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
@@ -150,10 +150,10 @@ export default function MobileNav() {
                 <Link
                   key={item.label ?? item.href}
                   href={item.href}
-                  className="flex items-center justify-center bg-primary text-white p-4 py-4 px-4 gap-4 rounded-full hover:scale-105 transition-transform dark:bg-primary dark:text-white"
+                  className="flex items-center justify-center bg-primary text-white p-3 rounded-full hover:scale-105 transition-transform dark:bg-primary dark:text-white"
                   aria-label={item.label ?? item.href}
                 >
-                  <Icon className="h-6 w-6" />
+                  <Icon className="h-7 w-7" />
                 </Link>
               );
             }
@@ -162,16 +162,16 @@ export default function MobileNav() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex flex-col items-center gap-1.5 group"
+                className="flex flex-col items-center gap-2 group px-2"
                 aria-current={isActive ? 'page' : undefined}
               >
                 <Icon
-                  className={`h-6 w-6 transition-colors ${
+                  className={`h-7 w-7 transition-colors ${
                     isActive ? 'text-primary' : 'text-muted group-hover:text-foreground'
                   }`}
                 />
                 <span
-                  className={`text-[10px] font-medium tracking-wide transition-colors ${
+                  className={`text-[11px] font-medium tracking-wide transition-colors ${
                     isActive ? 'text-primary' : 'text-muted group-hover:text-foreground'
                   }`}
                 >

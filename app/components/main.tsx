@@ -20,7 +20,7 @@ export default function MainFeed() {
   const [postRefreshSignal, setPostRefreshSignal] = useState(0);
 
   return (
-    <div className="w-full  lg:mx-auto px-4 min-w-0">
+    <div className="max-w-full   px-0 min-w-0">
       {/* Desktop Header - Tab Bar + Categories (inside feed column) */}
       <header className="sticky top-0 z-40 hidden lg:flex lg:flex-col bg-background/80 backdrop-blur-md border-b border-border mb-4">
         {/* Row 1: Tabs + Search */}
@@ -79,11 +79,11 @@ export default function MainFeed() {
         </div>
       </header>
 
-      <div className='py-2'>
+      <div className='py-6 sm:top-2.5'>
           <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} />
       </div>
      
-      <div className="px-0 py-0">
+      <div className="px-2 py-2">
         <SuggestedUsers />
       </div>
 
