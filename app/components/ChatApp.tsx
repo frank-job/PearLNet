@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Conversation, Message } from '@/app/lib/definitions';
 
 export default function ChatApp() {
@@ -13,9 +13,21 @@ export default function ChatApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewChat, setShowNewChat] = useState(false);
   const [users, setUsers] = useState<Array<{id: string; username: string; image_url: string | null}>>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchConversations = async () => {
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/session');
+      const data = await res.json();
+      if (data.userId) setCurrentUserId(data.userId);
+    } catch {
+      // ignore
+    }
+  };
+
+  const fetchConversations = useCallback(async () => {
     try {
       const res = await fetch('/api/chat');
       const data = await res.json();
@@ -25,25 +37,46 @@ export default function ChatApp() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchMessages = async (conversationId: string) => {
+  const fetchMessages = useCallback(async (conversationId: string) => {
     try {
       const res = await fetch(`/api/chat?conversationId=${conversationId}`);
       const data = await res.json();
-      if (data.data) setMessages(data.data);
+      if (data.data) {
+        setMessages(data.data);
+        // Mark messages as read
+        await fetch(`/api/chat/read`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ conversationId }),
+        });
+      }
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     }
-  };
+  }, []);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeConversation || sending) return;
+    if (!newMessage.trim() || !activeConversation || sending || !currentUserId) return;
 
     setSending(true);
     const content = newMessage.trim();
     setNewMessage('');
+
+    // Optimistic update
+    const optimisticMsg: Message = {
+      id: `temp-${Date.now()}`,
+      conversation_id: activeConversation.id,
+      sender_id: currentUserId,
+      content,
+      read: true,
+      created_at: new Date().toISOString(),
+      sender_username: 'You',
+      sender_image_url: null,
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
 
     try {
       const res = await fetch('/api/chat', {
@@ -52,33 +85,26 @@ export default function ChatApp() {
         body: JSON.stringify({ conversationId: activeConversation.id, content }),
       });
 
-      if (res.ok) {
-        const newMsg: Message = {
-          id: crypto.randomUUID(),
-          conversation_id: activeConversation.id,
-          sender_id: 'current-user',
-          content,
-          read: true,
-          created_at: new Date().toISOString(),
-          sender_username: 'You',
-          sender_image_url: null,
-        };
-        setMessages(prev => [...prev, newMsg]);
-        setConversations(prev => prev.map(c => 
-          c.id === activeConversation.id 
-            ? { ...c, last_message: content, last_message_at: new Date().toISOString() }
-            : c
-        ));
+      if (!res.ok) throw new Error('Failed to send');
+
+      // Replace optimistic message with real one after server confirms
+      const data = await res.json();
+      if (data.ok) {
+        // Refresh messages to get the real one with proper ID
+        fetchMessages(activeConversation.id);
+        fetchConversations();
       }
     } catch (err) {
       console.error('Failed to send message:', err);
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
       setNewMessage(content);
     } finally {
       setSending(false);
     }
-  };
+  }, [newMessage, activeConversation, sending, currentUserId, fetchMessages, fetchConversations]);
 
-  const handleNewConversation = async (otherUserId: string) => {
+  const handleNewConversation = useCallback(async (otherUserId: string) => {
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -88,24 +114,20 @@ export default function ChatApp() {
       const data = await res.json();
       if (data.conversationId) {
         setShowNewChat(false);
-        const conv = conversations.find(c => c.id === data.conversationId) || {
-          id: data.conversationId,
-          participant_a: '',
-          participant_b: '',
-          last_message: null,
-          last_message_at: null,
-          created_at: new Date().toISOString(),
-          other_user_id: otherUserId,
-        };
-        setActiveConversation(conv);
-        setMessages([]);
+        // Refresh conversations list and select the new one
+        await fetchConversations();
+        // The new conversation should now be in the list
+        setTimeout(() => {
+          const conv = conversations.find(c => c.id === data.conversationId);
+          if (conv) setActiveConversation(conv);
+        }, 100);
       }
     } catch (err) {
       console.error('Failed to create conversation:', err);
     }
-  };
+  }, [conversations, fetchConversations]);
 
-  const searchUsers = async () => {
+  const searchUsers = useCallback(async () => {
     if (!searchQuery.trim()) return;
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&type=users`);
@@ -114,18 +136,67 @@ export default function ChatApp() {
     } catch (err) {
       console.error('Failed to search users:', err);
     }
-  };
+  }, [searchQuery]);
 
+  // Fetch current user on mount
   useEffect(() => {
-    fetchConversations();
+    fetchCurrentUser();
   }, []);
 
+  // Initial conversations load
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  // Fetch messages when active conversation changes
   useEffect(() => {
     if (activeConversation) {
       fetchMessages(activeConversation.id);
+    } else {
+      setMessages([]);
     }
+  }, [activeConversation, fetchMessages]);
+
+  // Poll for new messages every 5 seconds when a conversation is active
+  useEffect(() => {
+    if (!activeConversation) {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/chat?conversationId=${activeConversation.id}`);
+        const data = await res.json();
+        if (data.data) {
+          setMessages(prev => {
+            const newMessages = data.data.filter(
+              (msg: Message) => !prev.some(m => m.id === msg.id)
+            );
+            if (newMessages.length > 0) {
+              return [...prev, ...newMessages];
+            }
+            return prev;
+          });
+        }
+      } catch {
+        // ignore poll errors
+      }
+    };
+
+    pollIntervalRef.current = setInterval(poll, 5000);
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
   }, [activeConversation]);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -155,6 +226,7 @@ export default function ChatApp() {
             <button
               onClick={() => setShowNewChat(true)}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground"
+              aria-label="New message"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -167,7 +239,7 @@ export default function ChatApp() {
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold">New Message</h3>
-              <button onClick={() => setShowNewChat(false)} className="text-muted hover:text-foreground">
+              <button onClick={() => setShowNewChat(false)} className="text-muted hover:text-foreground" aria-label="Close">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -179,8 +251,12 @@ export default function ChatApp() {
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); searchUsers(); }}
               className="w-full px-3 py-2 bg-surface rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoFocus
             />
             <div className="mt-2 max-h-40 overflow-y-auto">
+              {users.length === 0 && searchQuery.trim() && (
+                <p className="text-sm text-muted text-center py-4">No users found</p>
+              )}
               {users.map(user => (
                 <button
                   key={user.id}
@@ -217,7 +293,7 @@ export default function ChatApp() {
                   activeConversation?.id === conv.id ? 'bg-blue-500/10 border-l-2 border-blue-500' : ''
                 }`}
               >
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <img 
                     src={conv.other_image_url || `https://i.pravatar.cc/150?u=${conv.other_user_id}`} 
                     alt={conv.other_username || 'User'}
@@ -273,23 +349,24 @@ export default function ChatApp() {
                 messages.map(msg => (
                   <div
                     key={msg.id}
-                    className={`flex ${msg.sender_id === 'current-user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
                       className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                        msg.sender_id === 'current-user'
+                        msg.sender_id === currentUserId
                           ? 'bg-blue-500 text-white rounded-br-md'
                           : 'bg-surface-tertiary text-foreground rounded-bl-md'
                       }`}
                     >
                       <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                      <p className={`text-xs mt-1 ${msg.sender_id === 'current-user' ? 'text-blue-100' : 'text-muted'}`}>
+                      <p className={`text-xs mt-1 ${msg.sender_id === currentUserId ? 'text-blue-100' : 'text-muted'}`}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </div>
                 ))
               )}
+              <div ref={messagesEndRef} />
             </div>
 
             <form onSubmit={handleSendMessage} className="p-4 border-t border-border bg-surface-strong">
@@ -301,11 +378,13 @@ export default function ChatApp() {
                   placeholder="Type a message..."
                   className="flex-1 px-4 py-2 bg-surface rounded-full border border-border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={sending}
+                  autoFocus
                 />
                 <button
                   type="submit"
                   disabled={!newMessage.trim() || sending}
                   className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Send message"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
