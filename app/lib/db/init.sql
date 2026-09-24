@@ -342,3 +342,92 @@ CREATE INDEX IF NOT EXISTS idx_likes_post_id ON likes(post_id);
 CREATE INDEX IF NOT EXISTS idx_follows_follower_id ON follows(follower_id);
 CREATE INDEX IF NOT EXISTS idx_follows_following_id ON follows(following_id);
 
+
+-- ============================================================
+-- 9. EVENTS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+category VARCHAR(64) DEFAULT 'other',
+  image_url TEXT,
+  location VARCHAR(255),
+  starts_at TIMESTAMPTZ NOT NULL,
+  ends_at TIMESTAMPTZ,
+  creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  creator_email VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_starts_at ON events(starts_at);
+CREATE INDEX IF NOT EXISTS idx_events_creator_id ON events(creator_id);
+
+-- ============================================================
+-- 10. EVENT RSVPS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS event_rsvps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status VARCHAR(16) DEFAULT 'going',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(event_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_event_rsvps_event_id ON event_rsvps(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_rsvps_user_id ON event_rsvps(user_id);
+
+-- ============================================================
+-- 11. MARKETPLACE LISTINGS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS listings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  category VARCHAR(64) DEFAULT 'other',
+  price NUMERIC(12,2) NOT NULL DEFAULT 0,
+  currency VARCHAR(8) DEFAULT 'USD',
+  image_url TEXT,
+  condition VARCHAR(32) DEFAULT 'new',
+  location VARCHAR(255),
+  seller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  seller_email VARCHAR(255),
+  status VARCHAR(16) DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_listings_seller_id ON listings(seller_id);
+CREATE INDEX IF NOT EXISTS idx_listings_status ON listings(status);
+CREATE INDEX IF NOT EXISTS idx_listings_created_at ON listings(created_at DESC);
+
+-- ============================================================
+-- 12. CONVERSATIONS TABLE (DMs)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_a UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  participant_b UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  last_message TEXT,
+  last_message_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(participant_a, participant_b)
+);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_participant_a ON conversations(participant_a);
+CREATE INDEX IF NOT EXISTS idx_conversations_participant_b ON conversations(participant_b);
+
+-- ============================================================
+-- 13. MESSAGES TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);

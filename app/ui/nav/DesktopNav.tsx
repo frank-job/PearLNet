@@ -4,10 +4,13 @@ import Link from 'next/link';
 import {
   Bell,
   BookmarkIcon,
+  Calendar,
   Film,
   Home,
+  MessageSquare,
   Newspaper,
   PlusSquare,
+  Store,
   UserCircle,
 } from 'lucide-react';
 import SettingsPanel from './SettingsPanel';
@@ -15,7 +18,10 @@ import SettingsPanel from './SettingsPanel';
 const navigationLinks = [
   { name: 'Home', href: '/PearLNet/home', icon: Home },
   { name: 'Create', href: '/PearLNet/create', icon: PlusSquare },
+  { name: 'Chat', href: '/PearLNet/chat', icon: MessageSquare },
   { name: 'Notifications', href: '/PearLNet/Notification', icon: Bell },
+  { name: 'Events', href: '/PearLNet/events', icon: Calendar },
+  { name: 'Marketplace', href: '/PearLNet/marketplace', icon: Store },
   { name: 'Account', href: '/PearLNet/account', icon: UserCircle },
   { name: 'Saved', href: '/PearLNet/saved', icon: BookmarkIcon },
   { name: 'News', href: '/PearLNet/news', icon: Newspaper },

@@ -2,16 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, MessageSquare, Plus, Bell, Layers, Film } from 'lucide-react';
+import { Calendar, Home, MessageSquare, Plus, Bell, Layers, Film, Store } from 'lucide-react';
 import { useFeed } from '@/app/lib/FeedContext';
 import SearchBox from '@/app/components/SearchBox';
 import { FEED_CATEGORIES, getCategoryPageUrl } from '@/app/lib/category-api-map';
 
 const navItems = [
   { label: 'Home', href: '/PearLNet/home', icon: Home },
-  { label: 'Inbox', href: '/PearLNet/Notification', icon: MessageSquare },
+  { label: 'Chat', href: '/PearLNet/chat', icon: MessageSquare },
   { label: null, href: '/PearLNet/create', icon: Plus, center: true },
-  { label: 'Updates', href: '/PearLNet/feed', icon: Bell },
+  { label: 'Events', href: '/PearLNet/events', icon: Calendar },
+  { label: 'Marketplace', href: '/PearLNet/marketplace', icon: Store },
+  { label: 'Updates', href: '/PearLNet/Notification', icon: Bell },
   { label: 'Feeds', href: '/PearLNet/account', icon: Layers },
   { label: 'Movies', href: '/PearLNet/movies', icon: Film },
 ];

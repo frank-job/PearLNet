@@ -20,7 +20,7 @@ export default function MainFeed() {
   const [postRefreshSignal, setPostRefreshSignal] = useState(0);
 
   return (
-    <div className="w-full   lg:mx-auto px-4 min-w-0">
+    <div className="  lg:mx-auto px-4 min-w-0">
       {/* Desktop Header - Tab Bar + Categories (inside feed column) */}
       <header className="sticky top-0 z-40 hidden lg:flex lg:flex-col bg-background/80 backdrop-blur-md border-b border-border mb-4">
         {/* Row 1: Tabs + Search */}
@@ -53,7 +53,7 @@ export default function MainFeed() {
         </div>
 
         {searchOpen && (
-          <div className="border-b border-border pb-3 pt-1">
+          <div className="pb-3 pt-1">
             <SearchBox />
           </div>
         )}
@@ -69,7 +69,7 @@ export default function MainFeed() {
               }}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                 activeCategory === category
-                  ? 'border-primary bg-blue-500 text-white'
+                  ? ' bg-blue-500 text-white'
                   : 'border-border bg-surface text-slate-500 dark:text-slate-400 hover:border-primary/50 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >

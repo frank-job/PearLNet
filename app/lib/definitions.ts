@@ -148,3 +148,77 @@ export type StoryUser = {
   image_url: string | null;
   hasStory: boolean;
 };
+
+// ===== Events Types =====
+
+export type Event = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  image_url: string | null;
+  location: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  creator_id: string;
+  creator_email: string | null;
+  creator_username?: string;
+  creator_image_url?: string | null;
+  created_at: string;
+  rsvp_count?: number;
+  my_rsvp?: 'going' | 'maybe' | 'not_going' | null;
+};
+
+export type EventRsvp = {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: 'going' | 'maybe' | 'not_going';
+  created_at: string;
+};
+
+// ===== Marketplace Types =====
+
+export type Listing = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  price: number;
+  currency: string;
+  image_url: string | null;
+  condition: string;
+  location: string | null;
+  seller_id: string;
+  seller_email: string | null;
+  status: 'active' | 'sold' | 'removed';
+  created_at: string;
+  seller_username?: string;
+  seller_image_url?: string | null;
+};
+
+// ===== Chat / DM Types =====
+
+export type Conversation = {
+  id: string;
+  participant_a: string;
+  participant_b: string;
+  last_message: string | null;
+  last_message_at: string | null;
+  created_at: string;
+  other_user_id?: string;
+  other_username?: string;
+  other_image_url?: string | null;
+  unread_count?: number;
+};
+
+export type Message = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  read: boolean;
+  created_at: string;
+  sender_username?: string;
+  sender_image_url?: string | null;
+};
