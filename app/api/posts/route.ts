@@ -8,6 +8,15 @@ import { redis } from '@/lib/redis';
 import { MediaType } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
+  try {
+    return await getPosts(request);
+  } catch (error) {
+    console.error('[Posts] Failed to fetch posts:', error);
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+  }
+}
+
+async function getPosts(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const limit = Math.min(Number(searchParams.get('limit')) || 20, 100);
   const offset = Math.max(Number(searchParams.get('offset')) || 0, 0);
@@ -35,7 +44,7 @@ export async function GET(request: NextRequest) {
         ],
       },
       include: {
-        author: {
+        user: {
           select: {
             id: true, username: true, name: true, email: true,
             profile: { select: { imageUrl: true } },
@@ -66,7 +75,7 @@ export async function GET(request: NextRequest) {
 
   const posts = await prisma.post.findMany({
     include: {
-      author: {
+      user: {
         select: {
           id: true, username: true, name: true, email: true,
           profile: { select: { imageUrl: true } },
@@ -98,13 +107,13 @@ function formatPost(post: any) {
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
     author: {
-      id: post.author.id,
-      username: post.author.username,
-      name: post.author.name,
-      email: post.author.email,
-      image: post.author.profile?.imageUrl ?? null,
-      verified: post.author.verified,
-      role: post.author.role,
+      id: post.user.id,
+      username: post.user.username,
+      name: post.user.name,
+      email: post.user.email,
+      image: post.user.profile?.imageUrl ?? null,
+      verified: post.user.verified,
+      role: post.user.role,
     },
     _count: {
       likes: post._count.likes,

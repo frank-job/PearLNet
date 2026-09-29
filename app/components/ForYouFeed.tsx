@@ -11,6 +11,7 @@ const PAGE_SIZE = 10;
 export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: number }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [feedError, setFeedError] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [exhausted, setExhausted] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -21,6 +22,7 @@ export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: numb
 
   const fetchPosts = useCallback(
     async (limit: number, offset: number) => {
+      setFeedError(false);
       const params = new URLSearchParams({
         limit: String(limit),
         offset: String(offset),
@@ -35,17 +37,21 @@ export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: numb
           json = JSON.parse(body);
         } catch {
           console.error(`Posts API returned invalid JSON (HTTP ${res.status})`);
+          setFeedError(true);
           return [];
         }
 
         if (!res.ok) {
           console.error(json.error || `Posts API request failed (HTTP ${res.status})`);
+          setFeedError(true);
           return [];
         }
         if (Array.isArray(json.data)) return json.data;
         if (json.error) console.error(json.error);
+        setFeedError(true);
       } catch (error) {
         console.error('Posts API request failed:', error);
+        setFeedError(true);
       }
       return [];
     },
@@ -178,6 +184,17 @@ export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: numb
           <PostSkeleton />
           <PostSkeleton />
           <PostSkeleton />
+        </div>
+      ) : feedError && posts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-16 px-4 text-center">
+          <p className="text-sm text-muted">We couldn&apos;t load your feed.</p>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+          >
+            Try again
+          </button>
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">

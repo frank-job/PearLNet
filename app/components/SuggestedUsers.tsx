@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 type Suggestion = {
-  user_id: string;
-  username: string;
-  email: string;
-  image_url: string | null;
+  id: string;
+  username: string | null;
+  name: string | null;
+  image: string | null;
 };
 
 export default function SuggestedUsers() {
@@ -79,31 +79,32 @@ export default function SuggestedUsers() {
           ))
         ) : (
           users.map((user) => {
-            const isFollowing = followingIds.has(user.user_id);
+            const displayName = user.username || user.name || 'User';
+            const isFollowing = followingIds.has(user.id);
             return (
               <div
-                key={user.user_id}
+                key={user.id}
                 className="flex-shrink-0 w-32 rounded-2xl border border-border bg-surface p-3 flex flex-col items-center gap-2 shadow-sm hover:shadow-md transition-all"
               >
-                <Link href={`/PearLNet/account?id=${user.user_id}`} className="flex flex-col items-center gap-1.5 min-w-0">
-                  {user.image_url ? (
+                <Link href={`/PearLNet/account?id=${user.id}`} className="flex flex-col items-center gap-1.5 min-w-0">
+                  {user.image ? (
                     <img
-                      src={user.image_url}
-                      alt={user.username}
+                      src={user.image}
+                      alt={displayName}
                       className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
                     <div className="w-10 h-10 bg-primary-soft text-primary rounded-full flex items-center justify-center text-sm font-bold uppercase flex-shrink-0">
-                      {user.username[0]}
+                      {displayName[0]}
                     </div>
                   )}
                   <div className="text-center min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">{user.username}</p>
+                    <p className="text-xs font-semibold text-foreground truncate">{displayName}</p>
                   </div>
                 </Link>
                 <button
                   type="button"
-                  onClick={() => handleFollow(user.user_id)}
+                  onClick={() => handleFollow(user.id)}
                   className={`w-full mt-1 px-2 py-1.5 rounded-full text-[10px] font-bold transition-colors ${
                     isFollowing
                       ? 'bg-surface-strong text-muted hover:bg-surface'

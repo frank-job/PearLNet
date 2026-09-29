@@ -88,7 +88,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     <article className="mb-4 overflow-hidden rounded-2xl bg-card border border-border">
       <PostHeader post={post} currentUserId={currentUserId} isOwner={isOwner} onDelete={handleDelete} />
 
-      <PostContent content={post.content} />
+      <PostContent content={post.caption ?? post.content ?? ''} />
 
       {post.media && post.media.length > 0 && (
         <PostMedia media={post.media} />

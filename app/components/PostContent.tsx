@@ -2,13 +2,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 interface PostContentProps {
-  content: string;
+  content?: string | null;
 }
 
 const MAX_LINES_COLLAPSED = 3;
 
 export default function PostContent({ content }: PostContentProps) {
   const [expanded, setExpanded] = useState(false);
+  if (!content) return null;
+
   const lines = content.split('\n');
   const shouldCollapse = lines.length > MAX_LINES_COLLAPSED;
   const displayLines = expanded ? lines : lines.slice(0, MAX_LINES_COLLAPSED);
