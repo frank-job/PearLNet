@@ -22,7 +22,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.4.0",
-    "@prisma/client": "^7.10.0",
+    "@prisma/client": "7.10.0",
     "@types/bcryptjs": "^3.0.0",
     "@vercel/blob": "^2.6.1",
     "@vercel/postgres": "^0.10.0",
@@ -55,7 +55,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
-    "prisma": "^8.0.0-rc.15",
+    "prisma": "7.10.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
