@@ -431,3 +431,29 @@ CREATE TABLE IF NOT EXISTS messages (
 
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+
+-- ============================================================
+-- 14. MESSAGE REPLIES / COMMENTS ON MESSAGES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS message_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  created_at TIMESHAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_message_comments_message_id ON message_comments(message_id);
+
+-- ============================================================
+-- 15. EVENT COMMENTS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS event_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_event_comments_event_id ON event_comments(event_id);

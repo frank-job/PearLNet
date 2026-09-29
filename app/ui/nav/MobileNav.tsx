@@ -16,6 +16,7 @@ import {
   UserCircle,
   BookmarkIcon,
   Newspaper,
+  RefreshCw,
   X,
 } from 'lucide-react';
 import { useFeed } from '@/app/lib/FeedContext';
@@ -55,6 +56,24 @@ export default function MobileNav() {
 
   const hideOnMobile = pathname === '/PearLNet/create' || pathname === '/PearLNet/Notification';
   const isStandaloneFeedPage = pathname === '/PearLNet/news' || pathname === '/PearLNet/movies' || pathname?.startsWith('/PearLNet/news') || pathname?.startsWith('/PearLNet/movies');
+  const isFeedPage = pathname === '/PearLNet/home' || pathname === '/PearLNet/feed';
+  const pageTitle = pathname?.startsWith('/PearLNet/account/edit')
+    ? 'Edit profile'
+    : pathname?.startsWith('/PearLNet/account')
+      ? 'Account'
+      : pathname?.startsWith('/PearLNet/marketplace')
+        ? 'Marketplace'
+        : pathname?.startsWith('/PearLNet/events')
+          ? 'Events'
+          : pathname?.startsWith('/PearLNet/chat')
+            ? 'Inbox'
+            : pathname?.startsWith('/PearLNet/saved')
+              ? 'Saved'
+              : pathname?.startsWith('/PearLNet/settings')
+                ? 'Settings'
+                : pathname?.startsWith('/PearLNet/search')
+                  ? 'Search'
+                  : 'PearLNet';
 
   if (hideOnMobile) {
     return null;
@@ -185,20 +204,36 @@ export default function MobileNav() {
 
       {/* Top header with search and categories - sticky at top */}
       {!isStandaloneFeedPage && (
-        <header className="fixed inset-x-0 top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border lg:hidden">
+        <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border lg:hidden">
           <div className="flex h-12 items-center justify-between px-4 border-b border-border">
-            <Link href="/PearLNet/home" className="text-xl font-bold text-primary">
-              PearLNet
-            </Link>
-            <button
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Open menu"
-              className="rounded-xl bg-surface-strong p-2 hover:bg-surface-elevated transition-colors"
-            >
-              <Menu className="h-6 w-6 text-foreground" />
-            </button>
+            {isFeedPage ? (
+              <Link href="/PearLNet/home" className="text-xl font-bold text-primary">
+                PearLNet
+              </Link>
+            ) : (
+              <h1 className="text-lg font-bold text-foreground">{pageTitle}</h1>
+            )}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.refresh()}
+                aria-label="Refresh page"
+                title="Refresh page"
+                className="rounded-xl bg-surface-strong p-2 hover:bg-surface-elevated transition-colors"
+              >
+                <RefreshCw className="h-5 w-5 text-foreground" />
+              </button>
+              <button
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Open menu"
+                className="rounded-xl bg-surface-strong p-2 hover:bg-surface-elevated transition-colors"
+              >
+                <Menu className="h-6 w-6 text-foreground" />
+              </button>
+            </div>
           </div>
 
+          {isFeedPage && <>
           <div className="flex items-center w-full px-4 py-1">
             <div className="flex flex-1 gap-1 r p-1">
               {(['forYou', 'following'] as const).map((tab) => (
@@ -255,6 +290,7 @@ export default function MobileNav() {
               </button>
             ))}
           </div>
+          </>}
         </header>
       )}
     </>

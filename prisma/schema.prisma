@@ -1,0 +1,720 @@
+// prisma/schema.prisma
+// ============================================================
+// PearLNet — Production-ready Social Media Marketplace
+// Prisma Schema v1.0
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Enums
+// ============================================================
+
+enum UserRole {
+  USER
+  BUSINESS_OWNER
+  VERIFIED
+  MODERATOR
+  ADMIN
+}
+
+enum ProductStatus {
+  AVAILABLE
+  SOLD
+  REMOVED
+}
+
+enum ProductCondition {
+  NEW
+  USED_LIKE_NEW
+  USED_GOOD
+  USED_FAIR
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportTargetType {
+  POST
+  COMMENT
+  USER
+  PRODUCT
+  BUSINESS
+  REVIEW
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  TEXT
+}
+
+// ============================================================
+// NextAuth Tables
+// ============================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String  @db.VarChar(32)
+  provider          String  @db.VarChar(64)
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String? @db.VarChar(32)
+  scope             String? @db.Text
+  id_token          String? @db.Text
+  session_state     String? @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token") @db.Text
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String  @db.Text
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================
+// User & Authentication
+// ============================================================
+
+model User {
+  id           String    @id @default(uuid())
+  name         String?   @db.VarChar(255)
+  username     String?   @unique @db.VarChar(50)
+  email        String?   @unique @db.VarChar(255)
+  emailVerified DateTime? @map("email_verified_at")
+  password     String    @db.VarChar(255)
+  phone        String?   @unique @db.VarChar(32)
+  role         UserRole  @default(USER)
+  verified     Boolean   @default(false)
+  verifiedAt   DateTime? @map("verified_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  profile          Profile?
+  posts            Post[]
+  comments         Comment[]
+  likes            Like[]
+  followers        Follow[] @relation("followers")
+  following        Follow[] @relation("following")
+  notifications    Notification[]
+  sessions         Session[]
+  accounts         Account[]
+  stories          Story[]
+  sentMessages     Message[]
+  messageComments  MessageComment[]
+  eventComments    EventComment[]
+  savedPosts       SavedPost[]
+  businesses       Business[]
+  products         Product[]
+  productReviews   ProductReview[]
+  productFavorites ProductFavorite[]
+  productBoosts    ProductBoost[]
+  reports          Report[]  @relation("reporter")
+  handledReports   Report[]  @relation("handler")
+  conversations    ConversationParticipant[]
+  messageReactions MessageReaction[]
+
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+// ============================================================
+// Profile
+// ============================================================
+
+model Profile {
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  username     String?  @db.VarChar(50)
+  email        String?  @db.VarChar(255)
+  bio          String?  @db.Text
+  location     String?  @db.VarChar(255)
+  imageUrl     String?  @map("image_url") @db.Text
+  birthYear    Int?     @map("birth_year")
+  dateOfBirth  DateTime? @map("date_of_birth") @db.Date
+  gender       String?  @db.VarChar(16)
+  website      String?  @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("profiles")
+}
+
+// ============================================================
+// Stories
+// ============================================================
+
+model Story {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  imageUrl    String?  @map("image_url") @db.Text
+  videoUrl    String?  @map("video_url") @db.Text
+  caption   String?  @db.Text
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("stories")
+}
+
+// ============================================================
+// Posts (Social Media)
+// ============================================================
+
+model Post {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  userEmail  String?  @map("user_email") @db.VarChar(255)
+  caption    String?  @db.Text
+  imageUrl   String?  @map("image_url") @db.Text
+  images     Json?    @db.JsonB
+  videoUrl   String?  @map("video_url") @db.Text
+  mediaType  MediaType @default(IMAGE) @map("media_type")
+  viewCount  Int      @default(0) @map("view_count")
+  isEdited   Boolean  @default(false) @map("is_edited")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  likes       Like[]
+  savedBy     SavedPost[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("posts")
+}
+
+// ============================================================
+// Comments
+// ============================================================
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  userEmail String?  @map("user_email") @db.VarChar(255)
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+  @@index([postId, createdAt])
+  @@map("comments")
+}
+
+// ============================================================
+// Likes
+// ============================================================
+
+model Like {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+  @@map("likes")
+}
+
+// ============================================================
+// Followers / Following
+// ============================================================
+
+model Follow {
+  id         String   @id @default(uuid())
+  followerId String   @map("follower_id")
+  followingId String  @map("following_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+// ============================================================
+// Saved Posts (Bookmarks)
+// ============================================================
+
+model SavedPost {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  postId    String   @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@index([userId, createdAt])
+  @@map("saved_posts")
+}
+
+// ============================================================
+// Shares
+// ============================================================
+
+model Share {
+  id           String   @id @default(uuid())
+  postId       String   @map("post_id")
+  userId       String   @map("user_id")
+  sharedWithUserId String? @map("shared_with_user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([postId])
+  @@index([userId])
+  @@map("shares")
+}
+
+// ============================================================
+// Notifications
+// ============================================================
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String   @db.VarChar(32)
+  message   String   @db.Text
+  link      String?  @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================================
+// Post Views (deduplicated)
+// ============================================================
+
+model PostView {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String?  @map("user_id")
+  guestId   String?  @map("guest_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([postId, userId])
+  @@index([postId, guestId])
+  @@index([postId])
+  @@map("post_views")
+}
+
+// ============================================================
+// Business Directory
+// ============================================================
+
+model Business {
+  id            String   @id @default(uuid())
+  ownerId       String   @map("owner_id")
+  name          String   @db.VarChar(255)
+  slug          String   @unique @db.VarChar(255)
+  description   String?  @db.Text
+  email         String?  @db.VarChar(255)
+  phone         String?  @db.VarChar(32)
+  website       String?  @db.VarChar(255)
+  imageUrl      String?  @map("image_url") @db.Text
+  address       String?  @db.Text
+  city          String?  @db.VarChar(100)
+  state          String?  @db.VarChar(100)
+  country       String?  @db.VarChar(100)
+  latitude      Float?
+  longitude     Float?
+  verified      Boolean  @default(false) @db.Boolean
+  verifiedAt    DateTime? @map("verified_at")
+  verifiedBy    String?  @map("verified_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  owner    User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products Product[]
+  reviews  BusinessReview[]
+  reports  Report[]
+
+  @@index([ownerId])
+  @@index([verified])
+  @@index([name])
+  @@index([latitude, longitude])
+  @@map("businesses")
+}
+
+model BusinessReview {
+  id          String   @id @default(uuid())
+  businessId  String   @map("business_id")
+  userId      String   @map("user_id")
+  rating      Int      @db.SmallInt
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([businessId])
+  @@index([userId])
+  @@map("business_reviews")
+}
+
+// ============================================================
+// Marketplace Products
+// ============================================================
+
+model Product {
+  id          String        @id @default(uuid())
+  title       String        @db.VarChar(255)
+  description String?       @db.Text
+  categoryId  String?       @map("category_id")
+  price       Float         @db.DoublePrecision
+  currency    String        @default("USD") @db.VarChar(8)
+  condition   ProductCondition @default(NEW)
+  status      ProductStatus @default(AVAILABLE)
+  location    String?       @db.VarChar(255)
+  sellerId    String        @map("seller_id")
+  sellerEmail String?       @map("seller_email") @db.VarChar(255)
+  imageUrl     String?       @map("image_url") @db.Text
+  images      Json?         @db.JsonB
+  isFeatured  Boolean       @default(false) @map("is_featured")
+  boostedUntil  DateTime?     @map("boosted_until")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  seller   User?             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category Category?         @relation(fields: [categoryId], references: [id])
+  reviews  ProductReview[]
+  favorites ProductFavorite[]
+  boosts   ProductBoost[]
+
+  @@index([sellerId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([boostedUntil])
+  @@index([price])
+  @@index([createdAt])
+  @@index([title, description])
+  @@fulltext([title, description])
+  @@map("products")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique @db.VarChar(100)
+  slug        String    @unique @db.VarChar(100)
+  imageUrl     String?   @map("image_url") @db.Text
+  parentId    String?   @map("parent_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  parent     Category?    @relation("CategoryTree", fields: [parentId], references: [id])
+  children   Category[]   @relation("CategoryTree")
+  products   Product[]
+
+  @@index([parentId])
+  @@index([slug])
+  @@map("categories")
+}
+
+model ProductReview {
+  id        String   @id @default(uuid())
+  productId String   @map("product_id")
+  userId    String   @map("user_id")
+  rating    Int      @db.SmallInt
+  comment   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([userId])
+  @@map("product_reviews")
+}
+
+model ProductFavorite {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("product_favorites")
+}
+
+model ProductBoost {
+  id          String   @id @default(uuid())
+  productId   String   @map("product_id")
+  userId      String   @map("user_id")
+  amount      Float    @db.DoublePrecision
+  currency    String   @default("USD") @db.VarChar(8)
+  boostLevel  String   @default("standard") @db.VarChar(32)
+  boostedUntil DateTime @map("boosted_until")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([boostedUntil])
+  @@map("product_boosts")
+}
+
+// ============================================================
+// Messaging (Socket.IO)
+// ============================================================
+
+model Conversation {
+  id          String           @id @default(uuid())
+  type        ConversationType @default(DIRECT)
+  name         String?          @db.VarChar(255)
+  imageUrl      String?          @map("image_url") @db.Text
+  createdBy     String?          @map("created_by")
+  lastMessageId String?          @map("last_message_id")
+  lastMessageAt DateTime?        @map("last_message_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id              String   @id @default(uuid())
+  conversationId  String   @map("conversation_id")
+  userId          String   @map("user_id")
+  role            String   @default("member") @db.VarChar(32)
+  joinedAt        DateTime @default(now()) @map("joined_at")
+  lastReadMessageId String?  @map("last_read_message_id")
+  muted           Boolean  @default(false)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  conversationId  String   @map("conversation_id")
+  senderId        String   @map("sender_id")
+  content         String   @db.Text
+  imageUrl         String?  @map("image_url") @db.Text
+  videoUrl         String?  @map("video_url") @db.Text
+  isRead          Boolean  @default(false) @map("is_read")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  reactions    MessageReaction[]
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model MessageReaction {
+  id            String   @id @default(uuid())
+  messageId     String   @map("message_id")
+  userId        String   @map("user_id")
+  reaction        String   @db.VarChar(32)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, reaction])
+  @@index([messageId])
+  @@map("message_reactions")
+}
+
+model MessageComment {
+  id          String   @id @default(uuid())
+  messageId   String   @map("message_id")
+  userId      String   @map("user_id")
+  content     String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_comments")
+}
+
+// ============================================================
+// Admin Management
+// ============================================================
+
+model Admin {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  role        String   @default("admin") @db.VarChar(32)
+  permissions Json     @default("[]") @db.JsonB
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([role])
+  @@map("admins")
+}
+
+// ============================================================
+// Reports & Moderation
+// ============================================================
+
+model Report {
+  id            String         @id @default(uuid())
+  reporterId      String         @map("reporter_id")
+  targetType      ReportTargetType @map("target_type")
+  targetId        String         @map("target_id")
+  reason          String         @db.Text
+  description     String?        @db.Text
+  status          ReportStatus   @default(PENDING)
+  handlerId       String?        @map("handler_id")
+  resolutionNote  String?        @map("resolution_note") @db.Text
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  reporter  User      @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  handler   User?     @relation("handler", fields: [handlerId], references: [id], onDelete: SetNull)
+  business  Business? @relation(fields: [targetId], references: [id])
+
+  @@index([reporterId])
+  @@index([targetType, targetId])
+  @@index([status])
+  @@index([handlerId])
+  @@map("reports")
+}
+
+// ============================================================
+// Events (existing social feature)
+// ============================================================
+
+model Event {
+  id           String   @id @default(uuid())
+  title        String   @db.VarChar(255)
+  description  String?  @db.Text
+  category     String   @db.VarChar(64) @default("other")
+  imageUrl      String?  @map("image_url") @db.Text
+  location     String?  @db.VarChar(255)
+  startsAt     DateTime @map("starts_at")
+  endsAt       DateTime? @map("ends_at")
+  creatorId    String   @map("creator_id")
+  creatorEmail String?  @map("creator_email") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  creator     User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  rsvps       EventRsvp[]
+  comments    EventComment[]
+
+  @@index([creatorId])
+  @@index([startsAt])
+  @@index([category])
+  @@map("events")
+}
+
+model EventRsvp {
+  id        String   @id @default(uuid())
+  eventId   String   @map("event_id")
+  userId    String   @map("user_id")
+  status    String   @db.VarChar(16) @default("going")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@map("event_rsvps")
+}
+
+model EventComment {
+  id        String   @id @default(uuid())
+  eventId   String   @map("event_id")
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([eventId])
+  @@index([userId])
+  @@map("event_comments")
+}

@@ -1,42 +1,117 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/app/lib/action';
-import { fetchSavedPosts, savePostAction, unsavePostAction, isPostSaved } from '@/app/lib/action';
+import { auth } from '@/lib/auth/server';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
+  const session = await auth();
+  if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const result = await fetchSavedPosts(session.userId);
-  if ('error' in result) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+  const userId = session.user.id as string;
+  const { searchParams } = new URL(request.url);
+  const limit = Math.min(Number(searchParams.get('limit')) || 50, 100);
+  const offset = Math.max(Number(searchParams.get('offset')) || 0, 0);
+  const postId = searchParams.get('postId');
+
+  if (postId) {
+    const saved = await prisma.savedPost.findUnique({
+      where: { userId_postId: { userId, postId } },
+      select: { id: true, createdAt: true },
+    });
+    return NextResponse.json({ saved: !!saved });
   }
-  return NextResponse.json({ data: result.data });
+
+  const savedPosts = await prisma.savedPost.findMany({
+    where: { userId },
+    include: {
+      post: {
+        include: {
+          author: {
+            select: {
+              id: true, username: true, name: true, email: true,
+              profile: { select: { imageUrl: true } },
+              verified: true, role: true,
+            },
+          },
+          _count: { select: { likes: true, comments: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    skip: offset,
+    take: limit,
+  });
+
+  const result = savedPosts
+    .filter((sp) => sp.post !== null)
+    .map((sp) => {
+      const post = sp.post as any;
+      return {
+        id: post.id,
+        caption: post.caption,
+        imageUrl: post.imageUrl,
+        images: post.images,
+        videoUrl: post.videoUrl,
+        mediaType: post.mediaType,
+        viewCount: post.viewCount,
+        isEdited: post.isEdited,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        author: {
+          id: post.author.id,
+          username: post.author.username,
+          name: post.author.name,
+          email: post.author.email,
+          image: post.author.profile?.imageUrl ?? null,
+          verified: post.author.verified,
+          role: post.author.role,
+        },
+        _count: {
+          likes: post._count.likes,
+          comments: post._count.comments,
+        },
+        savedAt: sp.createdAt,
+      };
+    });
+
+  return NextResponse.json({ data: result });
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
+  const session = await auth();
+  if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { postId } = body;
-
-  if (!postId) {
+  const body = await request.json().catch(() => null);
+  if (!body?.postId) {
     return NextResponse.json({ error: 'postId is required' }, { status: 400 });
   }
 
-  const saved = await isPostSaved(session.userId, postId);
-  if (saved) {
-    await unsavePostAction(postId);
-    return NextResponse.json({ saved: false });
+  await prisma.savedPost.upsert({
+    where: { userId_postId: { userId: session.user.id as string, postId: body.postId } },
+    create: { userId: session.user.id as string, postId: body.postId },
+    update: {},
+  });
+
+  return NextResponse.json({ saved: true });
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const result = await savePostAction(postId);
-  if (result && 'message' in result) {
-    return NextResponse.json({ error: result.message }, { status: 400 });
+  const body = await request.json().catch(() => null);
+  if (!body?.postId) {
+    return NextResponse.json({ error: 'postId is required' }, { status: 400 });
   }
-  return NextResponse.json({ saved: true });
+
+  await prisma.savedPost.deleteMany({
+    where: { userId: session.user.id as string, postId: body.postId },
+  });
+
+  return NextResponse.json({ saved: false });
 }

@@ -64,10 +64,10 @@ export default async function AccountPage({
   const displayName = profile?.username ?? 'User';
 
   return (
-    <main className="min-h-screen transition-all duration-300 ml-4 lg:ml-64 pb-24 lg:pb-8 px-4 md:px-8">
+    <main className="min-h-screen transition-all duration-300 pb-24 lg:pb-8 px-4 md:px-8">
       <header className="flex flex-col sm:flex-col sm:justify-center sm:items-center justify-between gap-4 py-6">
-        <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-
+        <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl">
+          {isOwnProfile ? 'Your profile' : `${displayName}'s profile`}
         </h1>
       </header>
 

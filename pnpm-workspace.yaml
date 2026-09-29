@@ -4,3 +4,6 @@ allowBuilds:
   msgpackr-extract: false
   unrs-resolver: false
   workerd: false
+minimumReleaseAgeExclude:
+  - socket.io-client@4.8.4
+  - socket.io@4.8.4

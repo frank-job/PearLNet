@@ -1,32 +1,97 @@
 import { Suspense } from 'react';
-import Link from 'next/link';
-import { Plus } from 'lucide-react';
-import MarketplaceFeed from '@/app/components/MarketplaceFeed';
-import ThemeToggle from '@/app/ui/theme/ThemeToggle';
+import type { Metadata } from 'next';
+import MarketplaceBrowser from '@/app/components/MarketplaceBrowser';
+import PageHeader from '@/app/components/PageHeader';
+import * as marketplaceService from '@/lib/services/marketplace-service';
+import type { MarketplaceCategory, MarketplaceProduct } from '@/types';
 
-export default function MarketplacePage() {
+export const metadata: Metadata = {
+  title: 'Marketplace | PearLNet',
+  description: 'Buy and sell products with people and businesses on PearLNet.',
+};
+
+const PAGE_SIZE = 24;
+
+interface MarketplacePageProps {
+  searchParams: Promise<{
+    query?: string;
+    categoryId?: string;
+    condition?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    page?: string;
+  }>;
+}
+
+function toNumber(value?: string): number | undefined {
+  if (value === undefined) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
+  const params = await searchParams;
+
+  const page = Math.max(Number(params.page) || 1, 1);
+  const [productsResult, categories] = await Promise.all([
+    marketplaceService
+      .fetchProducts({
+        search: params.query || undefined,
+        categoryId: params.categoryId || undefined,
+        condition: (params.condition as MarketplaceProduct['condition']) || undefined,
+        minPrice: toNumber(params.minPrice),
+        maxPrice: toNumber(params.maxPrice),
+        status: 'AVAILABLE',
+        sortBy: (params.sortBy as 'createdAt' | 'price') || 'createdAt',
+        sortOrder: (params.sortOrder as 'asc' | 'desc') || 'desc',
+        page,
+        limit: PAGE_SIZE,
+      })
+      .catch((err) => {
+        console.error('[marketplace] fetchProducts failed:', err);
+        return { products: [] as MarketplaceProduct[], total: 0, page, limit: PAGE_SIZE };
+      }),
+    marketplaceService
+      .fetchCategories()
+      .catch(() => [] as MarketplaceCategory[]),
+  ]);
+
+  const { products, total } = productsResult;
+
   return (
-    <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto bg-surface">
-      <div className="max-w-4xl mx-auto w-full">
-        <header className="sticky top-0 z-40 px-4 py-6 bg-surface-strong border-b border-border backdrop-blur-md">
-          <div className="flex items-center justify-between">
-            <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-              PearlNet <span className="text-muted">Marketplace</span>
-            </h1>
-            <Link
-              href="/PearLNet/marketplace/create"
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Listing</span>
-            </Link>
-          </div>
-          <p className="text-sm text-muted mt-1">Buy and sell with the community</p>
-        </header>
+    <main className="min-h-screen bg-surface transition-all duration-300">
+      <div className="mx-auto w-full max-w-6xl">
+        <PageHeader title="PearlNet" subtitle="Marketplace" backHref="/PearLNet/home" />
 
         <div className="px-4 py-6">
-          <Suspense fallback={<div className="py-8 text-center text-xs text-muted">Loading listings...</div>}>
-            <MarketplaceFeed />
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="overflow-hidden rounded-2xl border border-border bg-surface-strong"
+                  >
+                    <div className="aspect-square w-full animate-pulse bg-surface-tertiary" />
+                    <div className="space-y-2 p-4">
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-surface-tertiary" />
+                      <div className="h-3 w-1/2 animate-pulse rounded bg-surface-tertiary" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }
+          >
+            <MarketplaceBrowser
+              initialProducts={products}
+              initialTotal={total}
+              initialPage={page}
+              categories={categories as MarketplaceCategory[]}
+              initialCategoryId={params.categoryId ?? ''}
+              initialQuery={params.query ?? ''}
+            />
           </Suspense>
         </div>
       </div>

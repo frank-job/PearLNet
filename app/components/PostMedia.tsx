@@ -1,83 +1,68 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import Image from 'next/image';
+import { useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { Media } from '@prisma/client';
 
-type PostMediaProps = {
-  imageUrl?: string | null;
-  images?: string[];
-  alt?: string;
-};
+interface PostMediaProps {
+  media: { id: string; type: string; url: string; alt?: string | null }[];
+}
 
-const mediaClassName = 'block w-full aspect-[4/5] sm:aspect-[4/3] object-cover';
-
-export default function PostMedia({ imageUrl, images, alt = 'Post' }: PostMediaProps) {
-  const media = images && images.length > 0 ? images : imageUrl ? [imageUrl] : [];
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(media.length > 1);
+export default function PostMedia({ media }: PostMediaProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   if (media.length === 0) return null;
 
-  if (media.length === 1) {
-    return (
-      <div className="w-full overflow-hidden bg-surface-strong">
-        <img src={media[0]} alt={alt} loading="lazy" className={mediaClassName} />
-      </div>
-    );
-  }
-
-  const updateArrows = (element: HTMLDivElement) => {
-    setCanPrev(element.scrollLeft > 10);
-    setCanNext(element.scrollLeft + element.clientWidth < element.scrollWidth - 10);
-  };
-
-  const scrollBy = (direction: number) => {
-    scrollRef.current?.scrollBy({
-      left: direction * (scrollRef.current.clientWidth || 1),
-      behavior: 'smooth',
-    });
-  };
+  const currentMedia = media[currentIndex];
 
   return (
-    <div className="relative group w-full overflow-hidden bg-surface-strong">
-      <div
-        ref={scrollRef}
-        onScroll={(event) => updateArrows(event.currentTarget)}
-        className="flex w-full gap-1 overflow-x-auto snap-x scroll-smooth no-scrollbar"
-      >
-        {media.map((source, index) => (
-          <img
-            key={source + index}
-            src={source}
-            alt={`${alt} ${index + 1}`}
-            loading="lazy"
-            decoding="async"
-            className={`${mediaClassName} shrink-0 snap-start`}
-          />
-        ))}
-      </div>
+    <div className="relative">
+      {media.length > 1 && (
+        <>
+          <button
+            onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : media.length - 1))}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
+          >
+            <div className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setCurrentIndex((prev) => (prev < media.length - 1 ? prev + 1 : 0))}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
+          >
+            <div className="h-4 w-4" />
+          </button>
+        </>
+      )}
 
-      <button
-        type="button"
-        aria-label="Previous image"
-        onClick={() => scrollBy(-1)}
-        className={`absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-opacity ${
-          canPrev ? 'opacity-100' : 'pointer-events-none opacity-0'
-        }`}
-      >
-        <ChevronLeftIcon className="h-5 w-5" />
-      </button>
-      <button
-        type="button"
-        aria-label="Next image"
-        onClick={() => scrollBy(1)}
-        className={`absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-opacity ${
-          canNext ? 'opacity-100' : 'pointer-events-none opacity-0'
-        }`}
-      >
-        <ChevronRightIcon className="h-5 w-5" />
-      </button>
+      {currentMedia.type === 'VIDEO' ? (
+        <video
+          src={currentMedia.url}
+          className="w-full object-cover"
+          controls
+          poster={currentMedia.alt || undefined}
+        />
+      ) : (
+        <Image
+          src={currentMedia.url}
+          alt={currentMedia.alt || 'Post image'}
+          width={600}
+          height={400}
+          className="w-full object-cover"
+          sizes="(max-width: 600px) 100vw, 600px"
+        />
+      )}
+
+      {media.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          {media.map((_, idx) => (
+            <div
+              key={idx}
+              className={`h-1.5 w-2 rounded-full ${idx === currentIndex ? 'bg-white' : 'bg-white/50'}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

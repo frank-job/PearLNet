@@ -1,91 +1,88 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  fetchNotifications,
-  fetchUnreadNotificationCount,
-  markNotificationRead,
-  markAllNotificationsRead,
-  createNotificationAction,
-} from '@/app/lib/action';
-import { getSession } from '@/app/lib/action';
+import { auth } from '@/lib/auth/server';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
+  const session = await auth();
+  if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const unreadOnly = request.nextUrl.searchParams.get('unread') === 'true';
+  const userId = session.user.id as string;
+  const { searchParams } = new URL(request.url);
+  const limit = Math.min(Number(searchParams.get('limit')) || 50, 100);
+  const offset = Math.max(Number(searchParams.get('offset')) || 0, 0);
 
-  if (unreadOnly) {
-    const count = await fetchUnreadNotificationCount(session.userId);
-    return NextResponse.json({ count });
-  }
+  const notifications = await prisma.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    skip: offset,
+    take: limit,
+  });
 
-  const result = await fetchNotifications(session.userId);
-  if ('error' in result) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
-  }
-  return NextResponse.json({ data: result.data });
+  const unreadCount = await prisma.notification.count({
+    where: { userId, read: false },
+  });
+
+  return NextResponse.json({ data: notifications, unreadCount });
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
+  const session = await auth();
+  if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    const body = await request.json();
-    const { userId, type, message, link } = body;
-
-    if (!userId || !type || !message) {
-      return NextResponse.json(
-        { error: 'userId, type, and message are required' },
-        { status: 400 },
-      );
-    }
-
-    await createNotificationAction(userId, type, message, link);
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error('Notification creation error:', err);
-    return NextResponse.json(
-      { error: 'Failed to create notification' },
-      { status: 500 },
-    );
+  const body = await request.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
+
+  if (body.action === 'mark-all-read') {
+    const result = await prisma.notification.updateMany({
+      where: { userId: session.user.id as string, read: false },
+      data: { read: true },
+    });
+    return NextResponse.json({ updated: result.count });
+  }
+
+  if (body.notificationId) {
+    await prisma.notification.update({
+      where: { id: body.notificationId, userId: session.user.id as string },
+      data: { read: true },
+    });
+    return NextResponse.json({ success: true });
+  }
+
+  if (body.type && body.type === 'create') {
+    await prisma.notification.create({
+      data: {
+        userId: body.userId,
+        type: body.notificationType ?? 'message',
+        message: body.message ?? '',
+        link: body.link ?? null,
+      },
+    });
+    return NextResponse.json({ success: true });
+  }
+
+  return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 }
 
-export async function PATCH(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
+export async function DELETE(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    const body = await request.json();
-    const { notificationId, all } = body;
-
-    // Mark all of the current user's notifications as read
-    if (all) {
-      await markAllNotificationsRead(session.userId);
-      return NextResponse.json({ success: true });
-    }
-
-    if (!notificationId) {
-      return NextResponse.json(
-        { error: 'notificationId is required' },
-        { status: 400 },
-      );
-    }
-
-    await markNotificationRead(notificationId);
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error('Notification read error:', err);
-    return NextResponse.json(
-      { error: 'Failed to mark notification as read' },
-      { status: 500 },
-    );
+  const body = await request.json().catch(() => null);
+  if (!body?.notificationId) {
+    return NextResponse.json({ error: 'notificationId is required' }, { status: 400 });
   }
+
+  await prisma.notification.deleteMany({
+    where: { id: body.notificationId, userId: session.user.id as string },
+  });
+
+  return NextResponse.json({ success: true });
 }

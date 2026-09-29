@@ -237,8 +237,11 @@ export async function fetchConversations(): Promise<any[]> {
   try {
     const result = await sql`
       SELECT c.*,
-        CASE WHEN c.participant_a = ${userId} THEN c.participant_b ELSE c.participant_a END AS other_user_id
+        CASE WHEN c.participant_a = ${userId} THEN c.participant_b ELSE c.participant_a END AS other_user_id,
+        p.username AS other_username,
+        p.image_url AS other_image_url
       FROM conversations c
+      LEFT JOIN profiles p ON p.user_id = CASE WHEN c.participant_a = ${userId} THEN c.participant_b ELSE c.participant_a END
       WHERE c.participant_a = ${userId} OR c.participant_b = ${userId}
       ORDER BY c.last_message_at DESC NULLS LAST
     `;
@@ -271,5 +274,75 @@ export async function markMessagesRead(conversationId: string): Promise<void> {
     await sql`UPDATE messages SET read = TRUE WHERE conversation_id = ${conversationId} AND sender_id != ${userId}`;
   } catch {
     // ignore
+  }
+}
+
+// ============================================================
+// MESSAGE COMMENTS (replies on chat messages)
+// ============================================================
+
+export async function addMessageComment(messageId: string, content: string): Promise<{ error?: string }> {
+  const userId = await getCurrentUserId();
+  if (!userId) return { error: 'Not authenticated' };
+
+  try {
+    await sql`
+      INSERT INTO message_comments (message_id, user_id, content)
+      VALUES (${messageId}, ${userId}, ${content})
+    `;
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to add comment' };
+  }
+}
+
+export async function fetchMessageComments(messageId: string): Promise<any[]> {
+  try {
+    const result = await sql`
+      SELECT mc.*, u.username AS commenter_username, p.image_url AS commenter_image_url
+      FROM message_comments mc
+      LEFT JOIN users u ON u.id = mc.user_id
+      LEFT JOIN profiles p ON p.user_id = mc.user_id
+      WHERE mc.message_id = ${messageId}
+      ORDER BY mc.created_at ASC
+    `;
+    return result.rows;
+  } catch {
+    return [];
+  }
+}
+
+// ============================================================
+// EVENT COMMENTS
+// ============================================================
+
+export async function addEventComment(eventId: string, content: string): Promise<{ error?: string }> {
+  const userId = await getCurrentUserId();
+  if (!userId) return { error: 'Not authenticated' };
+
+  try {
+    await sql`
+      INSERT INTO event_comments (event_id, user_id, content)
+      VALUES (${eventId}, ${userId}, ${content})
+    `;
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to add comment' };
+  }
+}
+
+export async function fetchEventComments(eventId: string): Promise<any[]> {
+  try {
+    const result = await sql`
+      SELECT ec.*, u.username AS commenter_username, p.image_url AS commenter_image_url
+      FROM event_comments ec
+      LEFT JOIN users u ON u.id = ec.user_id
+      LEFT JOIN profiles p ON p.user_id = ec.user_id
+      WHERE ec.event_id = ${eventId}
+      ORDER BY ec.created_at ASC
+    `;
+    return result.rows;
+  } catch {
+    return [];
   }
 }

@@ -1,298 +1,575 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Image, Loader2 } from 'lucide-react';
+import {
+  PhotoIcon,
+  XMarkIcon,
+  ArrowPathIcon,
+  ExclamationTriangleIcon,
+  BuildingStorefrontIcon,
+} from '@heroicons/react/24/outline';
+import { useSession } from 'next-auth/react';
+import { createProductSchema } from '@/lib/validations/schemas';
+import type { MarketplaceCategory } from '@/types';
 
-const CATEGORIES = [
-  'Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books',
-  'Vehicles', 'Toys & Games', 'Beauty', 'Automotive', 'Other'
-];
+const MAX_IMAGES = 6;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const CONDITIONS = [
-  'new', 'like_new', 'good', 'fair', 'poor'
-];
+  { value: 'NEW', label: 'New' },
+  { value: 'LIKE_NEW', label: 'Like new' },
+  { value: 'GOOD', label: 'Good' },
+  { value: 'FAIR', label: 'Fair' },
+  { value: 'POOR', label: 'Poor' },
+] as const;
+
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY'] as const;
+
+interface ListingBusiness {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface FormErrors {
+  title?: string;
+  description?: string;
+  categoryId?: string;
+  price?: string;
+  currency?: string;
+  condition?: string;
+  location?: string;
+  images?: string;
+}
 
 export default function CreateListing() {
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Electronics');
+  const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
-  const [currency, setCurrency] = useState('USD');
-  const [condition, setCondition] = useState('good');
+  const [currency, setCurrency] = useState<string>('USD');
+  const [condition, setCondition] = useState<string>('NEW');
   const [location, setLocation] = useState('');
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [businessId, setBusinessId] = useState('');
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const remainingSlots = 5 - images.length;
-    const newFiles = files.slice(0, remainingSlots);
-    
-    newFiles.forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Image must be less than 5MB');
-        return;
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
+  const [businesses, setBusinesses] = useState<ListingBusiness[]>([]);
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const res = await fetch('/api/marketplace/categories', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (active) setCategories(data?.data ?? []);
+        }
+      } catch {
+        // Categories are optional; the listing can still be created without one.
+      } finally {
+        if (active) setLoadingOptions(false);
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') return;
+    let active = true;
+
+    (async () => {
+      try {
+        const res = await fetch('/api/businesses?mine=true&limit=50', {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (active) setBusinesses(data?.businesses ?? data?.data ?? []);
+        }
+      } catch {
+        // Business association is optional.
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [sessionStatus]);
+
+  useEffect(() => {
+    return () => {
+      previews.forEach((src) => URL.revokeObjectURL(src));
+    };
+  }, [previews]);
+
+  const flatCategories = useMemo(() => {
+    const out: MarketplaceCategory[] = [];
+    for (const parent of categories) {
+      out.push(parent);
+      for (const child of parent.children ?? []) {
+        out.push(child);
+      }
+    }
+    return out;
+  }, [categories]);
+
+  const validate = (): FormErrors => {
+    const next: FormErrors = {};
+    const parsed = createProductSchema.safeParse({
+      title: title.trim(),
+      description: description.trim() || null,
+      categoryId: categoryId || null,
+      price: price === '' ? Number.NaN : Number(price),
+      currency,
+      condition,
+      location: location.trim() || null,
     });
-    setImages(prev => [...prev, ...newFiles]);
+
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if (typeof field === 'string' && !next[field as keyof FormErrors]) {
+          next[field as keyof FormErrors] = issue.message;
+        }
+      }
+    }
+
+    if (images.length > MAX_IMAGES) {
+      next.images = `You can upload up to ${MAX_IMAGES} images`;
+    }
+
+    return next;
+  };
+
+  const handleFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const nextErrors = { ...errors };
+
+    const accepted: File[] = [];
+    for (const file of Array.from(fileList)) {
+      if (accepted.length + images.length >= MAX_IMAGES) {
+        nextErrors.images = `You can upload up to ${MAX_IMAGES} images`;
+        break;
+      }
+      if (!file.type.startsWith('image/')) {
+        nextErrors.images = 'Only image files are supported';
+        continue;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        nextErrors.images = 'Each image must be under 5MB';
+        continue;
+      }
+      accepted.push(file);
+    }
+
+    if (accepted.length > 0) {
+      setImages((prev) => [...prev, ...accepted]);
+      setPreviews((prev) => [
+        ...prev,
+        ...accepted.map((f) => URL.createObjectURL(f)),
+      ]);
+      nextErrors.images = undefined;
+    }
+
+    setErrors(nextErrors);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
+    setErrors((prev) => ({ ...prev, images: undefined }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    if (!title.trim()) {
-      setError('Title is required');
-      setLoading(false);
-      return;
-    }
-    if (!price || Number(price) <= 0) {
-      setError('Valid price is required');
-      setLoading(false);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('title', title.trim());
-    if (description.trim()) formData.append('description', description.trim());
-    formData.append('category', category);
-    formData.append('price', price);
-    formData.append('currency', currency);
-    formData.append('condition', condition);
-    if (location.trim()) formData.append('location', location.trim());
-    
-    images.forEach(file => {
-      formData.append('images', file);
+  const moveImage = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= images.length) return;
+    setImages((prev) => {
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
     });
+    setPreviews((prev) => {
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFormError(null);
+
+    if (sessionStatus === 'loading') {
+      setFormError('Checking your session, please try again.');
+      return;
+    }
+    if (!session?.user) {
+      setFormError('You must be signed in to create a listing.');
+      return;
+    }
+
+    const validationErrors = validate();
+    setErrors(validationErrors);
+    if (Object.values(validationErrors).some(Boolean)) {
+      setFormError('Please fix the highlighted fields.');
+      return;
+    }
+
+    setSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      if (description.trim()) formData.append('description', description.trim());
+      if (categoryId) formData.append('categoryId', categoryId);
+      if (businessId) formData.append('businessId', businessId);
+      formData.append('price', price);
+      formData.append('currency', currency);
+      formData.append('condition', condition);
+      if (location.trim()) formData.append('location', location.trim());
+      images.forEach((file) => formData.append('images', file));
+
       const res = await fetch('/api/marketplace', {
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
 
-      const data = await res.json();
-
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create listing');
+        throw new Error(data?.error || 'Could not create your listing.');
       }
 
-      router.push('/PearLNet/marketplace');
+      router.push(
+        data?.productId ? `/PearLNet/marketplace/product/${data.productId}` : '/PearLNet/marketplace',
+      );
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create listing');
+      setFormError(err instanceof Error ? err.message : 'Could not create your listing.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6">
+      {formError && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-500"
+        >
+          <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>{formError}</p>
+        </div>
+      )}
+
       <div>
-        <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-          PearlNet
-        </h1>
-        <p className="text-sm text-muted mt-1">Create a new listing</p>
+        <label htmlFor="title" className="mb-2 block text-sm font-semibold text-foreground">
+          Title <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="title"
+          type="text"
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setErrors((prev) => ({ ...prev, title: undefined }));
+          }}
+          placeholder="What are you selling?"
+          maxLength={255}
+          aria-invalid={!!errors.title}
+          aria-describedby={errors.title ? 'title-error' : undefined}
+          className={`w-full rounded-xl border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary ${
+            errors.title ? 'border-red-500' : 'border-border'
+          }`}
+        />
+        <div className="mt-1 flex justify-between">
+          {errors.title ? (
+            <p id="title-error" className="text-xs text-red-500">
+              {errors.title}
+            </p>
+          ) : (
+            <span />
+          )}
+          <span className="text-xs text-muted">{title.length}/255</span>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-surface border border-border rounded-2xl p-6 space-y-6">
-        {error && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 p-4 text-sm">
-            {error}
-          </div>
-        )}
+      <div>
+        <label htmlFor="description" className="mb-2 block text-sm font-semibold text-foreground">
+          Description
+        </label>
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            setErrors((prev) => ({ ...prev, description: undefined }));
+          }}
+          rows={5}
+          maxLength={5000}
+          placeholder="Describe condition, age, and any included accessories."
+          aria-invalid={!!errors.description}
+          className={`w-full resize-y rounded-xl border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary ${
+            errors.description ? 'border-red-500' : 'border-border'
+          }`}
+        />
+        <p className="mt-1 text-right text-xs text-muted">{description.length}/5000</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="categoryId" className="mb-2 block text-sm font-semibold text-foreground">
+            Category
+          </label>
+          <select
+            id="categoryId"
+            value={categoryId}
+            disabled={loadingOptions}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
+          >
+            <option value="">{loadingOptions ? 'Loading categories...' : 'Select a category'}</option>
+            {flatCategories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+          {errors.categoryId && (
+            <p className="mt-1 text-xs text-red-500">{errors.categoryId}</p>
+          )}
+        </div>
 
         <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-2">
-            Title <span className="text-red-500">*</span>
+          <label htmlFor="condition" className="mb-2 block text-sm font-semibold text-foreground">
+            Condition
+          </label>
+          <select
+            id="condition"
+            value={condition}
+            onChange={(e) => setCondition(e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            {CONDITIONS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {businesses.length > 0 && (
+        <div>
+          <label
+            htmlFor="businessId"
+            className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground"
+          >
+            <BuildingStorefrontIcon className="h-4 w-4" />
+            List under a business
+          </label>
+          <select
+            id="businessId"
+            value={businessId}
+            onChange={(e) => setBusinessId(e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">Personal listing (no business)</option>
+            {businesses.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div>
+          <label htmlFor="price" className="mb-2 block text-sm font-semibold text-foreground">
+            Price <span className="text-red-500">*</span>
           </label>
           <input
+            id="price"
+            type="number"
+            inputMode="decimal"
+            min="0.01"
+            step="0.01"
+            value={price}
+            onChange={(e) => {
+              setPrice(e.target.value);
+              setErrors((prev) => ({ ...prev, price: undefined }));
+            }}
+            placeholder="0.00"
+            aria-invalid={!!errors.price}
+            className={`w-full rounded-xl border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary ${
+              errors.price ? 'border-red-500' : 'border-border'
+            }`}
+          />
+          {errors.price && <p className="mt-1 text-xs text-red-500">{errors.price}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="currency" className="mb-2 block text-sm font-semibold text-foreground">
+            Currency
+          </label>
+          <select
+            id="currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="location" className="mb-2 block text-sm font-semibold text-foreground">
+            Location
+          </label>
+          <input
+            id="location"
             type="text"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="What are you selling?"
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            maxLength={100}
+            value={location}
+            onChange={(e) => {
+              setLocation(e.target.value);
+              setErrors((prev) => ({ ...prev, location: undefined }));
+            }}
+            placeholder="City, State"
+            maxLength={255}
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary"
           />
+          {errors.location && <p className="mt-1 text-xs text-red-500">{errors.location}</p>}
         </div>
+      </div>
 
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-2">
-            Description
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe your item..."
-            rows={4}
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            maxLength={2000}
-          />
-        </div>
+      <div>
+        <label className="mb-2 block text-sm font-semibold text-foreground">
+          Photos <span className="font-normal text-muted">({images.length}/{MAX_IMAGES})</span>
+        </label>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium mb-2">
-              Category
-            </label>
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="condition" className="block text-sm font-medium mb-2">
-              Condition
-            </label>
-            <select
-              id="condition"
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {CONDITIONS.map(cond => (
-                <option key={cond} value={cond}>{cond.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium mb-2">
-              Price <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              id="price"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="currency" className="block text-sm font-medium mb-2">
-              Currency
-            </label>
-            <select
-              id="currency"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium mb-2">
-              Location
-            </label>
-            <input
-              type="text"
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="City, State"
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Photos ({images.length}/5)
-          </label>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {imagePreviews.map((preview, index) => (
-              <div key={index} className="relative flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden">
-                <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+        {previews.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-3">
+            {previews.map((preview, index) => (
+              <div
+                key={preview}
+                className="relative h-24 w-24 overflow-hidden rounded-xl border border-border"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={preview} alt={`Upload ${index + 1}`} className="h-full w-full object-cover" />
+                {index === 0 && (
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 py-0.5 text-center text-[10px] font-semibold text-white">
+                    Cover
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                  aria-label="Remove image"
+                  aria-label={`Remove image ${index + 1}`}
+                  className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white transition-colors hover:bg-black"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <XMarkIcon className="h-3.5 w-3.5" />
                 </button>
+                {previews.length > 1 && (
+                  <div className="absolute bottom-1 left-1 flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => moveImage(index, -1)}
+                      disabled={index === 0}
+                      aria-label="Move image earlier"
+                      className="rounded bg-black/70 px-1 text-[10px] text-white disabled:opacity-40"
+                    >
+                      ←
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveImage(index, 1)}
+                      disabled={index === previews.length - 1}
+                      aria-label="Move image later"
+                      className="rounded bg-black/70 px-1 text-[10px] text-white disabled:opacity-40"
+                    >
+                      →
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
-            {images.length < 5 && (
-              <label className="flex-shrink-0 w-24 h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-surface-strong transition-colors">
-                <Image className="w-8 h-8 text-muted" />
-                <span className="text-xs text-muted mt-1">Add</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id={`image-upload-${images.length}`}
-                />
-              </label>
-            )}
           </div>
-          <p className="text-xs text-muted mt-2">Max 5 images, 5MB each</p>
-        </div>
+        )}
 
-        <div className="flex gap-3 pt-4 border-t border-border">
+        {images.length < MAX_IMAGES && (
           <button
             type="button"
-            onClick={() => router.back()}
-            className="flex-1 px-6 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-surface-strong transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-8 text-muted transition-colors hover:border-primary hover:bg-surface-strong"
           >
-            Cancel
+            <PhotoIcon className="h-8 w-8" />
+            <span className="text-sm font-medium">Add photos</span>
+            <span className="text-xs">JPG, PNG or WebP, up to 5MB each</span>
           </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 px-6 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Creating...
-              </span>
-            ) : (
-              'Create Listing'
-            )}
-          </button>
-        </div>
-      </form>
-    </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => handleFiles(e.target.files)}
+        />
+
+        {errors.images && <p className="mt-2 text-xs text-red-500">{errors.images}</p>}
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="flex-1 rounded-xl border border-border px-6 py-3 font-semibold text-foreground transition-colors hover:bg-surface-strong disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={submitting || sessionStatus === 'loading'}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {submitting ? (
+            <>
+              <ArrowPathIcon className="h-4 w-4 animate-spin" />
+              Creating listing...
+            </>
+          ) : (
+            'Create listing'
+          )}
+        </button>
+      </div>
+    </form>
   );
 }

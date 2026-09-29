@@ -1,207 +1,211 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
-import { XMarkIcon, FaceSmileIcon, ChartBarIcon, HashtagIcon, PhotoIcon } from '@heroicons/react/24/outline';
-import DynamicPlaceholder from './DynamicPlaceholder';
-import LivePostPreview from './LivePostPreview';
 
-/* ============================================================
-   CreatePost Component
-   - Twitter-style post composer
-   - Supports a caption AND/OR images together in one post.
-   - Images are sent as multipart files and uploaded to Vercel Blob
-     on the server.
-   ============================================================ */
+import Link from 'next/link';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+import {
+  PhotoIcon,
+  VideoCameraIcon as VideoIcon,
+  EmojiHappyIcon,
+  PaperClipIcon,
+  XMarkIcon,
+  GlobeAltIcon,
+  UsersIcon,
+  LockClosedIcon,
+} from '@heroicons/react/24/outline';
+import { useSession } from 'next-auth/react';
+import { uploadFiles } from '@/lib/cloudinary';
 
-export default function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
-  const [description, setDescription] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [userName, setUserName] = useState('You');
+interface MediaPreview {
+  id: string;
+  file: File;
+  preview: string;
+  type: 'IMAGE' | 'VIDEO';
+}
+
+export default function CreatePost() {
+  const { data: session } = useSession();
+  const [content, setContent] = useState('');
+  const [media, setMedia] = useState<MediaPreview[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [privacy, setPrivacy] = useState<'PUBLIC' | 'FOLLOWERS' | 'PRIVATE'>('PUBLIC');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const clearFeedback = () => setFeedback(null);
-
-  // Fetch the logged-in user's name for the live preview
   useEffect(() => {
-    let active = true;
-    fetch('/api/session')
-      .then((res) => res.json())
-      .then((data) => {
-        if (active && data.email) {
-          setUserName(data.email.split('@')[0] ?? 'You');
-        }
-      })
-      .catch(() => {});
-    return () => { active = false; };
-  }, []);
+    return () => {
+      media.forEach((m) => URL.revokeObjectURL(m.preview));
+    };
+  }, [media]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    clearFeedback();
-    const selected = e.target.files ? Array.from(e.target.files) : [];
-    if (selected.length === 0) return;
+  const handleFileSelect = (files: FileList | null) => {
+    if (!files) return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      const maxSize = isImage ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
 
-const newFiles = [...files, ...selected];
-    setFiles(newFiles);
-    setPreviews(newFiles.map((f) => URL.createObjectURL(f)));
+      if (!isImage && !isVideo) {
+        toast.error('Only images and videos are supported');
+        continue;
+      }
+      if (file.size > maxSize) {
+        toast.error(`File too large. Max: ${isImage ? '10MB' : '50MB'}`);
+        continue;
+      }
 
-    if (fileInputRef.current) fileInputRef.current.value = '';
+      setMedia((prev) => [
+        ...prev,
+        {
+          id: Math.random().toString(36).slice(2),
+          file,
+          preview: URL.createObjectURL(file),
+          type: isImage ? 'IMAGE' : 'VIDEO',
+        },
+      ]);
+    }
   };
 
-  const removeImage = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
-    clearFeedback();
+  const removeMedia = (id: string) => {
+    const item = media.find((m) => m.id === id);
+    if (item) {
+      URL.revokeObjectURL(item.preview);
+    }
+    setMedia((prev) => prev.filter((m) => m.id !== id));
   };
 
-const handleUpload = async () => {
-    clearFeedback();
-
-    if (!description.trim() && files.length === 0) {
-      setFeedback({ type: 'error', message: 'Please add a photo or a caption.' });
+  const handleSubmit = async () => {
+    if (!content.trim() && media.length === 0) {
+      toast.error('Please add some content or media');
       return;
     }
 
-    setUploading(true);
+    setLoading(true);
     try {
       const formData = new FormData();
+      formData.append('content', content);
+      formData.append('privacy', privacy);
 
-      for (const file of files) {
-        formData.append('images', file, file.name);
-      }
-      formData.append('caption', description.trim());
-
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        body: formData,
-      });
-      const json = await res.json();
-
-      if (json.error) {
-        setFeedback({ type: 'error', message: json.error });
-        return;
+      if (media.length > 0) {
+        const uploaded = await uploadFiles(
+          'posts',
+          session?.user?.name || 'user',
+          media.map((m) => m.file)
+        );
       }
 
-      setFiles([]);
-      setPreviews([]);
-      setDescription('');
-      setFeedback({ type: 'success', message: 'Post shared!' });
-      onPostCreated();
-
-      setTimeout(clearFeedback, 3000);
+      setContent('');
+      setMedia([]);
+      setPrivacy('PUBLIC');
+      toast.success('Post created!');
     } catch (error) {
-      console.error(error);
-      setFeedback({ type: 'error', message: 'Failed to create post. Please try again.' });
+      toast.error('Failed to create post');
     } finally {
-      setUploading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div id="composer" className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
-      <div className="flex align-middle top-1 gap-3">
-        {/* User Avatar Placeholder */}
-        <div className="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary font-bold text-sm shrink-0">
-          U
-        </div>
-
+    <div className="rounded-2xl border border-border bg-card p-4 mb-4">
+      <div className="flex gap-3">
+        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-muted" />
         <div className="flex-1">
-{/* Textarea */}
-          <div className="relative rounded-2xl border border-border bg-surface-strong px-4 py-2 transition-all duration-200 ">
-            <DynamicPlaceholder isEmpty={description.trim().length === 0} />
-            <textarea
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                clearFeedback();
-              }}
-              className="w-full resize-none outline-none text-base text-foreground placeholder-transparent min-h-15 bg-transparent relative z-10"
-              rows={2}
-            />
-          </div>
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="What's happening?"
+            className="w-full resize-none border-0 bg-transparent text-lg placeholder:text-muted-foreground focus:ring-0"
+            rows={Math.min(4, Math.ceil(content.length / 50) + 1)}
+            maxLength={280}
+          />
 
-          {/* Multi-Image Preview Row */}
-          {previews.length > 0 && (
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-2 snap-x">
-              {previews.map((preview, index) => (
-                <div
-                  key={index}
-                  className="relative shrink-0 w-32 h-32 rounded-2xl overflow-hidden border border-border snap-start"
-                >
-                  <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-surface-strong/80 hover:bg-surface text-foreground p-1 rounded-full transition-colors"
-                    title="Remove"
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </button>
-                  {index === 0 && previews.length > 1 && (
-                    <span className="absolute bottom-1 left-1 bg-surface-strong/80 text-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                      Cover
-                    </span>
+          {media.length > 0 && (
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {media.map((m) => (
+                <div key={m.id} className="relative aspect-square rounded-lg overflow-hidden">
+                  {m.type === 'IMAGE' ? (
+                    <img src={m.preview} alt="preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <video src={m.preview} className="h-full w-full object-cover" />
                   )}
+                  <button
+                    onClick={() => removeMedia(m.id)}
+                    className="absolute right-1 top-1 rounded-full bg-black/50 p-0.5 text-white"
+                  >
+                    <XMarkIcon className="h-3 w-3" />
+                  </button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Inline Feedback */}
-          {feedback && (
-            <div
-              className={`mt-2 text-sm font-medium px-3 py-2 rounded-xl ${
-                feedback.type === 'success'
-                  ? 'bg-emerald-600/10 text-emerald-400 border border-emerald-600/20'
-                  : 'bg-red-600/10 text-red-400 border border-red-600/20'
-              }`}
-            >
-              {feedback.message}
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-3 border-t border-border">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-              />
-<button
-                onClick={() => fileInputRef.current?.click()}
-                className="rounded-xl p-2 text-primary transition-colors hover:bg-primary/10"
-                title="Add images"
-              >
+          <div className="mt-3 flex items-center justify-between">
+            <div className="flex gap-2">
+              <label className="cursor-pointer rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  onChange={(e) => handleFileSelect(e.target.files)}
+                />
                 <PhotoIcon className="h-5 w-5" />
+              </label>
+              <label className="cursor-pointer rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary">
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  hidden
+                  onChange={(e) => handleFileSelect(e.target.files)}
+                />
+                <VideoIcon className="h-5 w-5" />
+              </label>
+              <button
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary"
+              >
+                <EmojiHappyIcon className="h-5 w-5" />
               </button>
-              <button type="button" aria-label="Add a poll" title="Add a poll" className="rounded-xl p-2 text-muted transition-colors hover:bg-primary/10 hover:text-foreground"><ChartBarIcon className="h-5 w-5" /></button>
-              <button type="button" aria-label="Add tags" title="Add tags" className="rounded-xl p-2 text-muted transition-colors hover:bg-primary/10 hover:text-foreground"><HashtagIcon className="h-5 w-5" /></button>
-              <button type="button" aria-label="Add emoji" title="Add emoji" onClick={() => setDescription((value) => `${value}${value ? ' ' : ''}✨`)} className="rounded-xl p-2 text-muted transition-colors hover:bg-primary/10 hover:text-foreground"><FaceSmileIcon className="h-5 w-5" /></button>
-              {previews.length > 0 && (
-                <span className="text-[10px] font-semibold text-muted">
-                  {previews.length} image{previews.length > 1 ? 's' : ''}
-                </span>
-              )}
+              <label className="cursor-pointer rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary">
+                <input type="file" hidden />
+                <PaperClipIcon className="h-5 w-5" />
+              </label>
             </div>
 
-            <button
-              onClick={handleUpload}
-              disabled={uploading || (!description.trim() && files.length === 0)}
-              className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
-            >
-              {uploading ? 'Posting...' : 'Post'}
-            </button>
-          </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                {privacy === 'PUBLIC' && <GlobeAltIcon className="h-3 w-3" />}
+                {privacy === 'FOLLOWERS' && <UsersIcon className="h-3 w-3" />}
+                {privacy === 'PRIVATE' && <LockClosedIcon className="h-3 w-3" />}
+                <select
+                  value={privacy}
+                  onChange={(e) => setPrivacy(e.target.value as typeof privacy)}
+                  className="cursor-pointer border-0 bg-transparent text-xs font-medium"
+                >
+                  <option value="PUBLIC">Public</option>
+                  <option value="FOLLOWERS">Followers</option>
+                  <option value="PRIVATE">Private</option>
+                </select>
+              </div>
 
-          {/* Live Preview */}
-          <LivePostPreview userName={userName} caption={description} imageUrls={previews} />
+              <button
+                onClick={handleSubmit}
+                disabled={loading || (!content.trim() && media.length === 0)}
+                className="rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50"
+              >
+                {loading ? 'Posting...' : 'Post'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-// </content>

@@ -1,86 +1,111 @@
 'use client';
-import { useState, useCallback } from 'react';
-import { BookmarkIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
+
+import {
+  HeartIcon,
+  ChatBubbleLeftIcon,
+  ShareIcon,
+  BookmarkIcon,
+  PhotoIcon,
+} from '@heroicons/react/24/outline';
+import {
+  HeartIcon as HeartSolid,
+  BookmarkIcon as BookmarkSolid,
+} from '@heroicons/react/24/solid';
+import { useState } from 'react';
+import Link from 'next/link';
+import { PostWithDetails } from '@/types';
+
+interface PostActionsProps {
+  post: PostWithDetails;
+  currentUserId?: string;
+  optimisticLike: number;
+  optimisticLiked: boolean;
+  optimisticSaved: boolean;
+  onLike: () => void;
+  onSave: () => void;
+  setShowComments: (show: boolean) => void;
+}
 
 export default function PostActions({
-  postId,
-  postAuthorId,
+  post,
   currentUserId,
-  isSaved,
-  onDelete,
-  onEdit,
-  className,
-}: {
-  postId: string;
-  postAuthorId?: string;
-  currentUserId?: string;
-  isSaved?: boolean;
-  onDelete?: () => void;
-  onEdit?: () => void;
-  className?: string;
-}) {
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(isSaved ?? false);
+  optimisticLike,
+  optimisticLiked,
+  optimisticSaved,
+  onLike,
+  onSave,
+  setShowComments,
+}: PostActionsProps) {
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
-  const handleToggleSave = useCallback(async () => {
-    if (saving) return;
-    setSaving(true);
-    try {
-      const res = await fetch('/api/saved-posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId }),
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Check this out',
+        text: post.content,
+        url: `${window.location.origin}/post/${post.id}`,
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      setSaved(json.saved);
-    } catch {
-      // Silently fail
-    } finally {
-      setSaving(false);
+    } else {
+      navigator.clipboard.writeText(
+        `${window.location.origin}/post/${post.id}`
+      );
     }
-  }, [postId, saving]);
-
-  const isOwner = currentUserId && postAuthorId && currentUserId === postAuthorId;
+  };
 
   return (
-    <div className={`flex items-center gap-1 ${className ?? ''}`}>
-      {isOwner && (
-        <>
-          <button
-            type="button"
-            onClick={onEdit}
-            className="p-1.5 rounded-full text-muted hover:bg-surface-strong transition-colors"
-            title="Edit"
-          >
-            <PencilIcon className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="p-1.5 rounded-full text-muted   transition-colors"
-            title="Delete"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </button>
-        </>
-      )}
-      <button
-        type="button"
-        onClick={handleToggleSave}
-        disabled={saving}
-        className={`p-1.5 rounded-full transition-colors ${
-          saved ? 'text-blue-500' : 'text-muted hover:bg-surface-strong'
-        } disabled:opacity-50`}
-        title={saved ? 'Unsave' : 'Save'}
-      >
-        {saved ? (
-          <BookmarkIconSolid className="w-4 h-4" />
-        ) : (
-          <BookmarkIcon className="w-4 h-4" />
-        )}
-      </button>
+    <div className="flex items-center justify-between px-4 py-2">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={onLike}
+          disabled={!currentUserId}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-red-500"
+        >
+          {optimisticLiked ? (
+            <HeartSolid className="h-5 w-5 text-red-500" />
+          ) : (
+            <HeartIcon className="h-5 w-5" />
+          )}
+          <span className={optimisticLiked ? 'text-red-500' : ''}>
+            {optimisticLike}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setShowComments(true)}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+        >
+          <ChatBubbleLeftIcon className="h-5 w-5" />
+          <span>{post.commentsCount}</span>
+        </button>
+
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+        >
+          <ShareIcon className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onSave}
+          disabled={!currentUserId}
+          className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary"
+        >
+          {optimisticSaved ? (
+            <BookmarkSolid className="h-5 w-5 text-primary" />
+          ) : (
+            <BookmarkIcon className="h-5 w-5" />
+          )}
+        </button>
+
+        <Link
+          href={`/post/${post.id}`}
+          className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary"
+        >
+          <PhotoIcon className="h-5 w-5" />
+        </Link>
+      </div>
     </div>
   );
 }
