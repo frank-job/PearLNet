@@ -1,20 +1,17 @@
 'use client';
 
-import Link from 'next/link';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
   PhotoIcon,
   VideoCameraIcon as VideoIcon,
-  EmojiHappyIcon,
+  FaceSmileIcon, // <-- Changed from EmojiHappyIcon
   PaperClipIcon,
   XMarkIcon,
   GlobeAltIcon,
   UsersIcon,
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
-import { uploadFiles } from '@/lib/cloudinary';
 
 interface MediaPreview {
   id: string;
@@ -23,8 +20,7 @@ interface MediaPreview {
   type: 'IMAGE' | 'VIDEO';
 }
 
-export default function CreatePost() {
-  const { data: session } = useSession();
+export default function CreatePost({ onPostCreated }: { onPostCreated?: () => void }) {
   const [content, setContent] = useState('');
   const [media, setMedia] = useState<MediaPreview[]>([]);
   const [loading, setLoading] = useState(false);
@@ -86,23 +82,31 @@ export default function CreatePost() {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('content', content);
-      formData.append('privacy', privacy);
+      const mediaType = media[0]?.type ?? 'TEXT';
+      formData.append('caption', content);
+      formData.append('mediaType', mediaType);
 
-      if (media.length > 0) {
-        const uploaded = await uploadFiles(
-          'posts',
-          session?.user?.name || 'user',
-          media.map((m) => m.file)
-        );
+      if (mediaType === 'VIDEO') {
+        formData.append('video', media[0].file);
+      } else {
+        media
+          .filter((item) => item.type === 'IMAGE')
+          .forEach((item) => formData.append('images', item.file));
+      }
+
+      const response = await fetch('/api/posts', { method: 'POST', body: formData });
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        throw new Error(result?.error || 'Failed to create post');
       }
 
       setContent('');
       setMedia([]);
       setPrivacy('PUBLIC');
+      onPostCreated?.();
       toast.success('Post created!');
     } catch (error) {
-      toast.error('Failed to create post');
+      toast.error(error instanceof Error ? error.message : 'Failed to create post');
     } finally {
       setLoading(false);
     }
@@ -171,7 +175,7 @@ export default function CreatePost() {
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary"
               >
-                <EmojiHappyIcon className="h-5 w-5" />
+                <FaceSmileIcon className="h-5 w-5" />
               </button>
               <label className="cursor-pointer rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary">
                 <input type="file" hidden />

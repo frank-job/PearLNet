@@ -26,10 +26,27 @@ export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: numb
         offset: String(offset),
       });
 
-      const res = await fetch(`/api/posts?${params.toString()}`);
-      const json = await res.json();
-      if (json.data) return json.data as Post[];
-      if (json.error) console.error(json.error);
+      try {
+        const res = await fetch(`/api/posts?${params.toString()}`);
+        const body = await res.text();
+        let json: { data?: Post[]; error?: string };
+
+        try {
+          json = JSON.parse(body);
+        } catch {
+          console.error(`Posts API returned invalid JSON (HTTP ${res.status})`);
+          return [];
+        }
+
+        if (!res.ok) {
+          console.error(json.error || `Posts API request failed (HTTP ${res.status})`);
+          return [];
+        }
+        if (Array.isArray(json.data)) return json.data;
+        if (json.error) console.error(json.error);
+      } catch (error) {
+        console.error('Posts API request failed:', error);
+      }
       return [];
     },
     [],

@@ -153,6 +153,9 @@ model User {
   handledReports   Report[]  @relation("handler")
   conversations    ConversationParticipant[]
   messageReactions MessageReaction[]
+  businessReviews  BusinessReview[]
+  admin            Admin?
+  createdEvents    Event[]
 
   @@index([email])
   @@index([username])
@@ -447,6 +450,8 @@ model Product {
 
   seller   User?             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   category Category?         @relation(fields: [categoryId], references: [id])
+  business Business?         @relation(fields: [businessId], references: [id])
+  businessId String?        @map("business_id")
   reviews  ProductReview[]
   favorites ProductFavorite[]
   boosts   ProductBoost[]
@@ -459,7 +464,6 @@ model Product {
   @@index([price])
   @@index([createdAt])
   @@index([title, description])
-  @@fulltext([title, description])
   @@map("products")
 }
 
@@ -584,6 +588,7 @@ model Message {
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
   reactions    MessageReaction[]
+  comments     MessageComment[]
 
   @@index([conversationId])
   @@index([senderId])
@@ -612,6 +617,9 @@ model MessageComment {
   userId      String   @map("user_id")
   content     String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([messageId])
   @@index([userId])
@@ -713,6 +721,9 @@ model EventComment {
   userId    String   @map("user_id")
   content   String   @db.Text
   createdAt DateTime @default(now()) @map("created_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
   @@index([userId])
