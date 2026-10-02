@@ -449,31 +449,35 @@ async function main() {
   const fillerIds = [];
 
   for (let batch = 0; batch < FILLER_COUNT; batch += 80) {
-    const rows = [];
+    const users = [];
+    const profiles = [];
+
     for (let i = batch; i < Math.min(batch + 80, FILLER_COUNT); i += 1) {
       const { username, display } = fillerName(i);
-      rows.push({
+      const email = `filler${i}@seed.pearlnet.app`;
+
+      users.push({
         id: `seed-filler-${i}`,
         name: display,
         username,
-        email: `filler${i}@seed.pearlnet.app`,
+        email,
         password: passwordHash,
         role: 'USER',
         verified: false,
-        profile: {
-          create: {
-            username,
-            email: `filler${i}@seed.pearlnet.app`,
-            bio: null,
-            location: null,
-            imageUrl: null,
-            gender: 'other',
-          },
-        },
+      });
+      profiles.push({
+        userId: `seed-filler-${i}`,
+        username,
+        email,
+        bio: null,
+        location: null,
+        imageUrl: null,
+        gender: 'other',
       });
     }
 
-    await prisma.user.createMany({ data: rows, skipDuplicates: true });
+    await prisma.user.createMany({ data: users, skipDuplicates: true });
+    await prisma.profile.createMany({ data: profiles, skipDuplicates: true });
 
     for (let i = batch; i < Math.min(batch + 80, FILLER_COUNT); i += 1) {
       fillerIds.push(`seed-filler-${i}`);
