@@ -1,27 +1,36 @@
-"use client";
+'use client';
+
+import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 
-export default function LogoutButton() {
+export default function LogoutButton({
+  className = '',
+  label = 'Log out',
+}: {
+  className?: string;
+  label?: string;
+}) {
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
     setLoading(true);
     try {
-      await fetch('/api/session', { method: 'DELETE' });
-      // reload to update UI
-      window.location.href = '/login';
-    } finally {
+      // /api/session has no DELETE handler, so the sign-out has to go through
+      // NextAuth or the session cookie survives and the user stays signed in.
+      await signOut({ callbackUrl: '/login' });
+    } catch {
       setLoading(false);
     }
   };
 
   return (
     <button
+      type="button"
       onClick={handleLogout}
       disabled={loading}
-      className="px-3 py-2 rounded-xl bg-red-50 text-red-600 border border-red-100 text-sm"
+      className={className}
     >
-      {loading ? 'Logging out...' : 'Logout'}
+      {loading ? 'Logging out...' : label}
     </button>
   );
 }

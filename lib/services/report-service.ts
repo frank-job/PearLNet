@@ -79,7 +79,7 @@ export async function resolveReport(
   status: ReportStatus,
   resolutionNote?: string | null,
 ): Promise<boolean> {
-  await redis.del('reports:*');
+  await redis.delPattern('reports:*');
 
   const result = await prisma.report.update({
     where: { id: reportId },

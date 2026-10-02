@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/app/lib/action';
+import { auth } from '@/lib/auth/server';
 import { getClientIp } from '@/app/lib/views/client-ip';
-import { getPostViewCount, registerPostView } from '@/app/lib/views/view-service';
+import { registerPostView, getPostViewCount } from '@/app/lib/views/view-service';
 
 export async function GET(
   _request: NextRequest,
@@ -22,11 +22,11 @@ export async function POST(
   { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;
-  const session = await getSession();
+  const session = await auth();
 
   try {
-    const identity = session
-      ? { userId: session.userId }
+    const identity = session?.user?.id
+      ? { userId: session.user.id as string }
       : { ipAddress: getClientIp(request) };
     const result = await registerPostView(postId, identity);
     return NextResponse.json({ success: true, ...result });

@@ -34,7 +34,7 @@ export async function toggleFollow(followerId: string, followingId: string): Pro
       userId: followingId,
       type: 'follow',
       message: 'started following you',
-      link: `/PearLNet/profile/${followerId}`,
+      link: `/PearLNet/account?id=${encodeURIComponent(followerId)}`,
     },
   });
 

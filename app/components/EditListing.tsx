@@ -1,531 +1,312 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  PhotoIcon,
-  XMarkIcon,
-  ArrowPathIcon,
-  ExclamationTriangleIcon,
-  TrashIcon,
-  CheckCircleIcon,
-} from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
-import { createProductSchema } from '@/lib/validations/schemas';
-import type { MarketplaceCategory, MarketplaceProduct } from '@/types';
-
-const MAX_IMAGES = 6;
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+import { toast } from 'sonner';
+import { TrashIcon, PhotoIcon } from '@heroicons/react/24/outline';
 
 const CONDITIONS = [
   { value: 'NEW', label: 'New' },
-  { value: 'LIKE_NEW', label: 'Like new' },
-  { value: 'GOOD', label: 'Good' },
-  { value: 'FAIR', label: 'Fair' },
-  { value: 'POOR', label: 'Poor' },
-] as const;
+  { value: 'USED_LIKE_NEW', label: 'Used - like new' },
+  { value: 'USED_GOOD', label: 'Used - good' },
+  { value: 'USED_FAIR', label: 'Used - fair' },
+];
 
 const STATUSES = [
   { value: 'AVAILABLE', label: 'Available' },
-  { value: 'RESERVED', label: 'Reserved' },
   { value: 'SOLD', label: 'Sold' },
   { value: 'REMOVED', label: 'Removed' },
-] as const;
+];
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY'] as const;
-
-interface FormErrors {
-  title?: string;
-  description?: string;
-  categoryId?: string;
-  price?: string;
-  currency?: string;
-  condition?: string;
-  status?: string;
-  location?: string;
-  images?: string;
+interface ProductPayload {
+  id: string;
+  title: string;
+  description: string | null;
+  categoryId: string | null;
+  price: number;
+  currency: string;
+  condition: string;
+  status: string;
+  location: string | null;
+  imageUrl: string | null;
+  images: string[] | null;
 }
 
-export default function EditListing({ productId }: { productId: string }) {
+interface EditListingProps {
+  productId: string;
+  initialProduct?: ProductPayload | null;
+  categories?: { id: string; name: string }[];
+}
+
+/* ============================================================
+   EditListing
+   - Loads the listing when the server did not prefetch it
+   - Saves through PATCH /api/marketplace/[productId]
+   ============================================================ */
+
+export default function EditListing({
+  productId,
+  initialProduct = null,
+  categories = [],
+}: EditListingProps) {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState<ProductPayload | null>(initialProduct);
+  const [loading, setLoading] = useState(!initialProduct);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [product, setProduct] = useState<MarketplaceProduct | null>(null);
-
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [price, setPrice] = useState('');
-  const [currency, setCurrency] = useState<string>('USD');
-  const [condition, setCondition] = useState<string>('NEW');
-  const [status, setStatus] = useState<string>('AVAILABLE');
-  const [location, setLocation] = useState('');
-
-  const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [newPreviews, setNewPreviews] = useState<string[]>([]);
-
-  const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
-
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const loadProduct = useCallback(async () => {
+  useEffect(() => {
+    if (initialProduct) return;
+
+    let active = true;
     setLoading(true);
-    setLoadError(null);
-    try {
-      const res = await fetch(`/api/marketplace/${productId}`, {
-        credentials: 'include',
-        cache: 'no-store',
+
+    fetch(`/api/marketplace/${productId}?include=product`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Listing not found');
+        return res.json();
+      })
+      .then((data) => {
+        if (active && data?.product) setProduct(data.product as ProductPayload);
+      })
+      .catch((err: Error) => {
+        if (active) setLoadError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
 
-      if (res.status === 404) {
-        setLoadError('This listing no longer exists.');
-        return;
-      }
-      if (!res.ok) throw new Error('Could not load this listing.');
-
-      const payload = await res.json();
-      const data: MarketplaceProduct | undefined = payload?.data ?? payload?.product;
-      if (!data) throw new Error('Could not load this listing.');
-
-      setProduct(data);
-      setTitle(data.title ?? '');
-      setDescription(data.description ?? '');
-      setCategoryId(data.categoryId ?? data.category?.id ?? '');
-      setPrice(data.price != null ? String(data.price) : '');
-      setCurrency(data.currency || 'USD');
-      setCondition(data.condition || 'NEW');
-      setStatus(data.status || 'AVAILABLE');
-      setLocation(data.location ?? '');
-
-      const urls = [
-        ...(data.imageUrl ? [data.imageUrl] : []),
-        ...(Array.isArray(data.images) ? data.images : []),
-      ].filter((url, index, all) => Boolean(url) && all.indexOf(url) === index);
-      setExistingImages(urls);
-    } catch (err) {
-      setLoadError(err instanceof Error ? err.message : 'Could not load this listing.');
-    } finally {
-      setLoading(false);
-    }
-  }, [productId]);
-
-  useEffect(() => {
-    void loadProduct();
-  }, [loadProduct]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/marketplace/categories', { credentials: 'include' });
-        if (res.ok) {
-          const payload = await res.json();
-          if (active) setCategories(payload?.data ?? []);
-        }
-      } catch {
-        // Categories are optional when editing.
-      }
-    })();
     return () => {
       active = false;
     };
-  }, []);
+  }, [productId, initialProduct]);
 
-  useEffect(() => {
-    return () => {
-      newPreviews.forEach((src) => URL.revokeObjectURL(src));
-    };
-  }, [newPreviews]);
+  function update<K extends keyof ProductPayload>(key: K, value: ProductPayload[K]) {
+    setProduct((current) => (current ? { ...current, [key]: value } : current));
+  }
 
-  const flatCategories = useMemo(() => {
-    const out: MarketplaceCategory[] = [];
-    for (const parent of categories) {
-      out.push(parent);
-      for (const child of parent.children ?? []) out.push(child);
-    }
-    return out;
-  }, [categories]);
+  async function handleImageChange(files: FileList | null) {
+    if (!files || files.length === 0) return;
 
-  const isOwner = !!product?.seller?.id && product.seller.id === session?.user?.id;
+    setUploading(true);
+    setError(null);
 
-  const handleFiles = (fileList: FileList | null) => {
-    if (!fileList) return;
-    const nextErrors = { ...errors };
-    const accepted: File[] = [];
+    try {
+      // Uploaded through the server route: the Cloudinary SDK pulls in `fs`,
+      // so it cannot be bundled into a client component.
+      const urls: string[] = [];
+      for (const file of Array.from(files).slice(0, 5)) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'products');
 
-    for (const file of Array.from(fileList)) {
-      if (accepted.length + existingImages.length - removedImages.length + newImages.length >= MAX_IMAGES) {
-        nextErrors.images = `You can upload up to ${MAX_IMAGES} images`;
-        break;
-      }
-      if (!file.type.startsWith('image/')) {
-        nextErrors.images = 'Only image files are supported';
-        continue;
-      }
-      if (file.size > MAX_IMAGE_BYTES) {
-        nextErrors.images = 'Each image must be under 5MB';
-        continue;
-      }
-      accepted.push(file);
-    }
-
-    if (accepted.length > 0) {
-      setNewImages((prev) => [...prev, ...accepted]);
-      setNewPreviews((prev) => [...prev, ...accepted.map((f) => URL.createObjectURL(f))]);
-      nextErrors.images = undefined;
-    }
-
-    setErrors(nextErrors);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const removeExisting = (url: string) => {
-    setRemovedImages((prev) => [...prev, url]);
-    setErrors((prev) => ({ ...prev, images: undefined }));
-  };
-
-  const restoreExisting = (url: string) => {
-    setRemovedImages((prev) => prev.filter((u) => u !== url));
-  };
-
-  const removeNew = (index: number) => {
-    setNewImages((prev) => prev.filter((_, i) => i !== index));
-    setNewPreviews((prev) => {
-      URL.revokeObjectURL(prev[index]);
-      return prev.filter((_, i) => i !== index);
-    });
-  };
-
-  const validate = (): FormErrors => {
-    const next: FormErrors = {};
-    const parsed = createProductSchema.safeParse({
-      title: title.trim(),
-      description: description.trim() || null,
-      categoryId: categoryId || null,
-      price: price === '' ? Number.NaN : Number(price),
-      currency,
-      condition,
-      location: location.trim() || null,
-    });
-
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0];
-        if (typeof field === 'string' && !next[field as keyof FormErrors]) {
-          next[field as keyof FormErrors] = issue.message;
+        const res = await fetch('/api/uploads', { method: 'POST', body: formData });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(data?.error || 'Upload failed');
         }
+        urls.push(data.url as string);
       }
+
+      update('images', urls);
+      update('imageUrl', urls[0]);
+      toast.success('Images uploaded');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not upload those images.');
+    } finally {
+      setUploading(false);
     }
+  }
 
-    const keptExisting = existingImages.filter((u) => !removedImages.includes(u)).length;
-    if (keptExisting + newImages.length > MAX_IMAGES) {
-      next.images = `You can upload up to ${MAX_IMAGES} images`;
-    }
-
-    return next;
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFormError(null);
-    setSuccess(null);
-
-    const validationErrors = validate();
-    setErrors(validationErrors);
-    if (Object.values(validationErrors).some(Boolean)) {
-      setFormError('Please fix the highlighted fields.');
-      return;
-    }
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!product || saving) return;
 
     setSaving(true);
+    setError(null);
+
     try {
-      const keptExisting = existingImages.filter((u) => !removedImages.includes(u));
-
-      const formData = new FormData();
-      formData.append('title', title.trim());
-      formData.append('description', description.trim());
-      formData.append('categoryId', categoryId);
-      formData.append('price', price);
-      formData.append('currency', currency);
-      formData.append('condition', condition);
-      formData.append('status', status);
-      formData.append('location', location.trim());
-      formData.append('imageUrls', JSON.stringify(keptExisting));
-      formData.append('removedImages', JSON.stringify(removedImages));
-      newImages.forEach((file) => formData.append('images', file));
-
       const res = await fetch(`/api/marketplace/${productId}`, {
-        method: 'PUT',
-        body: formData,
-        credentials: 'include',
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: product.title,
+          description: product.description,
+          categoryId: product.categoryId || null,
+          price: Number(product.price),
+          currency: product.currency,
+          condition: product.condition,
+          status: product.status,
+          location: product.location,
+          imageUrls: product.images?.length ? product.images : product.imageUrl ? [product.imageUrl] : [],
+        }),
       });
 
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data?.error || 'Could not save your changes.');
+        throw new Error(data?.error || 'Could not save the listing.');
       }
 
-      setSuccess('Listing updated.');
-      setNewImages([]);
-      setNewPreviews([]);
-      setRemovedImages([]);
-      await loadProduct();
+      toast.success('Listing updated');
       router.refresh();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Could not save your changes.');
+      setError(err instanceof Error ? err.message : 'Could not save the listing.');
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('Delete this listing permanently? This cannot be undone.')) return;
-
-    setDeleting(true);
-    setFormError(null);
-    try {
-      const res = await fetch(`/api/marketplace/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error || 'Could not delete this listing.');
-      router.push('/PearLNet/marketplace');
-      router.refresh();
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Could not delete this listing.');
-    } finally {
-      setDeleting(false);
-    }
-  };
+  }
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="h-8 w-1/3 animate-pulse rounded-lg bg-surface-strong" />
-        <div className="h-40 animate-pulse rounded-xl bg-surface-strong" />
-        <div className="h-96 animate-pulse rounded-xl bg-surface-strong" />
+      <div className="space-y-4 rounded-2xl border border-border bg-surface p-6">
+        <div className="h-5 w-1/3 animate-pulse rounded bg-surface-strong" />
+        <div className="h-10 w-full animate-pulse rounded bg-surface-strong" />
+        <div className="h-24 w-full animate-pulse rounded bg-surface-strong" />
       </div>
     );
   }
 
-  if (loadError) {
+  if (loadError || !product) {
     return (
-      <div
-        role="alert"
-        className="flex flex-col items-center gap-4 rounded-xl border border-border bg-surface p-8 text-center"
-      >
-        <ExclamationTriangleIcon className="h-10 w-10 text-red-500" />
-        <p className="text-sm text-muted">{loadError}</p>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => void loadProduct()}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white"
-          >
-            <ArrowPathIcon className="h-4 w-4" />
-            Retry
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/PearLNet/marketplace')}
-            className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground"
-          >
-            Back to marketplace
-          </button>
-        </div>
+      <div className="rounded-2xl border border-border bg-surface p-10 text-center">
+        <p className="font-semibold text-foreground">{loadError ?? 'Listing not found'}</p>
+        <button
+          type="button"
+          onClick={() => router.push('/PearLNet/marketplace')}
+          className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          Back to marketplace
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-6">
-      {formError && (
-        <div
-          role="alert"
-          className="flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-500"
-        >
-          <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 shrink-0" />
-          <p>{formError}</p>
-        </div>
-      )}
-
-      {success && (
-        <div
-          role="status"
-          className="flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-600"
-        >
-          <CheckCircleIcon className="h-5 w-5" />
-          {success}
-        </div>
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-5 rounded-2xl border border-border bg-surface p-6"
+    >
+      {error && (
+        <p role="alert" className="rounded-xl border border-red-500/30 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </p>
       )}
 
       <div>
-        <label htmlFor="title" className="mb-2 block text-sm font-semibold text-foreground">
-          Title <span className="text-red-500">*</span>
+        <label htmlFor="title" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+          Title
         </label>
         <input
           id="title"
           type="text"
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            setErrors((prev) => ({ ...prev, title: undefined }));
-          }}
-          maxLength={255}
-          aria-invalid={!!errors.title}
-          className={`w-full rounded-xl border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
-            errors.title ? 'border-red-500' : 'border-border'
-          }`}
+          required
+          minLength={3}
+          value={product.title}
+          onChange={(e) => update('title', e.target.value)}
+          className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         />
-        {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title}</p>}
       </div>
 
       <div>
-        <label htmlFor="description" className="mb-2 block text-sm font-semibold text-foreground">
+        <label htmlFor="description" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
           Description
         </label>
         <textarea
           id="description"
-          value={description}
-          onChange={(e) => {
-            setDescription(e.target.value);
-            setErrors((prev) => ({ ...prev, description: undefined }));
-          }}
           rows={5}
-          maxLength={5000}
-          aria-invalid={!!errors.description}
-          className={`w-full resize-y rounded-xl border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
-            errors.description ? 'border-red-500' : 'border-border'
-          }`}
+          value={product.description ?? ''}
+          onChange={(e) => update('description', e.target.value)}
+          className="w-full resize-y rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="categoryId" className="mb-2 block text-sm font-semibold text-foreground">
-            Category
-          </label>
-          <select
-            id="categoryId"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="">No category</option>
-            {flatCategories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          {errors.categoryId && <p className="mt-1 text-xs text-red-500">{errors.categoryId}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="condition" className="mb-2 block text-sm font-semibold text-foreground">
-            Condition
-          </label>
-          <select
-            id="condition"
-            value={condition}
-            onChange={(e) => setCondition(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            {CONDITIONS.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
-          <label htmlFor="price" className="mb-2 block text-sm font-semibold text-foreground">
-            Price <span className="text-red-500">*</span>
+          <label htmlFor="price" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+            Price
           </label>
           <input
             id="price"
             type="number"
-            inputMode="decimal"
-            min="0.01"
             step="0.01"
-            value={price}
-            onChange={(e) => {
-              setPrice(e.target.value);
-              setErrors((prev) => ({ ...prev, price: undefined }));
-            }}
-            aria-invalid={!!errors.price}
-            className={`w-full rounded-xl border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
-              errors.price ? 'border-red-500' : 'border-border'
-            }`}
+            min="0.01"
+            required
+            value={product.price}
+            onChange={(e) => update('price', Number(e.target.value))}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
-          {errors.price && <p className="mt-1 text-xs text-red-500">{errors.price}</p>}
         </div>
 
         <div>
-          <label htmlFor="currency" className="mb-2 block text-sm font-semibold text-foreground">
-            Currency
+          <label htmlFor="condition" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+            Condition
           </label>
           <select
-            id="currency"
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            id="condition"
+            value={product.condition}
+            onChange={(e) => update('condition', e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {CONDITIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="status" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+            Status
+          </label>
+          <select
+            id="status"
+            value={product.status}
+            onChange={(e) => update('status', e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            {STATUSES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label htmlFor="location" className="mb-2 block text-sm font-semibold text-foreground">
+          <label htmlFor="location" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
             Location
           </label>
           <input
             id="location"
             type="text"
-            value={location}
-            onChange={(e) => {
-              setLocation(e.target.value);
-              setErrors((prev) => ({ ...prev, location: undefined }));
-            }}
-            placeholder="City, State"
-            maxLength={255}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+            value={product.location ?? ''}
+            onChange={(e) => update('location', e.target.value)}
+            placeholder="City, Country"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
-          {errors.location && <p className="mt-1 text-xs text-red-500">{errors.location}</p>}
         </div>
       </div>
 
-      {isOwner && (
+      {categories.length > 0 && (
         <div>
-          <label htmlFor="status" className="mb-2 block text-sm font-semibold text-foreground">
-            Listing status
+          <label htmlFor="categoryId" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">
+            Category
           </label>
           <select
-            id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            id="categoryId"
+            value={product.categoryId ?? ''}
+            onChange={(e) => update('categoryId', e.target.value || null)}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            {STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
+            <option value="">No category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
@@ -533,142 +314,70 @@ export default function EditListing({ productId }: { productId: string }) {
       )}
 
       <div>
-        <label className="mb-2 block text-sm font-semibold text-foreground">
-          Photos{' '}
-          <span className="font-normal text-muted">
-            ({existingImages.length - removedImages.length + newImages.length}/{MAX_IMAGES})
-          </span>
-        </label>
-
-        <div className="mb-3 flex flex-wrap gap-3">
-          {existingImages
-            .filter((url) => !removedImages.includes(url))
-            .map((url, index) => (
-              <div
+        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted">Images</span>
+        <div className="flex flex-wrap gap-3">
+          {(product.images?.length ? product.images : product.imageUrl ? [product.imageUrl] : []).map(
+            (url) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 key={url}
-                className="relative h-24 w-24 overflow-hidden rounded-xl border border-border"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt={`Listing photo ${index + 1}`} className="h-full w-full object-cover" />
-                {index === 0 && (
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 py-0.5 text-center text-[10px] font-semibold text-white">
-                    Cover
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeExisting(url)}
-                  aria-label="Remove photo"
-                  className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white hover:bg-black"
-                >
-                  <XMarkIcon className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
+                src={url}
+                alt=""
+                className="h-20 w-20 rounded-xl object-cover"
+              />
+            ),
+          )}
 
-          {newPreviews.map((preview, index) => (
-            <div
-              key={preview}
-              className="relative h-24 w-24 overflow-hidden rounded-xl border border-primary"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={preview} alt={`New upload ${index + 1}`} className="h-full w-full object-cover" />
-              <span className="absolute bottom-0 left-0 right-0 bg-primary/90 py-0.5 text-center text-[10px] font-semibold text-white">
-                New
-              </span>
-              <button
-                type="button"
-                onClick={() => removeNew(index)}
-                aria-label="Remove new upload"
-                className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white hover:bg-black"
-              >
-                <XMarkIcon className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
+          <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border text-muted transition-colors hover:border-primary hover:text-primary">
+            <PhotoIcon className="h-5 w-5" />
+            <span className="text-[10px] font-semibold">{uploading ? '...' : 'Add'}</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="sr-only"
+              disabled={uploading}
+              onChange={(e) => {
+                void handleImageChange(e.target.files);
+                e.target.value = '';
+              }}
+            />
+          </label>
         </div>
-
-        {removedImages.length > 0 && (
-          <div className="mb-3 rounded-xl border border-border bg-surface-strong p-3">
-            <p className="text-xs font-semibold text-foreground">Removed on save</p>
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {removedImages.map((url) => (
-                <li key={url}>
-                  <button
-                    type="button"
-                    onClick={() => restoreExisting(url)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-[11px] text-muted hover:text-foreground"
-                  >
-                    {url.split('/').pop()?.slice(0, 18) ?? 'image'}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {existingImages.length - removedImages.length + newImages.length < MAX_IMAGES && (
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-8 text-muted transition-colors hover:border-primary hover:bg-surface-strong"
-          >
-            <PhotoIcon className="h-8 w-8" />
-            <span className="text-sm font-medium">Add photos</span>
-          </button>
-        )}
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-
-        {errors.images && <p className="mt-2 text-xs text-red-500">{errors.images}</p>}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row">
+      <div className="flex flex-wrap gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={saving || uploading}
+          className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+        >
+          {saving ? 'Saving...' : 'Save changes'}
+        </button>
+
         <button
           type="button"
-          onClick={() => router.back()}
-          disabled={saving}
-          className="flex-1 rounded-xl border border-border px-6 py-3 font-semibold text-foreground transition-colors hover:bg-surface-strong disabled:opacity-50"
+          onClick={() => router.push('/PearLNet/marketplace')}
+          className="rounded-xl border border-border px-6 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-strong"
         >
           Cancel
         </button>
-        <button
-          type="submit"
-          disabled={saving || sessionStatus === 'loading'}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {saving ? (
-            <>
-              <ArrowPathIcon className="h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save changes'
-          )}
-        </button>
-      </div>
 
-      {isOwner && (
-        <div className="border-t border-border pt-5">
+        {product.status !== 'REMOVED' && (
           <button
             type="button"
-            onClick={handleDelete}
-            disabled={deleting || saving}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500/10 px-6 py-3 font-semibold text-red-500 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => {
+              if (!confirm('Remove this listing from the marketplace?')) return;
+              update('status', 'REMOVED');
+              toast.info('Marked as removed. Save to apply.');
+            }}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-500 transition-colors hover:bg-red-500/20"
           >
             <TrashIcon className="h-4 w-4" />
-            {deleting ? 'Deleting...' : 'Delete listing'}
+            Remove listing
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </form>
   );
 }
-

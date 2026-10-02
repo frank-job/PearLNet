@@ -11,15 +11,17 @@ export async function getOrCreateConversation(
 
   const existing = await prisma.conversation.findFirst({
     where: {
-      participants: {
-        some: { userId: currentUserId },
-      },
-      participants: {
-        some: { userId: otherUserId },
-      },
       type: 'DIRECT',
+      // Both participants must be on the same conversation. This has to be a
+      // single `every` filter: two `participants` keys in one object literal
+      // silently collapse to the last one, which would match conversations the
+      // current user is not actually part of.
+      AND: [
+        { participants: { some: { userId: currentUserId } } },
+        { participants: { some: { userId: otherUserId } } },
+      ],
     },
-    include: { participants: true },
+    select: { id: true },
   });
 
   if (existing) return existing.id;
@@ -126,7 +128,13 @@ export async function sendMessage(
         },
       });
     }
+
+    // The recipient's inbox is cached for 60s, so drop it or the new message
+    // only surfaces after the cache expires.
+    await redis.del(`conversations:${p.userId}`);
   }
+
+  await redis.del(`conversations:${senderId}`);
 
   return message.id;
 }
@@ -154,6 +162,7 @@ export async function fetchConversations(userId: string, limit = 50, offset = 0)
             select: {
               id: true,
               username: true,
+              name: true,
               profile: { select: { imageUrl: true, bio: true } },
               verified: true,
             },
@@ -193,11 +202,14 @@ export async function fetchConversations(userId: string, limit = 50, offset = 0)
       imageUrl: conv.imageUrl,
       otherUserId: other?.id ?? null,
       otherUsername: other?.username ?? null,
+      otherName: other?.name ?? null,
       otherImage: other?.profile?.imageUrl ?? null,
       otherVerified: other?.verified ?? false,
       lastMessage: lastMsg?.content ?? null,
       lastMessageAt: lastMsg?.createdAt ?? conv.lastMessageAt,
       lastMessageSender: lastMsg?.sender?.username ?? null,
+      lastMessageFromMe: lastMsg ? lastMsg.senderId === userId : false,
+      lastMessageHasMedia: Boolean(lastMsg?.imageUrl || lastMsg?.videoUrl),
       unreadCount: conv._count.messages,
       createdAt: conv.createdAt,
     };

@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    await redis.del('products:public:*');
+    await redis.delPattern('products:public:*');
     return NextResponse.json({ productId: product.id }, { status: 201 });
   }
 
@@ -187,6 +187,6 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  await redis.del('products:public:*');
+  await redis.delPattern('products:public:*');
   return NextResponse.json({ productId: product.id }, { status: 201 });
 }

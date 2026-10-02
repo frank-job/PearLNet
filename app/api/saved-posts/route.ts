@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     include: {
       post: {
         include: {
-          author: {
+          user: {
             select: {
               id: true, username: true, name: true, email: true,
               profile: { select: { imageUrl: true } },
@@ -59,13 +59,13 @@ export async function GET(request: NextRequest) {
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
         author: {
-          id: post.author.id,
-          username: post.author.username,
-          name: post.author.name,
-          email: post.author.email,
-          image: post.author.profile?.imageUrl ?? null,
-          verified: post.author.verified,
-          role: post.author.role,
+          id: post.user.id,
+          username: post.user.username,
+          name: post.user.name,
+          email: post.user.email,
+          image: post.user.profile?.imageUrl ?? null,
+          verified: post.user.verified,
+          role: post.user.role,
         },
         _count: {
           likes: post._count.likes,

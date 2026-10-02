@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
-import { sql } from '@vercel/postgres';
-import { cacheViewCount, getCachedViewCount } from './view-cache';
+import { prisma } from '@/lib/prisma';
+import { cacheViewCount, getCachedViewCount, invalidateViewCount } from './view-cache';
 
 export type ViewIdentity =
   | { userId: string; ipAddress?: never }
@@ -10,62 +10,75 @@ function hashIpAddress(ipAddress: string): string {
   return createHash('sha256').update(ipAddress).digest('hex');
 }
 
-async function readViewCount(postId: string): Promise<number> {
-  const cachedCount = getCachedViewCount(postId);
-  if (cachedCount !== null) return cachedCount;
-
-  const result = await sql`
-    SELECT COALESCE(view_count, 0)::int AS view_count
-    FROM posts
-    WHERE id = ${postId}
-  `;
-  const count = Number(result.rows[0]?.view_count ?? 0);
+async function readStoredViewCount(postId: string): Promise<number> {
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { viewCount: true },
+  });
+  const count = post?.viewCount ?? 0;
   cacheViewCount(postId, count);
   return count;
 }
 
+async function readViewCount(postId: string): Promise<number> {
+  const cachedCount = getCachedViewCount(postId);
+  if (cachedCount !== null) return cachedCount;
+  return readStoredViewCount(postId);
+}
+
+/**
+ * Records a view for a post, counting it at most once per viewer.
+ *
+ * A refresh used to bump `viewCount` every time because the increment was
+ * unconditional. Now a view is only counted the first time a given user (or
+ * guest IP hash) is seen on a post; repeat visits still refresh the cached
+ * total but do not inflate it.
+ */
 export async function registerPostView(
   postId: string,
   identity: ViewIdentity,
 ): Promise<{ counted: boolean; totalViews: number }> {
-  const guestId = 'ipAddress' in identity && identity.ipAddress ? hashIpAddress(identity.ipAddress) : null;
+  const guestId =
+    'ipAddress' in identity && identity.ipAddress ? hashIpAddress(identity.ipAddress) : null;
   const userId = 'userId' in identity ? identity.userId : null;
 
-  // The unique partial indexes make this insert safe even when two requests
-  // for the same post arrive at the same time.
-  const inserted = await sql`
-    INSERT INTO post_views (post_id, user_id, guest_id)
-    VALUES (${postId}, ${userId}, ${guestId})
-    ON CONFLICT DO NOTHING
-  `;
-  const counted = (inserted.rowCount ?? 0) > 0;
+  let counted = false;
 
-  if (counted) {
-    await sql`
-      UPDATE posts
-      SET view_count = COALESCE(view_count, 0) + 1
-      WHERE id = ${postId}
-    `;
+  if (userId) {
+    // The unique postId_userId constraint makes create fail on a repeat view,
+    // which is exactly the signal we need to skip the increment.
+    try {
+      await prisma.postView.create({ data: { postId, userId } });
+      counted = true;
+    } catch {
+      counted = false;
+    }
+  } else if (guestId) {
+    // There is no unique constraint on (postId, guestId), so check first.
+    const existing = await prisma.postView.findFirst({
+      where: { postId, guestId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      await prisma.postView.create({
+        data: { postId, guestId, userId: `guest-${guestId.substring(0, 20)}` },
+      });
+      counted = true;
+    }
   }
 
-  // Always refresh after registration so a newly counted view is visible
-  // immediately, while repeat views can use the cached total.
-  const totalViews = counted
-    ? await readFreshViewCount(postId)
-    : await readViewCount(postId);
+  if (counted) {
+    await prisma.post.update({
+      where: { id: postId },
+      data: { viewCount: { increment: 1 } },
+    });
+    // The stored total moved, so the cached copy is no longer trustworthy.
+    invalidateViewCount(postId);
+    return { counted: true, totalViews: await readStoredViewCount(postId) };
+  }
 
-  return { counted, totalViews };
-}
-
-async function readFreshViewCount(postId: string): Promise<number> {
-  const result = await sql`
-    SELECT COALESCE(view_count, 0)::int AS view_count
-    FROM posts
-    WHERE id = ${postId}
-  `;
-  const count = Number(result.rows[0]?.view_count ?? 0);
-  cacheViewCount(postId, count);
-  return count;
+  return { counted: false, totalViews: await readViewCount(postId) };
 }
 
 export async function getPostViewCount(postId: string): Promise<number> {

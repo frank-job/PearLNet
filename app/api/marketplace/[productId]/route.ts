@@ -2,7 +2,64 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/server';
 import { prisma } from '@/lib/prisma';
 import { redis } from '@/lib/redis';
-import { productReviewSchema, boostProductSchema } from '@/lib/validations/schemas';
+import {
+  productReviewSchema,
+  boostProductSchema,
+  updateProductSchema,
+} from '@/lib/validations/schemas';
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ productId: string }> },
+) {
+  const { productId } = await params;
+  const session = await auth();
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const userId = session.user.id as string;
+  const owner = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { sellerId: true },
+  });
+
+  if (!owner) {
+    return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+  }
+  if (owner.sellerId !== userId) {
+    return NextResponse.json({ error: 'You can only edit your own listings' }, { status: 403 });
+  }
+
+  const body = await request.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const parsed = updateProductSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  // The schema speaks in `imageUrls`; the row stores a cover `imageUrl` plus
+  // the full set in the `images` Json column.
+  const { imageUrls, videoUrl, ...rest } = parsed.data;
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: {
+      ...rest,
+      ...(imageUrls === undefined
+        ? {}
+        : { images: JSON.stringify(imageUrls), imageUrl: imageUrls[0] ?? null }),
+    },
+  });
+
+  await redis.del(`product:${productId}`);
+  await redis.delPattern('products:*');
+
+  return NextResponse.json({ success: true, productId });
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ productId: string }> }) {
   const { productId } = await params;
@@ -141,6 +198,51 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     return NextResponse.json({ favorited: !!fav });
+  }
+
+  // `include=product` returns the listing itself so the edit form can be
+  // prefilled without a second endpoint.
+  if (searchParams.get('include') === 'product') {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        seller: { select: { id: true } },
+        category: { select: { id: true, name: true } },
+        _count: { select: { reviews: true, favorites: true } },
+        reviews: { select: { rating: true } },
+      },
+    });
+
+    if (!product) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    }
+
+    const images = Array.isArray(product.images)
+      ? (product.images as string[]).filter((url) => typeof url === 'string')
+      : [];
+
+    return NextResponse.json({
+      product: {
+        id: product.id,
+        title: product.title,
+        description: product.description,
+        categoryId: product.categoryId,
+        price: Number(product.price),
+        currency: product.currency,
+        condition: product.condition,
+        status: product.status,
+        location: product.location,
+        imageUrl: product.imageUrl,
+        images: images.length ? images : product.imageUrl ? [product.imageUrl] : [],
+        isOwner: product.seller.id === (await auth())?.user?.id,
+        category: product.category,
+        reviewCount: product._count.reviews,
+        favoriteCount: product._count.favorites,
+        avgRating: product.reviews.length
+          ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+          : 0,
+      },
+    });
   }
 
   // Fetch reviews

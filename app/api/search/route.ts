@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         ],
       },
       include: {
-        author: {
+        user: {
           select: {
             id: true, username: true, name: true,
             profile: { select: { imageUrl: true } },

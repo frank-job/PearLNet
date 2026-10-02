@@ -71,6 +71,11 @@ export const createPostSchema = z.object({
     .max(2000, 'Caption must be 2000 characters or fewer')
     .optional(),
   mediaType: z.nativeEnum(MediaType).default(MediaType.IMAGE),
+  // Optional for the JSON creation path. The multipart branch of
+  // POST /api/posts uploads files itself and does not pass these through.
+  imageUrl: z.string().url().optional().nullable(),
+  images: z.array(z.string().url()).max(10).optional(),
+  videoUrl: z.string().url().optional().nullable(),
 });
 
 export const postIdSchema = z.object({

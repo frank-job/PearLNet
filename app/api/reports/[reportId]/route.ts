@@ -21,7 +21,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  await redis.del('reports:*');
+  await redis.delPattern('reports:*');
 
   const report = await prisma.report.update({
     where: { id: reportId },

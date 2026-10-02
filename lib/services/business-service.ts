@@ -103,7 +103,7 @@ export async function createBusiness(data: {
     data: { role: 'BUSINESS_OWNER' },
   });
 
-  await redis.del('businesses:public:*');
+  await redis.delPattern('businesses:public:*');
   return business.id;
 }
 
@@ -217,8 +217,8 @@ export async function addBusinessReview(data: {
     },
   });
 
-  await redis.del(`business:*`);
-  await redis.del('businesses:public:*');
+  await redis.delPattern(`business:*`);
+  await redis.delPattern('businesses:public:*');
 }
 
 export async function fetchBusinessReviews(businessId: string, limit = 20, offset = 0) {
@@ -242,7 +242,7 @@ export async function fetchBusinessReviews(businessId: string, limit = 20, offse
 }
 
 export async function verifyBusiness(businessId: string, adminId: string): Promise<boolean> {
-  await redis.del('businesses:public:*');
+  await redis.delPattern('businesses:public:*');
 
   await prisma.$transaction(async (tx) => {
     await tx.business.update({

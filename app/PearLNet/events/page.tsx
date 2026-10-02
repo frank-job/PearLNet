@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import EventsFeed from '@/app/components/EventsFeed';
+import EventsFeed from '@/app/components/events';
 import PageHeader from '@/app/components/PageHeader';
 
 export default function EventsPage() {

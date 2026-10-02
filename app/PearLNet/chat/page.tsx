@@ -1,22 +1,17 @@
 import { Suspense } from 'react';
 import ChatApp from '@/app/components/ChatApp';
-import PageHeader from '@/app/components/PageHeader';
 
 export default function ChatPage() {
   return (
-    <main className="min-h-screen transition-all duration-300 ml-0 pb-24 overflow-y-auto bg-surface">
-      <div className="max-w-5xl mx-auto w-full h-[calc(100vh-80px)]">
-        <PageHeader
-          title="PearlNet"
-          subtitle="Messages"
-          backHref="/PearLNet/home"
-        />
-
-        <div className="px-4 py-4 h-[calc(100%-65px)]">
-          <Suspense fallback={<div className="py-8 text-center text-xs text-muted">Loading messages...</div>}>
-            <ChatApp />
-          </Suspense>
-        </div>
+    <main className="min-h-screen bg-surface pb-24 lg:pb-8">
+      <header className="sticky top-0 z-40 px-4 py-4 bg-surface-strong border-b border-border backdrop-blur-md">
+        <h1 className="text-blue-600 font-extrabold text-3xl tracking-widest">Messages</h1>
+        <p className="text-sm text-muted mt-1">Chat with your connections</p>
+      </header>
+      <div className="px-4 py-4">
+        <Suspense fallback={<div className="py-8 text-center text-xs text-muted">Loading...</div>}>
+          <ChatApp />
+        </Suspense>
       </div>
     </main>
   );

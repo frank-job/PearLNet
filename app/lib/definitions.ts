@@ -23,6 +23,7 @@ export type Post = {
   user_id?: string;
   user_email?: string;
   view_count?: number;
+  like_count?: number;
   images?: string[];
 };
 
@@ -102,8 +103,13 @@ export type ProfileData = {
 export type UserListItem = {
   id: string;
   username: string;
+  /** Display name, preferred over the handle when present. */
+  name?: string | null;
   image_url: string | null;
   bio: string | null;
+  verified?: boolean;
+  /** Whether the viewer already follows this user, when known. */
+  isFollowing?: boolean;
 };
 
 export type SearchUserResult = {
@@ -162,8 +168,6 @@ export type Event = {
   ends_at: string | null;
   creator_id: string;
   creator_email: string | null;
-  creator_username?: string;
-  creator_image_url?: string | null;
   created_at: string;
   rsvp_count?: number;
   my_rsvp?: 'going' | 'maybe' | 'not_going' | null;

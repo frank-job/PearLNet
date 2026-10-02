@@ -1,56 +1,36 @@
+'use client';
+
 import Link from 'next/link';
-import ThemeToggle from '@/app/ui/theme/ThemeToggle';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
   backHref?: string;
-  backLabel?: string;
-  rightElement?: React.ReactNode;
-  transparent?: boolean;
+  action?: React.ReactNode;
 }
 
-export default function PageHeader({
-  title,
-  subtitle,
-  backHref,
-  backLabel = 'Back',
-  rightElement,
-  transparent = false,
-}: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, backHref, action }: PageHeaderProps) {
   return (
-    <header
-      className={`sticky top-0 z-40 px-4 py-4 border-b border-border backdrop-blur-md ${
-        transparent ? 'bg-surface/70' : 'bg-surface-strong'
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {backHref && (
-            <Link
-              href={backHref}
-              className="text-muted hover:text-foreground transition-colors"
-              aria-label={backLabel}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
+    <header className="sticky top-0 z-40 flex items-center justify-between gap-3 px-4 py-3 bg-surface-strong/95 backdrop-blur-md border-b border-border">
+      <div className="flex items-center gap-3 min-w-0">
+        {backHref && (
+          <Link
+            href={backHref}
+            className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-surface text-muted hover:text-foreground transition-colors shrink-0"
+            aria-label="Go back"
+          >
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Link>
+        )}
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold text-foreground truncate">{title}</h1>
+          {subtitle && (
+            <p className="text-xs text-muted truncate">{subtitle}</p>
           )}
-          <div>
-            <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl tracking-widest">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="text-sm text-muted mt-1">{subtitle}</p>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          {rightElement}
-          <ThemeToggle />
         </div>
       </div>
+      {action && <div className="shrink-0">{action}</div>}
     </header>
   );
 }

@@ -70,6 +70,32 @@ export const redis = {
       return 0;
     }
   },
+  /**
+   * Deletes every key matching a glob pattern using SCAN.
+   *
+   * `del` above issues a literal DEL, so passing a pattern such as
+   * `feed:<id>:*` silently removes nothing. Anything invalidating a family of
+   * cache keys has to go through this.
+   */
+  delPattern: async (pattern: string): Promise<number> => {
+    const r = getRedis();
+    if (!r) return 0;
+
+    let deleted = 0;
+    try {
+      let cursor = '0';
+      do {
+        const [next, keys] = await r.scan(cursor, 'MATCH', pattern, 'COUNT', 200);
+        cursor = next;
+        if (keys.length > 0) {
+          deleted += await r.del(...keys);
+        }
+      } while (cursor !== '0');
+    } catch {
+      return deleted;
+    }
+    return deleted;
+  },
   incr: async (key: string, ttlSeconds = 60): Promise<number> => {
     const r = getRedis();
     if (!r) return 1;

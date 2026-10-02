@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import PostFeed from './PostFeed';
 import PostSkeleton from './PostSkeleton';
-import type { Post } from '@/app/lib/definitions';
+import type { PostWithDetails } from '@/types';
 
 const PAGE_SIZE = 5;
 
@@ -14,7 +14,7 @@ const PAGE_SIZE = 5;
 // ============================================================
 
 export default function FollowingFeed() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [exhausted, setExhausted] = useState(false);
@@ -23,7 +23,7 @@ export default function FollowingFeed() {
   const fetchPosts = useCallback(async (offset: number) => {
     const res = await fetch(`/api/posts?type=following&limit=${PAGE_SIZE}&offset=${offset}`);
     const json = await res.json();
-    if (json.data) return json.data as Post[];
+    if (json.data) return json.data as PostWithDetails[];
     if (json.error) console.error(json.error);
     return [];
   }, []);

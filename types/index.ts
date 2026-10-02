@@ -117,3 +117,42 @@ export interface Paginated<T> {
   page: number;
   limit: number;
 }
+
+// Shared types for the PearLNet post feed.
+// These mirror the payload returned by GET /api/posts and
+// GET /api/saved-posts so the feed never drifts from the API.
+
+export interface PostAuthor {
+  id: string;
+  username: string | null;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  verified: boolean;
+  role: string | null;
+}
+
+export interface PostWithDetails {
+  id: string;
+  caption: string | null;
+  imageUrl: string | null;
+  images: string[] | null;
+  videoUrl: string | null;
+  mediaType: string | null;
+  viewCount: number;
+  isEdited: boolean;
+  createdAt: string;
+  updatedAt: string;
+  author: PostAuthor;
+  _count: {
+    likes: number;
+    comments: number;
+  };
+}
+
+export interface PostMediaItem {
+  id: string;
+  type: 'IMAGE' | 'VIDEO';
+  url: string;
+  alt?: string | null;
+}

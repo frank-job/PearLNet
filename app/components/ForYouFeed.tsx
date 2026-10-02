@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 import PostFeed from './PostFeed';
 import PostSkeleton from './PostSkeleton';
 import StoriesBar from './StoriesBar';
-import type { Post } from '@/app/lib/definitions';
+import type { PostWithDetails } from '@/types';
 
 const PAGE_SIZE = 10;
 
 export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: number }) {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -31,7 +31,7 @@ export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: numb
       try {
         const res = await fetch(`/api/posts?${params.toString()}`);
         const body = await res.text();
-        let json: { data?: Post[]; error?: string };
+        let json: { data?: PostWithDetails[]; error?: string };
 
         try {
           json = JSON.parse(body);
@@ -228,7 +228,7 @@ export default function ForYouFeed({ refreshSignal = 0 }: { refreshSignal?: numb
             transition={{ delay: 0.35, duration: 0.4 }}
             className="text-sm text-muted max-w-xs"
           >
-            Take a breath, then share something when you&apos;re ready. ✨
+            Take a breath, then share something when you&apos;re ready. âœ¨
           </motion.p>
         </div>
       ) : (

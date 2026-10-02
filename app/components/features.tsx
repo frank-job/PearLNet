@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { ArrowUpRight, Heart, MessageCircle, Sparkles, Users, Zap, Shield, Globe, CheckCircle, Image } from 'lucide-react';
-import ThemeToggle from '@/app/ui/theme/ThemeToggle';
 
 const proofPoints = [
   ['Share the moment', 'Post photos, thoughts, and everyday wins in seconds.'],
@@ -20,18 +19,6 @@ const featureCards = [
 export default function Features() {
   return (
     <main className="rounded-2xl text-[var(--color-brand-dark)] bg-surface">
-      <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 lg:px-10">
-        <Link href="/Features" className="flex items-center gap-3" aria-label="PearLNet home">
-          <span className="text-xl font-black tracking-[-0.06em]">PearLNet</span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <Link href="/login" className="text-2xl shadow-[15px_0px_15px_#0627e0] bg-blue-600 border-y-white py-3 px-3 rounded-2xl border-2 font-bold text-white underline decoration-[#ededf3] decoration-2 underline-offset-4 ">
-            Login
-          </Link>
-        </div>
-      </nav>
-
       {/* HERO SECTION */}
       <section className="mx-auto grid w-full max-w-7xl gap-12 px-6 pb-16 pt-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-10 lg:pb-24 lg:pt-16">
         <div className="animate-[rise-in_700ms_ease-out_both]">

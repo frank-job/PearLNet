@@ -187,8 +187,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    await redis.del(`feed:${userId}:*`);
-    await redis.del('posts:public:*');
+    await redis.delPattern(`feed:${userId}:*`);
+    await redis.delPattern('posts:public:*');
     return NextResponse.json({ postId: post.id }, { status: 201 });
   }
 
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  await redis.del(`feed:${userId}:*`);
-  await redis.del('posts:public:*');
+  await redis.delPattern(`feed:${userId}:*`);
+  await redis.delPattern('posts:public:*');
   return NextResponse.json({ postId: post.id }, { status: 201 });
 }

@@ -52,7 +52,7 @@ export async function createPost(data: {
     },
   });
 
-  await redis.del(`feed:${data.userId}:*`);
+  await redis.delPattern(`feed:${data.userId}:*`);
   return post.id;
 }
 
@@ -75,7 +75,7 @@ export async function fetchFeed(userId: string, limit: number, offset: number): 
       ],
     },
     include: {
-      author: {
+      user: {
         select: {
           id: true,
           username: true,
@@ -112,7 +112,7 @@ export async function fetchPosts(limit: number, offset: number): Promise<PostWit
 
   const posts = await prisma.post.findMany({
     include: {
-      author: {
+      user: {
         select: {
           id: true,
           username: true,
@@ -150,7 +150,7 @@ export async function fetchPostById(postId: string): Promise<PostWithAuthor | nu
   const post = await prisma.post.findUnique({
     where: { id: postId },
     include: {
-      author: {
+      user: {
         select: {
           id: true,
           username: true,
@@ -176,7 +176,7 @@ export async function fetchUserPosts(userId: string, limit: number, offset: numb
   const posts = await prisma.post.findMany({
     where: { userId },
     include: {
-      author: {
+      user: {
         select: {
           id: true,
           username: true,
@@ -199,7 +199,7 @@ export async function fetchUserPosts(userId: string, limit: number, offset: numb
 
 export async function updatePost(postId: string, userId: string, data: { caption?: string }): Promise<boolean> {
   await redis.del(`post:${postId}`);
-  await redis.del(`feed:${userId}:*`);
+  await redis.delPattern(`feed:${userId}:*`);
 
   const result = await prisma.post.updateMany({
     where: { id: postId, userId },
@@ -214,7 +214,7 @@ export async function updatePost(postId: string, userId: string, data: { caption
 
 export async function deletePost(postId: string, userId: string): Promise<boolean> {
   await redis.del(`post:${postId}`);
-  await redis.del(`feed:${userId}:*`);
+  await redis.delPattern(`feed:${userId}:*`);
 
   const result = await prisma.post.deleteMany({
     where: { id: postId, userId },
@@ -243,13 +243,13 @@ function formatPost(post: any): PostWithAuthor {
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
     author: {
-      id: post.author.id,
-      username: post.author.username,
-      name: post.author.name,
-      email: post.author.email,
-      image: post.author.profile?.imageUrl ?? null,
-      verified: post.author.verified,
-      role: post.author.role,
+      id: post.user.id,
+      username: post.user.username,
+      name: post.user.name,
+      email: post.user.email,
+      image: post.user.profile?.imageUrl ?? null,
+      verified: post.user.verified,
+      role: post.user.role,
     },
     _count: {
       likes: post._count?.likes ?? 0,
@@ -266,7 +266,7 @@ export async function searchPosts(query: string, limit: number, offset: number):
       ],
     },
     include: {
-      author: {
+      user: {
         select: {
           id: true,
           username: true,

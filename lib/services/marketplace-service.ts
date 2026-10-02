@@ -88,7 +88,7 @@ export async function createProduct(data: {
     },
   });
 
-  await redis.del('products:public:*');
+  await redis.delPattern('products:public:*');
   return product.id;
 }
 
@@ -244,7 +244,7 @@ export async function updateProduct(
     boostedUntil: Date | null }>,
 ): Promise<boolean> {
   await redis.del(`product:${productId}`);
-  await redis.del('products:public:*');
+  await redis.delPattern('products:public:*');
 
   const result = await prisma.product.updateMany({
     where: { id: productId, sellerId: userId },
@@ -256,7 +256,7 @@ export async function updateProduct(
 
 export async function deleteProduct(productId: string, userId: string): Promise<boolean> {
   await redis.del(`product:${productId}`);
-  await redis.del('products:public:*');
+  await redis.delPattern('products:public:*');
 
   const result = await prisma.product.deleteMany({
     where: { id: productId, sellerId: userId },
@@ -267,7 +267,7 @@ export async function deleteProduct(productId: string, userId: string): Promise<
 
 export async function markProductAsSold(productId: string, userId: string): Promise<boolean> {
   await redis.del(`product:${productId}`);
-  await redis.del('products:public:*');
+  await redis.delPattern('products:public:*');
 
   const result = await prisma.product.updateMany({
     where: { id: productId, sellerId: userId },
@@ -402,7 +402,7 @@ export async function boostProduct(data: {
   });
 
   await redis.del(`product:${data.productId}`);
-  await redis.del('products:public:*');
+  await redis.delPattern('products:public:*');
 
   return { boostUntil: boostedUntil };
 }

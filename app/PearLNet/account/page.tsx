@@ -1,25 +1,14 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import LogoutButton from '@/app/components/LogoutButton';
-import AccountTabs from '@/app/components/AccountTabs';
-import FollowButton from '@/app/components/FollowButton';
-import { User } from "lucide-react";
-import {
-  getCurrentUser,
-  getProfile,
-  fetchUserPosts,
-  fetchUserStats,
-  fetchUserLikes,
-  fetchFollowers,
-  fetchFollowing,
-} from '@/app/lib/action';
-import type { Post, UserListItem } from '@/app/lib/definitions';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth/server';
+import { getProfilePageData } from '@/app/lib/profile-data';
+import ProfileView from '@/app/components/ProfileView';
 
 // ============================================================
 // Account Page
 // - Shows a user's profile info + stats
 // - Supports viewing other users via the `?id=` query param
-// - Interactive tabs: Posts / Liked / Followers / Following
+// - Tabs: Posts / Liked / Followers / Following
 // - Requires authentication
 // ============================================================
 
@@ -28,142 +17,35 @@ export default async function AccountPage({
 }: {
   searchParams: Promise<{ id?: string }>;
 }) {
-  const user = await getCurrentUser();
-  if (!user) {
+  const session = await auth();
+  const viewerId = session?.user?.id as string | undefined;
+
+  if (!viewerId) {
     redirect('/login');
   }
 
   const params = await searchParams;
-  const viewUserId = params.id ?? user.userId;
-  const isOwnProfile = viewUserId === user.userId;
+  const viewUserId = params.id ?? viewerId;
+  const isOwnProfile = viewUserId === viewerId;
 
-  const [profileResult, postsResult, stats, likedResult, followersResult, followingResult] =
-    await Promise.all([
-      getProfile(viewUserId),
-      fetchUserPosts(viewUserId),
-      fetchUserStats(viewUserId),
-      fetchUserLikes(viewUserId),
-      fetchFollowers(viewUserId),
-      fetchFollowing(viewUserId),
-    ]);
+  const data = await getProfilePageData(viewUserId, viewerId);
 
-  const profile = 'data' in profileResult ? profileResult.data : null;
-  const posts: Post[] = 'data' in postsResult ? postsResult.data : [];
-  const liked: Post[] = 'data' in likedResult ? likedResult.data : [];
-  const followers: UserListItem[] = 'data' in followersResult ? followersResult.data : [];
-  const following: UserListItem[] = 'data' in followingResult ? followingResult.data : [];
-  const profileError = 'error' in profileResult ? profileResult.error : null;
-
-  const statsItems = [
-    { label: 'Posts', value: stats.posts },
-    { label: 'Likes', value: stats.likes },
-    { label: 'Followers', value: stats.followers },
-    { label: 'Following', value: stats.following },
-  ];
-
-  const displayName = profile?.username ?? 'User';
-
-  return (
-    <main className="min-h-screen transition-all duration-300 pb-24 lg:pb-8 px-4 md:px-8">
-      <header className="flex flex-col sm:flex-col sm:justify-center sm:items-center justify-between gap-4 py-6">
-        <h1 className="text-blue-600 font-extrabold text-3xl md:text-4xl">
-          {isOwnProfile ? 'Your profile' : `${displayName}'s profile`}
-        </h1>
-      </header>
-
-
-      {/* Profile Section */}
-      <section className=" rounded-2rem p-6   mb-8">
-         <User className="w-10 h-10 left-0 m-0 px-0 flex  text-blue-600" />
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          {/* Avatar */}
-          <div className="h-24 w-24 rounded-full bg-blue-600/10 text-blue-500 flex items-center justify-center text-3xl font-bold uppercase shrink-0">
-            {profile?.image_url ? (
-              <img
-                src={profile.image_url}
-                alt={profile.username}
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <span>{profile?.username?.[0] ?? displayName[0]?.toUpperCase() ?? '?'}</span>
-            )}
-          </div>
-
-          {/* Profile Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold text-foreground">
-              {profile?.username ?? displayName}
-            </h2>
-            <p className="text-sm text-muted mt-1">{profile?.email ?? ''}</p>
-            {profile?.bio && (
-              <p className="text-sm text-foreground mt-3 leading-relaxed">{profile.bio}</p>
-            )}
-            {profile?.location && (
-              <p className="text-xs text-muted mt-1">{profile.location}</p>
-            )}
-            {(profile?.birth_year || profile?.date_of_birth) && (
-              <p className="text-xs text-muted mt-1">
-                {/* {profile.birth_year ?? ''} */}
-                {profile.birth_year && profile.date_of_birth ? ' - ' : ''}
-                {profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : ''}
-              </p>
-            )}
-            {profileError && (
-              <p className="text-xs text-red-500 mt-2">Failed to load profile</p>
-            )}
-          </div>
-
-          {/* Actions: Edit/Logout for own profile, Follow for others */}
-          <div className="flex items-center gap-3">
-            {isOwnProfile ? (
-              <>
-                <a
-                  href="/PearLNet/account/edit"
-                  className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-colors"
-                >
-                  Edit profile
-                </a>
-                <LogoutButton />
-              </>
-            ) : (
-              <>
-                <FollowButton authorId={viewUserId} />
-                <Link
-                  href="/PearLNet/account"
-                  className="px-4 py-2 bg-surface-strong text-foreground rounded-xl text-sm font-semibold hover:bg-surface-strong/80 transition-colors"
-                >
-                  Your profile
-                </Link>
-              </>
-            )}
-          </div>
+  if (!data) {
+    return (
+      <main className="mx-auto min-h-screen w-full max-w-4xl px-4 pb-24 lg:pb-8">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface px-6 py-20 text-center">
+          <h1 className="text-xl font-bold text-foreground">Profile not found</h1>
+          <p className="text-sm text-muted">This account may have been removed.</p>
+          <Link
+            href="/PearLNet/home"
+            className="mt-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
+          >
+            Back to feed
+          </Link>
         </div>
+      </main>
+    );
+  }
 
-
-        {/* Stats Row */}
-        <div className="mt-1 flex lg:items-center lg:gap-6 lg:p-6 top-5 justify-center gap-4 text-center  p-4 rounded-xl shadow-sm">
-          {statsItems.map((item) => (
-            <div
-              key={item.label}
-              className=" sm-flex flex-col items-center rounded-md px-1 py-2 text-center"
-            >
-               <p className="text-xl font-bold text-foreground">{item.value}</p>
-              <p className="text-xs text-blue-600 mt-0.5">{item.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Interactive Tabs: Posts / Liked / Followers / Following */}
-
-      <AccountTabs
-        posts={posts}
-        liked={liked}
-        followers={followers}
-        following={following}
-        isOwnProfile={isOwnProfile}
-      />
-
-    </main>
-  );
+  return <ProfileView {...data} isOwnProfile={isOwnProfile} viewerId={viewerId} />;
 }
