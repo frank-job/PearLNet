@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import Link from 'next/link';
 
 type Suggestion = {
@@ -37,9 +38,13 @@ export default function SuggestedUsers() {
       const res = await fetch('/api/follows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authorId: userId }),
+        body: JSON.stringify({ userId }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        toast.error(data?.error ?? 'Failed to update follow');
+        return;
+      }
       if (data.isFollowing === true) {
         setFollowingIds((prev) => new Set(prev).add(userId));
       } else {
@@ -50,7 +55,7 @@ export default function SuggestedUsers() {
         });
       }
     } catch {
-      // ignore
+      toast.error('Failed to update follow');
     }
   };
 
