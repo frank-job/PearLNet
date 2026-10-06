@@ -11,15 +11,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  session,
 }: Readonly<{
   children: React.ReactNode;
-  session: any;
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col font-sans w-full max-w-full overflow-x-hidden">
-        <SessionProvider session={session}>
+        <SessionProvider>
           <ThemeProvider>
             <AppShell>{children}</AppShell>
           </ThemeProvider>

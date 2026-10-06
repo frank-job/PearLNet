@@ -28,10 +28,9 @@ interface ProductCardProps {
 
 const CONDITION_LABELS: Record<string, string> = {
   NEW: 'New',
-  LIKE_NEW: 'Like new',
-  GOOD: 'Good',
-  FAIR: 'Fair',
-  POOR: 'Poor',
+  USED_LIKE_NEW: 'Like new',
+  USED_GOOD: 'Good',
+  USED_FAIR: 'Fair',
 };
 
 const STATUS_LABELS: Record<string, string> = {

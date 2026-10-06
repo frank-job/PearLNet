@@ -234,7 +234,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         location: product.location,
         imageUrl: product.imageUrl,
         images: images.length ? images : product.imageUrl ? [product.imageUrl] : [],
-        isOwner: product.seller.id === (await auth())?.user?.id,
+        isOwner: product.seller?.id === (await auth())?.user?.id,
         category: product.category,
         reviewCount: product._count.reviews,
         favoriteCount: product._count.favorites,

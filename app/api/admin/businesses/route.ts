@@ -65,8 +65,8 @@ export async function GET(request: NextRequest) {
   });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ businessId: string }> }) {
-  const { businessId } = await params;
+export async function PUT(request: NextRequest, context: any) {
+  const { businessId } = await context.params;
   const session = await auth();
   if (!session?.user?.email || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -91,8 +91,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ businessId: string }> }) {
-  const { businessId } = await params;
+export async function DELETE(request: NextRequest, context: any) {
+  const { businessId } = await context.params;
   const session = await auth();
   if (!session?.user?.email || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized — admin only' }, { status: 401 });

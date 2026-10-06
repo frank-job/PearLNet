@@ -100,7 +100,7 @@ export async function searchUsers(query: string, limit = 20): Promise<PublicUser
     where: {
       OR: [
         { username: { contains: query, mode: 'insensitive' } },
-        { name: { contains: query, mode: 'inensitive' } },
+        { name: { contains: query, mode: 'insensitive' } },
       ],
     },
     include: {
@@ -110,7 +110,7 @@ export async function searchUsers(query: string, limit = 20): Promise<PublicUser
     take: limit,
   });
 
-  const result = users.map((u) => ({
+  const result = (users as any[]).map((u) => ({
     id: u.id,
     username: u.username,
     email: u.email,
@@ -148,7 +148,7 @@ export async function updateProfile(
     create: {
       userId,
       username: data.username,
-      email: (await prisma.user.findUnique({ where: { id: userId }, select: { email: true } })).email,
+      email: (await prisma.user.findUnique({ where: { id: userId }, select: { email: true } }))?.email ?? null,
       bio: data.bio,
       location: data.location,
       gender: data.gender,
@@ -182,7 +182,7 @@ export async function setAvatar(userId: string, imageUrl: string): Promise<void>
     create: {
       userId,
       imageUrl,
-      email: (await prisma.user.findUnique({ where: { id: userId }, select: { email: true } })).email,
+      email: (await prisma.user.findUnique({ where: { id: userId }, select: { email: true } }))?.email ?? null,
     },
     update: { imageUrl },
   });

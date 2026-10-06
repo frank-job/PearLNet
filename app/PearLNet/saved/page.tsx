@@ -12,7 +12,7 @@ export default async function SavedPostsPage() {
   }
 
   const result = await fetchSavedPosts(user.userId);
-  const posts = 'data' in result ? result.data : [];
+  const posts = ('data' in result ? result.data : []) as any;
 
   return (
     <main className="min-h-screen transition-all duration-300 pb-24 lg:pb-8 px-4 md:px-8">

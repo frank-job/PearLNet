@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth/helpers';
+import { auth } from '@/lib/auth/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function requireAuth(request: NextRequest) {

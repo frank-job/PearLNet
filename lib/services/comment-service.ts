@@ -39,7 +39,7 @@ export async function addComment(data: {
         content: data.content,
       },
       include: {
-        author: {
+        user: {
           select: {
             id: true,
             username: true,
@@ -62,7 +62,7 @@ export async function fetchComments(postId: string, limit = 50, offset = 0): Pro
   const comments = await prisma.comment.findMany({
     where: { postId },
     include: {
-      author: {
+      user: {
         select: {
           id: true,
           username: true,
@@ -97,12 +97,12 @@ function formatComment(comment: any): CommentWithAuthor {
     content: comment.content,
     createdAt: comment.createdAt,
     author: {
-      id: comment.author.id,
-      username: comment.author.username,
-      name: comment.author.name,
-      email: comment.author.email,
-      image: comment.author.profile?.imageUrl ?? null,
-      verified: comment.author.verified,
+      id: comment.user.id,
+      username: comment.user.username,
+      name: comment.user.name,
+      email: comment.user.email,
+      image: comment.user.profile?.imageUrl ?? null,
+      verified: comment.user.verified,
     },
   };
 }

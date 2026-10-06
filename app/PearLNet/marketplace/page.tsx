@@ -40,7 +40,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       .fetchProducts({
         search: params.query || undefined,
         categoryId: params.categoryId || undefined,
-        condition: (params.condition as MarketplaceProduct['condition']) || undefined,
+        condition: (params.condition as any) || undefined,
         minPrice: toNumber(params.minPrice),
         maxPrice: toNumber(params.maxPrice),
         status: 'AVAILABLE',

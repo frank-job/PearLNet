@@ -25,7 +25,7 @@ export async function toggleLike(postId: string, userId: string): Promise<{ like
   // Create notification
   const post = await prisma.post.findUnique({
     where: { id: postId },
-    select: { userId: true, author: { select: { username: true } } },
+    select: { userId: true, user: { select: { username: true } } },
   });
 
   if (post && post.userId !== userId) {
@@ -66,7 +66,7 @@ export async function fetchLikedPosts(userId: string, limit = 20, offset = 0) {
     include: {
       post: {
         include: {
-          author: {
+          user: {
             select: {
               id: true,
               username: true,
@@ -100,13 +100,13 @@ export async function fetchLikedPosts(userId: string, limit = 20, offset = 0) {
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       author: {
-        id: post.author.id,
-        username: post.author.username,
-        name: post.author.name,
-        email: post.author.email,
-        image: post.author.profile?.imageUrl ?? null,
-        verified: post.author.verified,
-        role: post.author.role,
+        id: post.user.id,
+        username: post.user.username,
+        name: post.user.name,
+        email: post.user.email,
+        image: post.user.profile?.imageUrl ?? null,
+        verified: post.user.verified,
+        role: post.user.role,
       },
       _count: {
         likes: post._count?.likes ?? 0,

@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
         userEmail: session.user.email,
         caption: caption ?? null,
         imageUrl,
-        images,
+        images: images ?? undefined,
         videoUrl,
         mediaType: mediaType as MediaType,
       },

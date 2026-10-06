@@ -57,7 +57,7 @@ export function useInfiniteScroll<T>(
           setPage((prev) => prev + 1);
         }
       },
-      { root, threshold: root ? undefined : threshold / 1000 },
+      { root: root?.current ?? null, threshold: root ? undefined : threshold / 1000 },
     );
 
     if (node) {

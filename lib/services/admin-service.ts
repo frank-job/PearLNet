@@ -55,7 +55,10 @@ export async function fetchAnalytics(days = 7): Promise<AnalyticsSummary> {
       WHERE created_at >= ${startDate}
       GROUP BY DATE(created_at)
       ORDER BY date ASC
-    `.then((rows: any[]) => rows.map((r) => ({ date: r.date, count: Number(r.count) }))),
+    `.then((value: unknown) => {
+      const rows = (value as any[]).map((r) => ({ date: r.date, count: Number(r.count) }));
+      return rows;
+    }),
 
     prisma.$queryRaw`
       SELECT DATE(created_at) as date, COUNT(*)::int as count
@@ -63,7 +66,10 @@ export async function fetchAnalytics(days = 7): Promise<AnalyticsSummary> {
       WHERE created_at >= ${startDate}
       GROUP BY DATE(created_at)
       ORDER BY date ASC
-    `.then((rows: any[]) => rows.map((r) => ({ date: r.date, count: Number(r.count) }))),
+    `.then((value: unknown) => {
+      const rows = (value as any[]).map((r) => ({ date: r.date, count: Number(r.count) }));
+      return rows;
+    }),
 
     prisma.category.findMany({
       include: {
@@ -85,7 +91,10 @@ export async function fetchAnalytics(days = 7): Promise<AnalyticsSummary> {
       GROUP BY u.id, u.username
       ORDER BY activity DESC
       LIMIT 10
-    `.then((rows: any[]) => rows.map((r) => ({ id: r.id, username: r.username, activity: Number(r.activity) }))),
+    `.then((value: unknown) => {
+      const rows = (value as any[]).map((r) => ({ id: r.id, username: r.username, activity: Number(r.activity) }));
+      return rows;
+    }),
   ]);
 
   const result: AnalyticsSummary = {

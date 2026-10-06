@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       isFeatured: p.isFeatured,
       boostedUntil: p.boostedUntil,
       createdAt: p.createdAt,
-      seller: { id: p.seller.id, username: p.seller.username, email: p.seller.email },
+      seller: p.seller ? { id: p.seller.id, username: p.seller.username, email: p.seller.email } : { id: '', username: null, email: null },
       category: p.category,
       reviews: p._count.reviews,
       favorites: p._count.favorites,
@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
   });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ productId: string }> }) {
-  const { productId } = await params;
+export async function PUT(request: NextRequest, context: any) {
+  const { productId } = await context.params;
   const session = await auth();
   if (!session?.user?.email || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -93,8 +93,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ productId: string }> }) {
-  const { productId } = await params;
+export async function DELETE(request: NextRequest, context: any) {
+  const { productId } = await context.params;
   const session = await auth();
   if (!session?.user?.email || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Unauthorized — admin only' }, { status: 401 });

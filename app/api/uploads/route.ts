@@ -4,12 +4,6 @@ import { uploadFile } from '@/lib/cloudinary';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIdentifier } from '@/lib/security/rate-limiter';
 
-export const config = {
-  api: {
-    bodyParser: { sizeLimit: '100mb' },
-  },
-};
-
 export async function POST(request: NextRequest) {
   const ip = getClientIdentifier(request.headers);
   const allowed = await checkRateLimit(`uploads:${ip}`, { windowMs: 60_000, max: 30 });

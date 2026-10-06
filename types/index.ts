@@ -1,6 +1,6 @@
 // Shared types for the PearLNet marketplace and business directory.
 
-export type ProductCondition = 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR' | 'POOR';
+export type ProductCondition = 'NEW' | 'USED_LIKE_NEW' | 'USED_GOOD' | 'USED_FAIR';
 
 export type ProductStatus = 'AVAILABLE' | 'SOLD' | 'RESERVED' | 'REMOVED';
 

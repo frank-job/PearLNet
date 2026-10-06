@@ -53,7 +53,7 @@ export const updateProfileSchema = z.object({
   website: z.string().url('Please enter a valid URL').max(255).optional().or(z.literal('').optional()),
   gender: z.enum(['male', 'female', 'other', '']).optional(),
   birthYear: z
-    .number({ invalid_type_error: 'Please enter a valid year' })
+    .number({ error: 'Please enter a valid year' })
     .int()
     .min(1900, 'Year must be 1900 or later')
     .max(new Date().getFullYear(), 'Year cannot be in the future')
@@ -126,7 +126,7 @@ export const followSchema = z.object({
 export const createStorySchema = z.object({
   caption: z.string().max(500, 'Caption must be 500 characters or fewer').optional(),
   expiresInHours: z
-    .number({ invalid_type_error: 'Please enter a valid number' })
+    .number({ error: 'Please enter a valid number' })
     .int()
     .min(1, 'Story must last at least 1 hour')
     .max(168, 'Story must expire within 168 hours'),
@@ -155,8 +155,8 @@ export const createProductSchema = z.object({
     .optional()
     .nullable(),
   categoryId: z.string().uuid('Invalid category ID').optional().nullable(),
-  price: z
-    .number({ invalid_type_error: 'Price must be a number' })
+    price: z
+    .number({ error: 'Price must be a number' })
     .positive('Price must be greater than 0')
     .max(999999, 'Price is too large'),
   currency: z.string().length(3, 'Currency must be a 3-letter code').default('USD'),
@@ -176,40 +176,31 @@ export const productIdSchema = z.object({
 
 export const productSearchSchema = z.object({
   query: z.string().max(100, 'Search query is too long').optional(),
-  category: z.string().uuid('Invalid category ID').optional(),
+  categoryId: z.string().uuid('Invalid category ID').optional(),
   minPrice: z
-    .number({ invalid_type_error: 'Min price must be a number' })
+    .number({ error: 'Min price must be a number' })
     .positive('Min price must be positive')
     .optional(),
   maxPrice: z
-    .number({ invalid_type_error: 'Max price must be a number' })
+    .number({ error: 'Max price must be a number' })
     .positive('Max price must be positive')
     .optional(),
   condition: z.nativeEnum(ProductCondition).optional(),
   status: z.nativeEnum(ProductStatus).default(ProductStatus.AVAILABLE),
   sortBy: z.enum(['createdAt', 'price', 'viewCount']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  page: z
-    .number({ invalid_type_error: 'Page must be a number' })
-    .int()
-    .min(1)
-    .default(1),
-  limit: z
-    .number({ invalid_type_error: 'Limit must be a number' })
-    .int()
-    .min(1)
-    .max(100)
-    .default(20),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export const productReviewSchema = z.object({
   productId: z.string().uuid('Invalid product ID'),
   rating: z
-    .number({ invalid_type_error: 'Rating must be a number' })
+    .number({ error: 'Rating must be a number' })
     .int('Rating must be a whole number')
     .min(1, 'Rating must be at least 1')
     .max(5, 'Rating must be at most 5'),
-  comment: z
+   comment: z
     .string()
     .max(1000, 'Review must be 1000 characters or fewer')
     .optional()
@@ -219,13 +210,13 @@ export const productReviewSchema = z.object({
 export const boostProductSchema = z.object({
   productId: z.string().uuid('Invalid product ID'),
   amount: z
-    .number({ invalid_type_error: 'Boost amount must be a number' })
+    .number({ error: 'Boost amount must be a number' })
     .positive('Boost amount must be greater than 0')
     .max(10000, 'Boost amount is too large'),
   currency: z.string().length(3).default('USD'),
   boostLevel: z.enum(['standard', 'premium', 'featured']).default('standard'),
   durationHours: z
-    .number({ invalid_type_error: 'Duration must be a number' })
+    .number({ error: 'Duration must be a number' })
     .int()
     .min(1, 'Boost must last at least 1 hour')
     .max(720, 'Boost cannot exceed 30 days'),
@@ -263,7 +254,7 @@ export const businessIdSchema = z.object({
 export const businessReviewSchema = z.object({
   businessId: z.string().uuid('Invalid business ID'),
   rating: z
-    .number({ invalid_type_error: 'Rating must be a number' })
+    .number({ error: 'Rating must be a number' })
     .int('Rating must be a whole number')
     .min(1, 'Rating must be at least 1')
     .max(5, 'Rating must be at most 5'),
@@ -273,6 +264,8 @@ export const businessReviewSchema = z.object({
     .optional()
     .nullable(),
 });
+
+export { ProductStatus, ProductCondition, ReportTargetType };
 
 // ============================================================
 // Messaging / Chat Schemas

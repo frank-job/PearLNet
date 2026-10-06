@@ -25,10 +25,9 @@ const SORT_OPTIONS = [
 const CONDITIONS = [
   { value: '', label: 'Any condition' },
   { value: 'NEW', label: 'New' },
-  { value: 'LIKE_NEW', label: 'Like new' },
-  { value: 'GOOD', label: 'Good' },
-  { value: 'FAIR', label: 'Fair' },
-  { value: 'POOR', label: 'Poor' },
+  { value: 'USED_LIKE_NEW', label: 'Like new' },
+  { value: 'USED_GOOD', label: 'Good' },
+  { value: 'USED_FAIR', label: 'Fair' },
 ] as const;
 
 const PAGE_SIZE = 24;
@@ -139,7 +138,7 @@ export default function MarketplaceBrowser({
       if (!res.ok) throw new Error('Could not load more listings.');
       const data = await res.json();
       setProducts((prev) => [...prev, ...(data?.products ?? [])]);
-      setTotal(data?.total ?? prev.length);
+      setTotal(data?.total ?? 0);
       setPage(next);
       router.replace(`/PearLNet/marketplace?${params.toString()}`, { scroll: false });
     } catch (err) {

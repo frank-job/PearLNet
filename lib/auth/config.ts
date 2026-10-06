@@ -4,28 +4,47 @@ import Google from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 
+declare module 'next-auth' {
+  interface JWT {
+    role?: string;
+    verified?: boolean;
+    userId?: string;
+  }
+  interface Session {
+    user: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      role?: string;
+      verified?: boolean;
+    };
+  }
+}
+
 export const authConfig = {
   pages: {
     signIn: '/login',
-    signUp: '/signup',
     error: '/login',
     signOut: '/login',
   },
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: 'jwt' as const,
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 7 * 24 * 60 * 60,
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    jwt: ((params: any) => {
+      const { token, user, account } = params;
       if (user && account) {
         token.userId = user.id;
         token.role = user.role;
         token.verified = user.verified;
       }
       return token;
-    },
-    async session({ session, token }) {
+    }) as any,
+    session: ((params: any) => {
+      const { session, token } = params;
       if (token) {
         session.user = {
           id: token.userId as string,
@@ -37,7 +56,7 @@ export const authConfig = {
         };
       }
       return session;
-    },
+    }) as any,
   },
   providers: [
     Credentials({

@@ -246,9 +246,13 @@ export async function updateProduct(
   await redis.del(`product:${productId}`);
   await redis.delPattern('products:public:*');
 
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined),
+  ) as Parameters<typeof prisma.product.updateMany>[0]['data'];
+
   const result = await prisma.product.updateMany({
     where: { id: productId, sellerId: userId },
-    data,
+    data: cleanData,
   });
 
   return result.count > 0;
@@ -294,9 +298,12 @@ export async function favoriteProduct(userId: string, productId: string): Promis
     data: { userId, productId },
   });
 
+  const seller = await prisma.product.findUnique({ where: { id: productId }, select: { sellerId: true } });
+  if (!seller) return { favorited: false };
+
   await prisma.notification.create({
     data: {
-      userId: (await prisma.product.findUnique({ where: { id: productId }, select: { sellerId: true } })).sellerId,
+      userId: seller.sellerId,
       type: 'favorite',
       message: 'favorited your product',
       link: `/PearLNet/marketplace/${productId}`,

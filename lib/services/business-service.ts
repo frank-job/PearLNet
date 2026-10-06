@@ -117,7 +117,7 @@ export async function fetchBusinessBySlug(slug: string): Promise<BusinessWithDet
     }
   }
 
-  const business = await prisma.business.findUnique({
+const business = await prisma.business.findUnique({
     where: { slug },
     include: {
       owner: {
@@ -129,7 +129,6 @@ export async function fetchBusinessBySlug(slug: string): Promise<BusinessWithDet
           verified: true,
         },
       },
-      products: { select: { _count: { select: { products: true } } } },
       reviews: true,
       _count: { select: { products: true, reviews: true } },
     },
@@ -138,7 +137,7 @@ export async function fetchBusinessBySlug(slug: string): Promise<BusinessWithDet
   if (!business) return null;
 
   const avgRating = business.reviews.length > 0
-    ? business.reviews.reduce((sum, r) => sum + r.rating, 0) / business.reviews.length
+    ? business.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / business.reviews.length
     : 0;
 
   const formatted = formatBusiness({ ...business, avgRating });

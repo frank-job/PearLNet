@@ -14,6 +14,9 @@ export type SocketEventMap = {
   'notification': (data: any) => void;
   connect: () => void;
   disconnect: () => void;
+  'join-conversation': (data: { conversationId: string }) => void;
+  'leave-conversation': (data: { conversationId: string }) => void;
+  'join-group': (data: { groupId: string }) => void;
 };
 
 export function useSocket(userId?: string) {
