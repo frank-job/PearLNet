@@ -4,11 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { EyeIcon, HeartIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import {
-  CheckBadgeIcon,
-  LinkIcon,
-  MapPinIcon,
-} from '@heroicons/react/20/solid';
+import { CheckBadgeIcon, LinkIcon, MapPinIcon } from '@heroicons/react/20/solid';
 import { toast } from 'sonner';
 import FollowButton from './FollowButton';
 import LogoutButton from './LogoutButton';
@@ -21,8 +17,7 @@ import type { ProfilePageData } from '@/app/lib/profile-data';
    ProfileView
    - TikTok-style profile: identity + inline
      Following / Followers / Likes counters
-   - Tapping a counter swaps the grid for the matching list,
-     the same way the real app does
+   - Tapping a counter swaps the grid for the matching list
    - Owns the follow state so the button and the follower
      counter never disagree
    ============================================================ */
@@ -61,7 +56,7 @@ function PostGrid({ posts, emptyText }: { posts: Post[]; emptyText: string }) {
             />
           ) : (
             <span className="flex h-full w-full items-center justify-center px-2 text-center text-sm font-semibold text-muted">
-              {post.caption ? post.caption.slice(0, 60) : '✦'}
+              {post.caption ? post.caption.slice(0, 60) : ''}
             </span>
           )}
 
@@ -105,7 +100,7 @@ function UserList({
         <li key={user.id} className="flex items-center gap-3 p-4">
           <Link
             href={`/PearLNet/account?id=${encodeURIComponent(user.id)}`}
-            className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-surface-strong"
+            className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-surface-strong ring-1 ring-border"
           >
             {user.image_url ? (
               <Image
@@ -162,7 +157,6 @@ export default function ProfileView({
 }: ProfileViewProps) {
   const [active, setActive] = useState<TabKey>('posts');
   const [followerTotal, setFollowerTotal] = useState(stats.followers);
-  const [followingTotal, setFollowingTotal] = useState(stats.following);
 
   const displayName = profile.name ?? profile.username ?? 'PearLNet user';
 
@@ -177,7 +171,7 @@ export default function ProfileView({
   }
 
   const counters: { key: TabKey; label: string; value: number }[] = [
-    { key: 'following', label: 'Following', value: followingTotal },
+    { key: 'following', label: 'Following', value: stats.following },
     { key: 'followers', label: 'Followers', value: followerTotal },
     { key: 'liked', label: 'Likes', value: stats.likes },
   ];
@@ -187,7 +181,7 @@ export default function ProfileView({
       <div className="mx-auto w-full max-w-4xl px-4 md:px-8">
         {/* Profile header */}
         <header className="flex flex-col items-center gap-5 py-6 sm:flex-row sm:items-start sm:gap-6">
-          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-surface-strong ring-2 ring-border sm:h-24 sm:w-24">
+          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-surface-strong ring-2 ring-blue-600 sm:h-24 sm:w-24">
             {profile.image ? (
               <Image
                 src={profile.image}
@@ -198,7 +192,7 @@ export default function ProfileView({
                 className="object-cover"
               />
             ) : (
-              <span className="flex h-full w-full items-center justify-center text-3xl font-bold uppercase text-muted">
+              <span className="flex h-full w-full items-center justify-center bg-black text-3xl font-bold uppercase text-white">
                 {displayName.charAt(0)}
               </span>
             )}
@@ -232,7 +226,7 @@ export default function ProfileView({
                   href={profile.website}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="flex items-center gap-1 hover:text-primary hover:underline"
+                  className="flex items-center gap-1 hover:text-blue-600 hover:underline"
                 >
                   <LinkIcon className="h-3.5 w-3.5" />
                   {profile.website.replace(/^https?:\/\//, '')}
@@ -278,7 +272,7 @@ export default function ProfileView({
           </div>
         </header>
 
-        {/* Stats: tapping a counter switches the content below, TikTok style */}
+        {/* Stats: tapping a counter switches the content below */}
         <section className="flex items-center justify-center gap-6 border-y border-border py-4 sm:justify-start sm:gap-8">
           {counters.map((counter) => {
             const selected = active === counter.key;

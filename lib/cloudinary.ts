@@ -65,8 +65,8 @@ export async function uploadFile(
   options: CloudinaryUploadOptions = {},
 ): Promise<CloudinaryUploadResult> {
   const { valid, error, type } = validateUpload(file);
-  if (!valid || !error) {
-    if (!valid) throw new Error(error);
+  if (!valid) {
+    throw new Error(error ?? 'Invalid file');
   }
 
   const arrayBuffer = await file.arrayBuffer();

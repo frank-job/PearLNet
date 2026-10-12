@@ -1,31 +1,36 @@
 'use client';
+
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ForYouFeed from './ForYouFeed';
 import FollowingFeed from './FollowingFeed';
 import SearchBox from './SearchBox';
 import FollowingAccounts from './FollowingAccounts';
 import SuggestedUsers from './SuggestedUsers';
-import FeedTabs, { type FeedTab } from './FeedTabs';
-import FeedCategories from './FeedCategories';
 import FeedComposer from './FeedComposer';
-import { MagnifyingGlassIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useFeed } from '@/app/lib/FeedContext';
 import { useRouter } from 'next/navigation';
 import { FEED_CATEGORIES, getCategoryPageUrl } from '@/app/lib/category-api-map';
 
-
 export default function MainFeed() {
-  const { activeTab, setActiveTab, activeCategory, setActiveCategory, searchOpen, toggleSearch } = useFeed();
+  const {
+    activeTab,
+    setActiveTab,
+    activeCategory,
+    setActiveCategory,
+    searchOpen,
+    toggleSearch,
+  } = useFeed();
   const router = useRouter();
   const [postRefreshSignal, setPostRefreshSignal] = useState(0);
 
   return (
-    <div className="max-w-full   px-0 min-w-0">
-      {/* Desktop Header - Tab Bar + Categories (inside feed column) */}
-      <header className="sticky top-0 z-40 hidden lg:flex lg:flex-col bg-background/80 backdrop-blur-md border-b border-border mb-4">
-        {/* Row 1: Tabs + Search */}
-        <div className="flex items-center px-0 py-2 border-b border-border">
-          <div className="flex flex-1 gap-1  rounded-xl p-1">
+    <div className="min-w-0">
+      {/* Sticky feed header: tabs + search + category pills */}
+      <header className="sticky top-16 z-30 border-b border-border bg-background/85 backdrop-blur-md">
+        <div className="flex items-center">
+          <div className="flex flex-1">
             {(['forYou', 'following'] as const).map((tab) => (
               <button
                 key={tab}
@@ -33,20 +38,33 @@ export default function MainFeed() {
                   setActiveTab(tab);
                   setActiveCategory('News');
                 }}
-                className={`relative flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                className={`relative flex-1 py-3.5 text-sm font-bold transition-colors ${
                   activeTab === tab
-                    ? 'text-blue-800'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    ? 'text-foreground'
+                    : 'text-muted hover:text-foreground'
                 }`}
+                aria-current={activeTab === tab ? 'true' : undefined}
               >
                 {tab === 'forYou' ? 'For You' : 'Following'}
+                {activeTab === tab && (
+                  <motion.span
+                    layoutId="feed-tab-underline"
+                    className="absolute inset-x-8 bottom-0 h-0.5 rounded-full bg-blue-600"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
               </button>
             ))}
           </div>
+
           <button
             onClick={toggleSearch}
             aria-label={searchOpen ? 'Close search' : 'Open search'}
-            className="ml-3 rounded-full p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className={`mr-1 rounded-full p-2 transition-colors ${
+              searchOpen
+                ? 'bg-blue-600 text-white'
+                : 'text-muted hover:bg-surface-strong hover:text-foreground'
+            }`}
           >
             <MagnifyingGlassIcon className="h-5 w-5" />
           </button>
@@ -58,8 +76,7 @@ export default function MainFeed() {
           </div>
         )}
 
-        {/* Row 2: Category pills */}
-        <div className="flex px-0 py-2 pb-3 overflow-x-auto no-scrollbar gap-2 border-b border-border">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar py-2.5">
           {FEED_CATEGORIES.map((category) => (
             <button
               key={category}
@@ -69,40 +86,32 @@ export default function MainFeed() {
               }}
               className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                 activeCategory === category
-                  ? ' bg-blue-500 text-white'
-                  : 'border-border bg-surface text-slate-500 dark:text-slate-400 hover:border-primary/50 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  ? 'border-blue-600 bg-blue-600 text-white'
+                  : 'border-border bg-surface text-muted hover:border-blue-600/50 hover:text-foreground'
               }`}
             >
-              {category.toUpperCase()}
+              {category}
             </button>
           ))}
         </div>
       </header>
 
-      <div className='py-6 sm:top-2.5'>
-          <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} />
+      <div className="py-4">
+        <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} />
       </div>
-     
-      <div className="px-2 py-2">
+
+      <div className="mb-5">
         <SuggestedUsers />
       </div>
 
-<div className="px-0">
-        {activeTab === 'following' ? (
-          <>
-            <FollowingAccounts />
-            <FollowingFeed />
-          </>
-        ) : (
-          <>
-            {/* <FeedComposer onPostCreated={() => setPostRefreshSignal((signal) => signal + 1)} /> */}
-          <div className="sm:w-full">
-                  <ForYouFeed refreshSignal={postRefreshSignal} />
-              </div>
-          
-          </>
-        )}
-      </div>
+      {activeTab === 'following' ? (
+        <>
+          <FollowingAccounts />
+          <FollowingFeed />
+        </>
+      ) : (
+        <ForYouFeed refreshSignal={postRefreshSignal} />
+      )}
     </div>
   );
 }

@@ -102,7 +102,7 @@ function NavRow({
       aria-current={active ? 'page' : undefined}
       className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
         active
-          ? 'bg-purple-600 text-white shadow-sm'
+          ? 'bg-blue-600 text-white shadow-sm'
           : 'text-muted hover:bg-surface-strong hover:text-foreground'
       }`}
     >
@@ -178,7 +178,7 @@ function UserFooter() {
     return (
       <Link
         href="/login"
-        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
+        className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
       >
         Sign in
       </Link>
@@ -266,7 +266,7 @@ function SidebarContent({
   return (
     <>
       <div className="mb-6 flex items-center gap-2.5 px-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-purple-600 text-xs font-black text-white">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-600 text-xs font-black text-white">
           PL
         </span>
         <h2 className="text-lg font-bold text-foreground">PearLNet</h2>
@@ -298,10 +298,6 @@ function SidebarContent({
 export default function BottomNav() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? 'hidden' : '';
@@ -364,7 +360,7 @@ export default function BottomNav() {
                   key={item.href}
                   href={item.href}
                   aria-label={item.label}
-                  className="flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/40 transition-transform hover:scale-105 active:scale-95"
+                  className="flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 transition-transform hover:scale-105 active:scale-95"
                 >
                   <Icon className="h-6 w-6" />
                 </Link>
@@ -377,7 +373,7 @@ export default function BottomNav() {
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
                 className={`flex min-w-[56px] flex-col items-center gap-1 rounded-lg px-2 py-1 transition-colors ${
-                  active ? 'text-purple-600' : 'text-muted hover:text-foreground'
+                  active ? 'text-blue-600' : 'text-muted hover:text-foreground'
                 }`}
               >
                 <Icon className={`h-6 w-6 transition-transform ${active ? 'scale-110' : ''}`} />

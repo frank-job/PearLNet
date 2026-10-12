@@ -1,16 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   PhotoIcon,
   VideoCameraIcon as VideoIcon,
-  FaceSmileIcon, // <-- Changed from EmojiHappyIcon
   PaperClipIcon,
   XMarkIcon,
-  GlobeAltIcon,
-  UsersIcon,
-  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 
 interface MediaPreview {
@@ -24,11 +20,10 @@ export default function CreatePost({ onPostCreated }: { onPostCreated?: () => vo
   const [content, setContent] = useState('');
   const [media, setMedia] = useState<MediaPreview[]>([]);
   const [loading, setLoading] = useState(false);
-  const [privacy, setPrivacy] = useState<'PUBLIC' | 'FOLLOWERS' | 'PRIVATE'>('PUBLIC');
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const clipInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
@@ -82,7 +77,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated?: () => vo
     setLoading(true);
     try {
       const formData = new FormData();
-      const mediaType = media[0]?.type ?? 'TEXT';
+      const mediaType = media[0]?.type ?? 'IMAGE';
       formData.append('caption', content);
       formData.append('mediaType', mediaType);
 
@@ -102,7 +97,6 @@ export default function CreatePost({ onPostCreated }: { onPostCreated?: () => vo
 
       setContent('');
       setMedia([]);
-      setPrivacy('PUBLIC');
       onPostCreated?.();
       toast.success('Post created!');
     } catch (error) {
@@ -171,34 +165,21 @@ export default function CreatePost({ onPostCreated }: { onPostCreated?: () => vo
                 />
                 <VideoIcon className="h-5 w-5" />
               </label>
-              <button
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary"
-              >
-                <FaceSmileIcon className="h-5 w-5" />
-              </button>
               <label className="cursor-pointer rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-primary">
-                <input type="file" hidden />
+                <input
+                  ref={clipInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  hidden
+                  onChange={(e) => handleFileSelect(e.target.files)}
+                />
                 <PaperClipIcon className="h-5 w-5" />
               </label>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                {privacy === 'PUBLIC' && <GlobeAltIcon className="h-3 w-3" />}
-                {privacy === 'FOLLOWERS' && <UsersIcon className="h-3 w-3" />}
-                {privacy === 'PRIVATE' && <LockClosedIcon className="h-3 w-3" />}
-                <select
-                  value={privacy}
-                  onChange={(e) => setPrivacy(e.target.value as typeof privacy)}
-                  className="cursor-pointer border-0 bg-transparent text-xs font-medium"
-                >
-                  <option value="PUBLIC">Public</option>
-                  <option value="FOLLOWERS">Followers</option>
-                  <option value="PRIVATE">Private</option>
-                </select>
-              </div>
-
+              <span className="text-xs text-muted-foreground">{content.length}/280</span>
               <button
                 onClick={handleSubmit}
                 disabled={loading || (!content.trim() && media.length === 0)}

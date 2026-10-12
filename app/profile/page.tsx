@@ -14,7 +14,7 @@ export default function ProfilePage() {
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="bg-surface-strong rounded-2xl border border-border p-6">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
               U
             </div>
             <div className="flex-1">
@@ -39,7 +39,7 @@ export default function ProfilePage() {
               const Icon = stat.icon;
               return (
                 <div key={stat.label} className="text-center">
-                  <Icon className="w-5 h-5 mx-auto mb-1 text-purple-600" />
+                  <Icon className="w-5 h-5 mx-auto mb-1 text-blue-600" />
                   <p className="text-lg font-bold text-foreground">{stat.value}</p>
                   <p className="text-xs text-muted">{stat.label}</p>
                 </div>
@@ -53,14 +53,14 @@ export default function ProfilePage() {
             href="/PearLNet/account"
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-surface-strong border border-border hover:bg-surface transition-colors"
           >
-            <User className="w-5 h-5 text-purple-600" />
+            <User className="w-5 h-5 text-blue-600" />
             <span className="text-sm font-medium">View Full Profile</span>
           </Link>
           <Link
             href="/PearLNet/settings"
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-surface-strong border border-border hover:bg-surface transition-colors"
           >
-            <Settings className="w-5 h-5 text-purple-600" />
+            <Settings className="w-5 h-5 text-blue-600" />
             <span className="text-sm font-medium">Settings</span>
           </Link>
           <div className="pt-2">

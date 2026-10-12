@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  /* PearLNet palette: blue, white, black (grays are tints/shades) */
   --background: #ffffff;
   --foreground: #000000;
   --surface: #ffffff;
@@ -8,18 +9,15 @@
   --surface-elevated: #ffffff;
   --border: #e5e5e5;
   --border-strong: #d4d4d4;
-  --muted: #000000;
-  --muted-light: #525252;
-  --accent: #3b82f6;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
+  --muted: #525252;
+  --muted-light: #737373;
+  --accent: #2563eb;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --primary-soft: #eff6ff;
   --card-bg: #ffffff;
   --card-border: #e5e5e5;
-  --color-brand-blue: #3b82f6;
-  --color-brand-coral: #f0694f;
-  --color-brand-lime: #d7f36b;
-  --color-brand-cream: #fff8ed;
+  --color-brand-blue: #2563eb;
   --color-brand-dark: #000000;
   --color-brand-muted: #525252;
   --color-brand-gray: #737373;
@@ -34,21 +32,18 @@ html.dark {
   --surface-elevated: #262626;
   --border: #333333;
   --border-strong: #404040;
-  --muted: #ffffff;
-  --muted-light: #a3a3a3;
-  --accent: #ffffff;
-  --primary: #ffffff;
-  --primary-hover: #e5e5e5;
-  --primary-soft: #333333;
+  --muted: #a3a3a3;
+  --muted-light: #737373;
+  --accent: #3b82f6;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-soft: #1a1a1a;
   --card-bg: #0a0a0a;
   --card-border: #262626;
-  --color-brand-blue: #ffffff;
-  --color-brand-coral: #ffffff;
-  --color-brand-lime: #ffffff;
-  --color-brand-cream: #ffffff;
+  --color-brand-blue: #3b82f6;
   --color-brand-dark: #ffffff;
   --color-brand-muted: #a3a3a3;
-  --color-brand-gray: #a3a3a3;
+  --color-brand-gray: #737373;
   color-scheme: dark;
 }
 @theme inline {
@@ -94,6 +89,19 @@ body {
   background: var(--primary-soft);
 }
 
+/* Semantic helpers used by feed + composer components */
+.bg-card {
+  background: var(--card-bg);
+}
+
+.bg-primary {
+  background: var(--primary);
+}
+
+.bg-muted {
+  background: var(--surface-strong);
+}
+
 .text-foreground {
   color: var(--foreground);
 }
@@ -102,8 +110,20 @@ body {
   color: var(--muted);
 }
 
+.text-muted-foreground {
+  color: var(--muted-light);
+}
+
 .text-primary {
   color: var(--primary);
+}
+
+.text-primary-foreground {
+  color: #ffffff;
+}
+
+html.dark .text-primary-foreground {
+  color: #000000;
 }
 
 .border-border {

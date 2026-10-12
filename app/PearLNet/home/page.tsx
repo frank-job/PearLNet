@@ -1,18 +1,23 @@
-// import NavBar from '../../ui/nav/NavBarr';
+'use client';
+
+import TopBar from '@/app/components/TopBar';
 import MainFeed from '@/app/components/main';
 import TrendingSidebar from '@/app/components/TrendingSidebar';
 
 // ============================================================
-// Rat Home Page
-// - Public feed with "For You" and "Following" tabs
-// - Post composer at the top for creating new posts
-// - Shows posts from everyone or from followed users
+// Home Page
+// - Sticky top bar: logo, search, notifications, avatar
+// - Feed column: For You / Following tabs, stories, composer,
+//   suggestions and the infinite-scroll post feed
+// - Sidebar: trending topics derived from real posts + who to follow
 // ============================================================
 
-export default async function RatHomePage() {
+export default function HomePage() {
   return (
     <main className="min-h-screen bg-surface pb-24 lg:pb-8">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+      <TopBar />
+
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 pt-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <MainFeed />
         <TrendingSidebar />
       </div>

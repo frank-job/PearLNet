@@ -62,7 +62,8 @@ export default function StoriesBar({ onStoryClick }: { onStoryClick?: (user: Sto
             <div
               className="rounded-full p-[2px]"
               style={{
-                background: 'linear-gradient(45deg, #f97316, #ec4899, #8b5cf6)',
+                background:
+                  'linear-gradient(135deg, #2563eb 0%, #3b82f6 45%, #000000 100%)',
               }}
             >
               <img

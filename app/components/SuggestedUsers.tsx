@@ -112,8 +112,8 @@ export default function SuggestedUsers() {
                   onClick={() => handleFollow(user.id)}
                   className={`w-full mt-1 px-2 py-1.5 rounded-full text-[10px] font-bold transition-colors ${
                     isFollowing
-                      ? 'bg-surface-strong text-muted hover:bg-surface'
-                      : 'bg-primary text-white border border- bg-blue-600 hover:bg-primary/90'
+                      ? 'bg-surface-strong text-muted hover:bg-surface hover:text-foreground'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
                   {isFollowing ? 'Following' : 'Follow'}

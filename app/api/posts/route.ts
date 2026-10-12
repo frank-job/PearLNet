@@ -154,14 +154,23 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('images') as File[];
     const video = formData.get('video') as File | null;
 
+    // Derive mediaType from what was actually uploaded instead of trusting
+    // the client-supplied value, so a video post can't be stored as an image.
+    let derivedType: MediaType = MediaType.IMAGE;
+    if (video && video.size > 0) {
+      derivedType = MediaType.VIDEO;
+    } else if (files.some((f) => f.size > 0)) {
+      derivedType = MediaType.IMAGE;
+    }
+
     let imageUrl: string | null = null;
     let images: string[] | null = null;
     let videoUrl: string | null = null;
 
-    if (video && video.size > 0) {
+    if (derivedType === MediaType.VIDEO && video) {
       const upload = await uploadFile(video, { folder: 'posts/videos', tags: ['video'] });
       videoUrl = upload.secureUrl;
-    } else if (files.length > 0) {
+    } else {
       const uploaded: string[] = [];
       for (const file of files) {
         if (file.size > 0) {
@@ -183,7 +192,7 @@ export async function POST(request: NextRequest) {
         imageUrl,
         images: images ?? undefined,
         videoUrl,
-        mediaType: mediaType as MediaType,
+        mediaType: derivedType,
       },
     });
 

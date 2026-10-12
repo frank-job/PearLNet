@@ -1,183 +1,196 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { BellIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
+import { CheckIcon } from '@heroicons/react/20/solid';
 import { formatRelativeTime } from '@/app/lib/time-utils';
 
-/* ============================================================
-   NotificationBell Component
-   - Shows a bell icon with unread count badge
-   - Fetches unread notification count on mount and periodically
-   - Clicking opens a dropdown with recent notifications
-   - Clicking a notification navigates to the linked page
-   ============================================================ */
+interface NotificationItem {
+  id: string;
+  type: string;
+  message: string;
+  link: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+const TYPE_ICON: Record<string, string> = {
+  follow: '👥',
+  like: '❤️',
+  comment: '💬',
+  message: '✉️',
+};
 
 export default function NotificationBell() {
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notifications, setNotifications] = useState<
-    { id: string; message: string; link: string | null; read: boolean; created_at: string }[]
-  >([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-
-  const fetchUnreadCount = useCallback(async () => {
-    try {
-      const res = await fetch('/api/notifications?unread=true');
-      if (!res.ok) return;
-      const data = await res.json();
-      setUnreadCount(data.count ?? 0);
-    } catch {
-      // Silently fail
-    }
-  }, []);
-
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const res = await fetch('/api/notifications');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.data) setNotifications(data.data);
-    } catch {
-      // Silently fail
-    }
-  }, []);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchUnreadCount();
-    fetchNotifications();
-    const countInterval = setInterval(fetchUnreadCount, 30000);
-    const listInterval = setInterval(fetchNotifications, 60000);
+    let cancelled = false;
+
+    fetch('/api/notifications?limit=20')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) {
+          setNotifications(data.data ?? []);
+          setUnread(data.unreadCount ?? 0);
+        }
+      })
+      .catch(() => {});
+
     return () => {
-      clearInterval(countInterval);
-      clearInterval(listInterval);
+      cancelled = true;
     };
-  }, [fetchUnreadCount, fetchNotifications]);
+  }, []);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+    if (!open) return;
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
       }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
 
-  const handleToggle = async () => {
-    if (!open) {
-      setLoading(true);
-      await fetchNotifications();
-      await fetchUnreadCount();
-      setLoading(false);
-    }
-    setOpen(!open);
-  };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
 
-  const handleMarkAllRead = async () => {
+  const markAllRead = async () => {
     try {
-      await fetch('/api/notifications', {
-        method: 'PATCH',
+      const res = await fetch('/api/notifications', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          all: true,
-        }),
+        body: JSON.stringify({ action: 'mark-all-read' }),
       });
-      setUnreadCount(0);
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, read: true })),
-      );
+      if (!res.ok) return;
+      setUnread(0);
+      setNotifications((items) => items.map((n) => ({ ...n, read: true })));
     } catch {
-      // Silently fail
+      // Non-critical: the badge simply stays.
     }
   };
 
-  const handleNotificationClick = (notificationId: string, link: string | null) => {
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notificationId ? { ...n, read: true } : n,
-      ),
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-    setOpen(false);
-    if (link) {
-      router.push(link);
-    }
+  const markRead = (id: string) => {
+    fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notificationId: id }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data?.success) return;
+        setNotifications((items) =>
+          items.map((n) => (n.id === id ? { ...n, read: true } : n)),
+        );
+        setUnread((count) => Math.max(0, count - 1));
+      })
+      .catch(() => {});
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={ref}>
       <button
         type="button"
-        onClick={handleToggle}
-        className="relative p-2 text-muted hover:text-foreground transition-colors"
-        title="Notifications"
+        onClick={() => setOpen((value) => !value)}
+        aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}
+        aria-expanded={open}
+        className="relative grid h-10 w-10 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-strong"
       >
-        <BellIcon className="w-6 h-6" />
-        {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
-            {unreadCount > 99 ? '99+' : unreadCount}
+        <BellIcon className="h-5 w-5" />
+        {unread > 0 && (
+          <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
+            {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-surface rounded-xl shadow-lg border border-border z-50 max-h-96 overflow-y-auto">
-          <div className="flex items-center justify-between p-4 border-b border-border">
-            <h3 className="text-sm font-bold text-foreground">Notifications</h3>
-            {unreadCount > 0 && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-surface shadow-lg">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <h2 className="text-sm font-bold text-foreground">Notifications</h2>
+            {unread > 0 && (
               <button
                 type="button"
-                onClick={handleMarkAllRead}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                onClick={markAllRead}
+                className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
               >
+                <CheckIcon className="h-3.5 w-3.5" />
                 Mark all read
               </button>
             )}
           </div>
 
-          {notifications.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-sm text-foreground font-medium mb-1">All caught up 🎉</p>
-              <p className="text-xs text-muted">No new notifications right now</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-surface-strong">
-              {notifications.map((notification) => (
-                <button
-                  key={notification.id}
-                  type="button"
-                  onClick={() =>
-                    handleNotificationClick(
-                      notification.id,
-                      notification.link,
-                    )
-                  }
-                  className={`w-full text-left p-3 hover:bg-surface-strong transition-colors ${
-                    !notification.read ? 'bg-blue-50/50' : ''
-                  }`}
-                >
-                  <p
-                    className={`text-sm ${
-                      !notification.read
-                        ? 'text-foreground font-medium'
-                        : 'text-muted'
-                    }`}
-                  >
-                    {notification.message}
-                  </p>
-                  <p className="text-[10px] text-muted mt-1">
-                    {formatRelativeTime(notification.created_at)}
-                  </p>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="max-h-96 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-muted">
+                No notifications yet
+              </p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {notifications.map((notification) => {
+                  const href = notification.link ?? undefined;
+                  const inner = (
+                    <>
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-strong text-sm">
+                        {TYPE_ICON[notification.type] ?? '🔔'}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className={`block truncate text-sm ${
+                            notification.read ? 'text-muted' : 'font-semibold text-foreground'
+                          }`}
+                        >
+                          {notification.message}
+                        </span>
+                        <span className="block text-xs text-muted">
+                          {formatRelativeTime(notification.createdAt)}
+                        </span>
+                      </span>
+                      {!notification.read && (
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-blue-600" />
+                      )}
+                    </>
+                  );
+
+                  return (
+                    <li key={notification.id}>
+                      {href ? (
+                        <Link
+                          href={href}
+                          onClick={() => {
+                            markRead(notification.id);
+                            setOpen(false);
+                          }}
+                          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-strong"
+                        >
+                          {inner}
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => markRead(notification.id)}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-strong"
+                        >
+                          {inner}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
       )}
     </div>
